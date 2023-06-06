@@ -1,8 +1,13 @@
 import React from "react";
-
+export interface SignInResponse {
+    error: string | undefined;
+    status: number;
+    ok: boolean;
+    url: string | null;
+}
 interface buttonType {
     text: string;
-    handleClick?: (data: any) => void | (() => void);
+    handleClick?: (data: any) => void | (() => void) | Promise<SignInResponse | undefined>;
     type: "submit" | "reset" | "button";
     variant?: "primary" | "secondary";
 }

@@ -2,28 +2,26 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { object, string } from "yup";
+import { object, string, ref } from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { SuccessToast, ErrorToast } from "@/components/toast";
 import Input from "@/components/input";
 import Button from "@/components/button";
 
-interface signUpType {
-    name: string;
-    username: string;
-    email: string;
-    password: string;
-    confirmPassword: string;
-}
-
 const signUpSchema = object({
-    name: string().required(),
-    username: string().required(),
-    email: string().email("Email must be a valid email").required(),
-    password: string().min(8, "Password must be a minimum of 8 characters").required(),
-    confirmPassword: string().min(8, "Password must be a minimum of 8 characters").required(),
-    // profilePic: ,
+    name: string().trim().required("Name is required"),
+    username: string().trim().required("Username is required"),
+    email: string().trim().email("Email must be a valid email").required("Email is required"),
+    password: string()
+        .trim()
+        .min(8, "Password must be a minimum of 8 characters")
+        .required("Password is required"),
+    confirmPassword: string()
+        .trim()
+        .min(8, "Password must be a minimum of 8 characters")
+        .oneOf([ref("password"), undefined], "Passwords must match")
+        .required("Password is required"),
 });
 
 const SignUp = () => {
@@ -38,12 +36,6 @@ const SignUp = () => {
     const router = useRouter();
 
     const onSignUp = (data: any) => {
-        // Validate passwords match
-        if (data.password !== data.confirmPassword) {
-            ErrorToast("Passwords do not match");
-            return;
-        }
-
         console.log(data);
         SuccessToast("Sign Up Successful");
 

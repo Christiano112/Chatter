@@ -19,6 +19,7 @@ const Input = ({ label, name, placeholder, type, register, errors, ...props }: I
             )}
             <input
                 type={type}
+                id={name}
                 {...register(
                     name,
                     { required: true },

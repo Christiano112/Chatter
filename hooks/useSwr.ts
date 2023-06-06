@@ -1,13 +1,17 @@
 "use client";
 
 import useSWr, { preload } from "swr";
-import useFetch from "./useFetch";
 import { FetcherType } from "./useFetch";
 
-const useSwr = (url: string): FetcherType => {
-    preload(url, useFetch);
+const fetcher = async (url: string) => {
+    const res = await fetch(url);
+    return res.json();
+};
 
-    const { data, error, isLoading } = useSWr(url, useFetch);
+const useSwr = (url: string): FetcherType => {
+    preload(url, fetcher);
+
+    const { data, error, isValidating: isLoading } = useSWr(url, fetcher);
 
     return { data, error, isLoading };
 };

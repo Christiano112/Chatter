@@ -1,99 +1,40 @@
 "use client";
 
-import React from "react";
-import { EditorState, convertFromRaw } from "draft-js";
-
+import React, { useRef } from "react";
+import { EditorState, convertToRaw } from "draft-js";
 import { Editor } from "react-draft-wysiwyg";
 import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
-
-import draftToMarkdown from "draftjs-to-markdown";
+import { InfoToast } from "@/components/toast";
 import draftToHtml from "draftjs-to-html";
-
-const content = {
-    entityMap: {},
-    blocks: [
-        {
-            key: "",
-            text: "",
-            type: "unstyled",
-            depth: 0,
-            inlineStyleRanges: [],
-            entityRanges: [],
-            data: {},
-        },
-    ],
-};
-
-const hashConfig = {
-    trigger: "#",
-    separator: " ",
-};
-
-const customEntityTransform = (entity: any) => {
-    const entityType = entity.get("type").toLowerCase();
-    if (entityType === "mention") {
-        return `[${entity.get("data").get("text")}](${entity.get("data").get("url")})`;
-    }
-    if (entityType === "hashtag") {
-        return `[${entity.get("data").get("text")}](${entity.get("data").get("url")})`;
-    }
-    return undefined;
-};
-
-const config = {
-    entityToHTML: (entity: any, originalText: any) => {
-        if (entity.type === "MENTION") {
-            return `<a href="${entity.data.url}">${originalText}</a>`;
-        }
-        if (entity.type === "LINK") {
-            return `<a href="${entity.data.url}">${originalText}</a>`;
-        }
-        if (entity.type === "IMAGE") {
-            return `<img src="${entity.data.src}" alt="${entity.data.alt}" />`;
-        }
-        return originalText;
-    },
-};
+import parse from "html-react-parser";
 
 const TextEditor = () => {
     const [editorState, setEditorState] = React.useState<EditorState>(() =>
         EditorState.createEmpty(),
     );
-
-    const contentState = convertFromRaw(content);
-    const rawContentState = editorState.getCurrentContent();
-    const markDown = draftToMarkdown(rawContentState, hashConfig, customEntityTransform, config);
-    const markUp = draftToHtml(rawContentState, hashConfig, customEntityTransform);
-
-    const [rawContent, setRawContent] = React.useState(contentState);
-    const [textValue, setTextValue] = React.useState("");
-
-    const onContentStateChange = (contentState: any) => {
-        setRawContent(contentState);
-    };
+    const [notes, setNotes] = React.useState<string>("");
+    const editor = useRef(null);
 
     React.useEffect(() => {
-        setTextValue(editorState.getCurrentContent().getPlainText());
-    }, [editorState]);
-
-    console.log("rawContent:", rawContent);
-    console.log("textValue:", textValue);
-    console.log("markDown:", markDown);
-    console.log("markUp:", markUp);
+        if (editorState.getCurrentContent().hasText()) {
+            const htmlValue = draftToHtml(convertToRaw(editorState.getCurrentContent()));
+            setNotes(htmlValue);
+            console.log("notes", notes);
+        }
+    }, [editorState, notes]);
 
     return (
         <React.Fragment>
             <Editor
-                editorState={editorState}
                 toolbarClassName="toolbarClassName rounded"
                 wrapperClassName="wrapperClassName bg-slate-500 mx-auto my-20 w-[80%] shadow-inner rounded-lg p-4 h-full max-h-[40rem] min-h-[20rem]"
                 editorClassName="editorClassName bg-slate-100 rounded-sm p-2 max-h-[22rem] min-h-[16rem] w-full"
-                // toolbarStyle={}
-                // wrapperStyle={}
-                // editorStyle={}
+                editorState={editorState}
                 onEditorStateChange={setEditorState}
-                onContentStateChange={onContentStateChange}
                 wrapperId={2} // ID for server side rendering
+                placeholder="Start typing..."
+                spellCheck={true}
+                ref={editor}
                 mention={{
                     separator: " ",
                     trigger: "@",
@@ -111,7 +52,128 @@ const TextEditor = () => {
                     separator: " ",
                     trigger: "#",
                 }}
+                toolbar={{
+                    options: [
+                        "inline",
+                        "blockType",
+                        "fontSize",
+                        "fontFamily",
+                        "list",
+                        "textAlign",
+                        "colorPicker",
+                        "link",
+                        "embedded",
+                        "emoji",
+                        "image",
+                        "remove",
+                        "history",
+                    ],
+                    inline: {
+                        inDropdown: true,
+                        options: [
+                            "bold",
+                            "italic",
+                            "underline",
+                            "strikethrough",
+                            "monospace",
+                            "superscript",
+                            "subscript",
+                        ],
+                    },
+                    blockType: {
+                        inDropdown: true,
+                        options: ["Normal", "H1", "H2", "H3", "H4", "H5", "H6"],
+                    },
+                    fontSize: {
+                        options: [8, 9, 10, 11, 12, 14, 16, 18, 24, 30, 36, 48],
+                    },
+                    fontFamily: {
+                        options: [
+                            "Arial",
+                            "Georgia",
+                            "Impact",
+                            "Tahoma",
+                            "Times New Roman",
+                            "Verdana",
+                        ],
+                    },
+                    list: {
+                        inDropdown: true,
+                        options: ["unordered", "ordered"],
+                    },
+                    textAlign: {
+                        options: ["left", "center", "right", "justify"],
+                    },
+                    colorPicker: {
+                        colors: [
+                            "rgb(97,189,109)",
+                            "rgb(26,188,156)",
+                            "rgb(84,172,210)",
+                            "rgb(44,130,201)",
+                            "rgb(147,101,184)",
+                            "rgb(71,85,119)",
+                            "rgb(204,204,204)",
+                            "rgb(65,168,95)",
+                            "rgb(0,168,133)",
+                            "rgb(61,142,185)",
+                            "rgb(41,105,176)",
+                            "rgb(85,57,130)",
+                            "rgb(40,50,78)",
+                            "rgb(0,0,0)",
+                            "rgb(247,218,100)",
+                            "rgb(251,160,38)",
+                            "rgb(235,107,86)",
+                            "rgb(226,80,65)",
+                            "rgb(163,143,132)",
+                            "rgb(239,239,239)",
+                            "rgb(255,255,255)",
+                            "rgb(250,197,28)",
+                            "rgb(243,121,52)",
+                            "rgb(209,72,65)",
+                            "rgb(184,49,47)",
+                            "rgb(124,112,107)",
+                            "rgb(209,213,216)",
+                        ],
+                    },
+                    link: {
+                        inDropdown: true,
+                        showOpenOptionOnHover: true,
+                        defaultTargetOption: "_self",
+                        options: ["link", "unlink"],
+                    },
+                    embedded: {
+                        inDropdown: true,
+                        options: ["embedded", "image", "video", "audio"],
+                    },
+                    emoji: {
+                        options: ["emoji"],
+                    },
+                    image: {
+                        urlEnabled: true,
+                        uploadEnabled: true,
+                        alignmentEnabled: true,
+                        uploadCallback: () => {
+                            InfoToast("Image Upload Successful");
+                        },
+                        previewImage: false,
+                        inputAccept:
+                            "image/gif,image/jpeg,image/jpg,image/png,image/svg,image/webp",
+                        alt: { present: false, mandatory: false },
+                        defaultSize: {
+                            height: "auto",
+                            width: "auto",
+                        },
+                    },
+                    remove: {
+                        inDropdown: true,
+                        options: ["remove", "cancel"],
+                    },
+                    history: {
+                        options: ["undo", "redo"],
+                    },
+                }}
             />
+            <div>{parse(notes)}</div>
         </React.Fragment>
     );
 };

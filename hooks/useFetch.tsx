@@ -4,15 +4,15 @@ import React from "react";
 import axios from "axios";
 
 export interface FetcherType {
-    data: any;
+    data: any[];
     isLoading: boolean;
     error: any;
 }
 
 const useFetch = (url: string): FetcherType => {
-    const [data, setData] = React.useState(null);
+    const [data, setData] = React.useState([]);
     const [isLoading, setIsLoading] = React.useState(true);
-    const [error, setError] = React.useState(null);
+    const [error, setError] = React.useState(undefined);
 
     React.useEffect(() => {
         setIsLoading(true);

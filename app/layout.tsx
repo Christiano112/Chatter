@@ -2,7 +2,9 @@ import "./globals.css";
 import { Inter } from "next/font/google";
 import CustomLayout from "./custom_layout";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({
+    subsets: ["latin"],
+});
 
 export const metadata = {
     title: "Chatter",
@@ -10,13 +12,16 @@ export const metadata = {
     charset: "utf-8",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+interface LayoutProps {
+    children: React.ReactNode;
+    session: any;
+}
+
+export default function RootLayout({ children, session }: LayoutProps) {
     return (
         <html lang="en">
             <body className={`${inter.className} mx-auto w-[98%] p-0 box-border`}>
-                {children}
-
-                <CustomLayout />
+                <CustomLayout session={session}>{children}</CustomLayout>
             </body>
         </html>
     );
