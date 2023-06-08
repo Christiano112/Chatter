@@ -1,4 +1,5 @@
-import React from "react";
+import React, { ReactNode} from "react";
+
 export interface SignInResponse {
     error: string | undefined;
     status: number;
@@ -6,7 +7,7 @@ export interface SignInResponse {
     url: string | null;
 }
 interface buttonType {
-    text: string;
+    text: ReactNode;
     handleClick?: (data: any) => void | (() => void) | Promise<SignInResponse | undefined>;
     type: "submit" | "reset" | "button";
     variant?: "primary" | "secondary";

@@ -1,29 +1,58 @@
 "use client";
 
 import React from "react";
-import { useAppDispatch, useAppSelector } from "@/store/store";
-import { increment, decrement, incrementByAmount } from "@/store/slices/counter";
+import Link from "next/link";
+import { nanoid } from "@reduxjs/toolkit";
+import ReactionButton from "@/components/reactions";
+import { useAppDispatch, useAppSelector } from "@/redux/store";
+import {
+    addPost,
+    deletePost,
+    selectAllPosts,
+    fetchPosts,
+    selectPostStatus,
+} from "@/redux/slices/posts";
 
 const Counter = () => {
-    const count = useAppSelector((state) => state.counter.value);
+    const [postId, setPostId] = React.useState<string>("");
     const dispatch = useAppDispatch();
+    const posts = useAppSelector(selectAllPosts);
+    const status = useAppSelector(selectPostStatus);
+
+    React.useEffect(() => {
+        if (status === "idle") {
+            dispatch(fetchPosts());
+        }
+    }, [status, dispatch]);
 
     return (
         <div>
-            <h1>Counter</h1>
             <div>
-                <button aria-label="Increment value" onClick={() => dispatch(increment())}>
-                    Increment
-                </button>
-                <span>{count}</span>
-                <button aria-label="Decrement value" onClick={() => dispatch(decrement())}>
-                    Decrement
-                </button>
+                <h1>Posts</h1>
+                {posts &&
+                    posts.map((post) => (
+                        <div key={post.id} className="border p-9 border-red-800">
+                            <p>id: {post.id}</p>
+                            <h1>title: {post.title}</h1>
+                            <p>content: {post.content}</p>
+                            <p>date: {post.date}</p>
+                            <p>author: {post.user}</p>
+                            {post.reactions && <ReactionButton post={post} />}
+                            <Link href={`/posts/${post.id}`}>View Post</Link>
+                            <button onClick={() => dispatch(deletePost(post.id))}>
+                                Delete Post
+                            </button>
+                        </div>
+                    ))}
+
                 <button
-                    aria-label="Increment value by 10"
-                    onClick={() => dispatch(incrementByAmount(10))}
+                    onClick={() => {
+                        const id = nanoid();
+                        setPostId(id);
+                        dispatch(addPost("New Post Title", "New Post Content", id));
+                    }}
                 >
-                    Increment by 10
+                    Add Post
                 </button>
             </div>
         </div>

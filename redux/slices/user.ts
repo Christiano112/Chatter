@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { PayloadAction, createSlice, nanoid, createAsyncThunk, createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 import useFetch from '@/hooks/useFetch';
 
@@ -15,18 +15,6 @@ import useFetch from '@/hooks/useFetch';
 const initialState = {
     user: null
 }
-
-// const fetchUser = (userId: string) => {
-
-//     return (dispatch: any, getState: RootState) => {
-//         try {
-//             const { data } = useFetch(`/users/${userId}`);
-//             dispatch(login(data));
-//         } catch (err) {
-//             console.log(err);
-//         }
-//     };
-// };
 
 export const userSlice = createSlice({
     name: 'user',

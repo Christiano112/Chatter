@@ -4,7 +4,7 @@ import React from "react";
 import { ToastContainer } from "react-toastify";
 import { SessionProvider } from "next-auth/react";
 import { Provider } from "react-redux";
-import store from "@/store/store";
+import store from "@/redux/store";
 
 export interface SessionProviderProps {
     children: React.ReactNode;

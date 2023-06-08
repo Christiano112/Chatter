@@ -12,8 +12,8 @@ import { useSession, signIn, signOut, getProviders, getCsrfToken } from "next-au
 import type { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../api/auth/[...nextauth]/route";
-import { useAppDispatch, useAppSelector } from "@/store/store";
-import { login } from "@/store/slices/user";
+import { useAppDispatch, useAppSelector } from "@/redux/store";
+import { login } from "@/redux/slices/user";
 
 const loginSchema = object({
     email: string().trim().email("Must be a valid email").required("Email is required"),
