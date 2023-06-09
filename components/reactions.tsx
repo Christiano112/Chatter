@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
-import { useAppDispatch } from '@/redux/store';
-import { PostType, reactionAdded, reactionDeleted } from '@/redux/slices/posts';
+import React, { useState } from "react";
+import { useAppDispatch } from "@/redux/store";
+import { PostType, reactionAdded, reactionDeleted } from "@/redux/slices/posts";
 
 export const reactionEmojis = {
-    like: '👍',
-    love: '❤️️',
-    haha: '😂',
-    wow: '😮',
-    sad: '😢',
-    angry: '😡',
-    thumbsUp: '👍',
-    thumbsDown: '👎',
-    fire: '🔥',
-    clapping: '👏',
+    like: "👍",
+    love: "❤️️",
+    haha: "😂",
+    wow: "😮",
+    sad: "😢",
+    angry: "😡",
+    thumbsUp: "👍",
+    thumbsDown: "👎",
+    fire: "🔥",
+    clapping: "👏",
 };
 
 interface ReactionButtonProps {
@@ -36,22 +36,20 @@ const ReactionButton: React.FC<ReactionButtonProps> = React.memo(({ post }) => {
         }
     };
 
-    const reactionButtons = Object.entries(reactionEmojis).map(
-        ([name, emoji]) => (
-            <button
-                key={name}
-                className={`mr-2${selectedReaction === name ? ' selected' : ''}`}
-                onClick={() => handleReactionClick(name)}
-                disabled={selectedReaction !== null && selectedReaction !== name}
-            >
-                {emoji} {post.reactions?.[name] || 0}
-            </button>
-        )
-    );
+    const reactionButtons = Object.entries(reactionEmojis).map(([name, emoji]) => (
+        <button
+            key={name}
+            className={`mr-2${selectedReaction === name ? " selected" : ""}`}
+            onClick={() => handleReactionClick(name)}
+            disabled={selectedReaction !== null && selectedReaction !== name}
+        >
+            {emoji} {post.reactions?.[name] || 0}
+        </button>
+    ));
 
-    return <div className='border border-blue-600'>{reactionButtons}</div>;
+    return <div className="border border-blue-600">{reactionButtons}</div>;
 });
 
-ReactionButton.displayName = 'ReactionButton';
+ReactionButton.displayName = "ReactionButton";
 
 export default ReactionButton;

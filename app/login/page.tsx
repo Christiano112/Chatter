@@ -33,12 +33,12 @@ const Login = ({
     const {
         register,
         handleSubmit,
-        watch,
         formState: { errors },
     } = useForm({
         resolver: yupResolver(loginSchema),
     });
     const router = useRouter();
+    const [signedIn, setSignedIn] = React.useState(true);
 
     const onLogin = (data: any) => {
         console.log(data);
@@ -55,15 +55,86 @@ const Login = ({
     console.log("currentUser", currentUser);
 
     return (
-        <React.Fragment>
-            <form
-                method="post"
-                action="/api/auth/signin/email"
-                onSubmit={handleSubmit(onLogin)}
-                className="mx-auto my-20 w-3/4 shadow-inner rounded-lg p-4 md:p-8 bg-slate-300"
+        <div className="flex h-[100vh] min-h-full">
+            <div
+                className="hidden md:flex flex-col items-center justify-center px-4"
+                style={{ background: "url('/side.jpg') center no-repeat", backgroundSize: "cover" }}
             >
+                <h1 className="text-4xl text-black text-center my-8 font-semibold">Chatter</h1>
+                <p className="text-black font-bold">
+                    Unleash the Power of Words, Connect with Like-minded Readers and Writers
+                </p>
+            </div>
+            <section className="w-full mt-10 flex flex-col items-center">
+                <div className="w-full flex justify-evenly bg-white shadow-lg rounded-t-lg">
+                    <button
+                        className={
+                            !signedIn
+                                ? "text-lg md:text-2xl bg-primary w-full py-4 text-white"
+                                : "text-lg md:text-2xl w-full py-4 bg-white text-primary rounded-tl-lg"
+                        }
+                        onClick={() => {
+                            setSignedIn(true);
+                            router.push("/signup");
+                        }}
+                    >
+                        Register
+                    </button>
+                    <button
+                        className={
+                            signedIn
+                                ? "text-lg md:text-2xl bg-primary w-full py-4 text-white"
+                                : "text-lg md:text-2xl w-full py-4 bg-white text-primary rounded-tr-lg"
+                        }
+                        onClick={() => {
+                            setSignedIn(false);
+                            router.push("/login");
+                        }}
+                    >
+                        Login
+                    </button>
+                </div>
+                <h1 className="text-2xl md:text-4xl text-black text-center mt-8 md:mt-[4rem] font-bold">
+                    Welcome Back
+                </h1>
+                <form
+                    method="post"
+                    action="/api/auth/signin/email"
+                    onSubmit={handleSubmit(onLogin)}
+                    className="mx-auto mt-8 md:mt-[4rem] w-[90%] md:w-[80%] pb-8"
+                >
+                    <Input
+                        label="Email"
+                        name="email"
+                        placeholder="Email"
+                        type="email"
+                        register={register}
+                        errors={errors}
+                    />
+                    <Input
+                        label="Password"
+                        name="password"
+                        placeholder="Password"
+                        type="password"
+                        register={register}
+                        errors={errors}
+                    />
+                    <Button
+                        text="Login"
+                        type="submit"
+                        variant="primary"
+                        handleClick={() => handleSubmit(onLogin)}
+                    />
+                </form>
+                <Button
+                    text={`Sign out`}
+                    type="button"
+                    variant="primary"
+                    handleClick={() => signOut()}
+                />
+                <input name="csrfToken" type="hidden" defaultValue={csrfToken} />
+                {/* SHOW PROVIDERS FOR LOGIN */}
                 <div>
-                    {/* SHOW PROVIDERS FOR LOGIN */}
                     {providers &&
                         Object.values(providers).map((provider) => (
                             <div key={provider.name}>
@@ -75,38 +146,9 @@ const Login = ({
                                 />
                             </div>
                         ))}
-                    <Button
-                        text={`Sign out`}
-                        type="button"
-                        variant="secondary"
-                        handleClick={() => signOut()}
-                    />
-                    <input name="csrfToken" type="hidden" defaultValue={csrfToken} />
                 </div>
-                <Input
-                    label="Email"
-                    name="email"
-                    placeholder="Email"
-                    type="email"
-                    register={register}
-                    errors={errors}
-                />
-                <Input
-                    label="Password"
-                    name="password"
-                    placeholder="Password"
-                    type="password"
-                    register={register}
-                    errors={errors}
-                />
-                <Button
-                    text="Login"
-                    type="submit"
-                    variant="secondary"
-                    handleClick={() => handleSubmit(onLogin)}
-                />
-            </form>
-        </React.Fragment>
+            </section>
+        </div>
     );
 };
 
