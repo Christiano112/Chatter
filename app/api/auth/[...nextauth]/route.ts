@@ -20,7 +20,7 @@ export const authOptions: NextAuthOptions = {
     theme: {
         colorScheme: "dark", // "auto | dark | light"
         brandColor: "#543EE0", // hex value
-        logo: "/chatter-logo.png", // path to logo img
+        logo: "/logo.png", // path to logo img
         buttonText: "#543EE0", // hex value
     },
     secret: process.env.NEXTAUTH_SECRET,

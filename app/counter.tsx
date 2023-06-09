@@ -14,7 +14,6 @@ import {
 } from "@/redux/slices/posts";
 
 const Counter = () => {
-    const [postId, setPostId] = React.useState<string>("");
     const dispatch = useAppDispatch();
     const posts = useAppSelector(selectAllPosts);
     const status = useAppSelector(selectPostStatus);
@@ -48,7 +47,6 @@ const Counter = () => {
                 <button
                     onClick={() => {
                         const id = nanoid();
-                        setPostId(id);
                         dispatch(addPost("New Post Title", "New Post Content", id));
                     }}
                 >

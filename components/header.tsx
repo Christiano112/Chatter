@@ -1,21 +1,68 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
+import Button from "@/components/button";
+import Logo from "@/public/logo.png";
+import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { FaAlignRight } from "react-icons/fa";
 
 const Header = () => {
+    const [isOpen, setIsOpen] = React.useState(false);
+    const pathname = usePathname();
+    const router = useRouter();
+
+    const isActive = (href: string) => (pathname === href ? "text-primary" : "text-tertiary");
+
     return (
-        <header className="bg-gray-800 px-8 py-4">
-            <nav>
-                <ul className="flex gap-4 justify-end text-white">
-                    <li>
-                        <Link href="/">Home</Link>
-                    </li>
-                    <li>
-                        <Link href="/login">Login</Link>
-                    </li>
-                    <li>
-                        <Link href="/signup">Sign Up</Link>
-                    </li>
-                </ul>
+        <header className="bg-white shadow-xl">
+            <nav className="container-fluid mx-auto flex items-center justify-between p-4">
+                <div className="flex items-center cursor-pointer">
+                    <Image src={Logo} alt="logo" width={80} height={80} />
+                </div>
+                {/* <div className={`2xs:flex ${isOpen ? 'block' : 'hidden'}`}> */}
+                <div className="flex-grow text-center">
+                    <ul className="flex justify-center space-x-4">
+                        <li>
+                            <Link href="/" className={`${isActive("/")} link`}>
+                                Home
+                            </Link>
+                        </li>
+                        <li>
+                            <Link href="/about" className={`${isActive("/about")} link`}>
+                                About
+                            </Link>
+                        </li>
+                        <li>
+                            <Link href="/contact" className={`${isActive("/contact")} link`}>
+                                Contact
+                            </Link>
+                        </li>
+                    </ul>
+                </div>
+                <div className="flex items-center space-x-4">
+                    <Button
+                        text="Login"
+                        type="button"
+                        size="large"
+                        style={{ border: "1px solid #543EE0", color: "#111111" }}
+                        handleClick={() => router.push("/login")}
+                    />
+                    <Button
+                        text="Sign up"
+                        type="button"
+                        variant="primary"
+                        size="medium"
+                        handleClick={() => router.push("/signup")}
+                    />
+                </div>
+                {/* </div> */}
+                <FaAlignRight
+                    className="text-primary 2xs:hidden cursor-pointer w-8 h-8"
+                    onClick={() => setIsOpen(!isOpen)}
+                />
             </nav>
         </header>
     );
