@@ -1,6 +1,5 @@
-import Image from "next/image";
 import React from "react";
-import EyeIcon from "/public/eye-icon.png";
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 
 interface InputType {
     label?: string;
@@ -68,7 +67,11 @@ const Input = ({ label, name, placeholder, type, register, errors, ...props }: I
                         className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer"
                         onClick={toggleInputType}
                     >
-                        <Image src={EyeIcon} alt="eye-icon" className="mix-blend-color-burn" />
+                        {inputType === "password" ? (
+                            <AiOutlineEyeInvisible className="text-2xl text-slate-500" />
+                        ) : (
+                            <AiOutlineEye className="text-2xl text-slate-500" />
+                        )}
                     </span>
                 )}
             </div>

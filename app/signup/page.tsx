@@ -4,11 +4,15 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { object, string, ref } from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useForm } from "react-hook-form";
+import { useForm, SubmitHandler } from "react-hook-form";
 import { SuccessToast, ErrorToast } from "@/components/toast";
 import Input from "@/components/input";
 import Button from "@/components/button";
 import Select from "@/components/select";
+
+export interface SignUpType {
+    [key: string]: string;
+}
 
 const signUpSchema = object({
     firstName: string().trim().required("First Name is required"),
@@ -38,7 +42,7 @@ const SignUp = () => {
     const router = useRouter();
     const [signedIn, setSignedIn] = React.useState(true);
 
-    const onSignUp = (data: any) => {
+    const onSignUp: SubmitHandler<SignUpType> = (data) => {
         console.log(data);
         SuccessToast("Sign Up Successful");
 

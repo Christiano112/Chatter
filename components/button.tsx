@@ -33,7 +33,7 @@ const getSizeClass = (size: ButtonType["size"]) => {
         case "small":
             return "w-[8rem]";
         case "medium":
-            return "w-[12rem";
+            return "w-[12rem]";
         case "large":
             return "w-1/2";
         default:

@@ -4,21 +4,20 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { object, string } from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useForm } from "react-hook-form";
+import { useForm, SubmitHandler } from "react-hook-form";
 import { SuccessToast, ErrorToast } from "@/components/toast";
 import Input from "@/components/input";
 import Button from "@/components/button";
-import { useSession, signIn, signOut, getProviders, getCsrfToken } from "next-auth/react";
+import { useSession, signIn, getProviders, getCsrfToken } from "next-auth/react";
 import type { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../api/auth/[...nextauth]/route";
 import { useAppDispatch, useAppSelector } from "@/redux/store";
 import { login } from "@/redux/slices/user";
 
-type LoginTypes = {
-    email: string;
-    password: string;
-};
+export interface LoginType {
+    [key: string]: string;
+}
 
 const loginSchema = object({
     email: string().trim().email("Must be a valid email").required("Email is required"),
@@ -45,7 +44,7 @@ const Login = ({
     const router = useRouter();
     const [signedIn, setSignedIn] = React.useState(true);
 
-    const onLogin = (data: any) => {
+    const onLogin: SubmitHandler<LoginType> = (data) => {
         console.log(data);
         SuccessToast("Login Successful");
         // Redirect to homepage
@@ -131,12 +130,6 @@ const Login = ({
                         handleClick={() => handleSubmit(onLogin)}
                     />
                 </form>
-                <Button
-                    text={`Sign out`}
-                    type="button"
-                    variant="primary"
-                    handleClick={() => signOut()}
-                />
                 <input name="csrfToken" type="hidden" defaultValue={csrfToken} />
                 {/* SHOW PROVIDERS FOR LOGIN */}
                 <div>
