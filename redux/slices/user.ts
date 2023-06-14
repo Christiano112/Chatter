@@ -1,6 +1,12 @@
-import { PayloadAction, createSlice, nanoid, createAsyncThunk, createSelector } from '@reduxjs/toolkit';
-import { RootState } from '../store';
-import useFetch from '@/hooks/useFetch';
+import {
+    PayloadAction,
+    createSlice,
+    nanoid,
+    createAsyncThunk,
+    createSelector,
+} from "@reduxjs/toolkit";
+import { RootState } from "../store";
+import useFetch from "@/hooks/useFetch";
 
 // interface UserStateType {
 //     [key: string]: string;
@@ -13,17 +19,17 @@ import useFetch from '@/hooks/useFetch';
 // };
 
 const initialState = {
-    user: null
-}
+    user: null,
+};
 
 export const userSlice = createSlice({
-    name: 'user',
+    name: "user",
     initialState,
     reducers: {
         login: (state, action) => {
             state.user = action.payload;
-        }
-    }
+        },
+    },
 });
 
 export const { login } = userSlice.actions;

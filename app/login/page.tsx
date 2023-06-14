@@ -15,6 +15,11 @@ import { authOptions } from "../api/auth/[...nextauth]/route";
 import { useAppDispatch, useAppSelector } from "@/redux/store";
 import { login } from "@/redux/slices/user";
 
+type LoginTypes = {
+    email: string;
+    password: string;
+};
+
 const loginSchema = object({
     email: string().trim().email("Must be a valid email").required("Email is required"),
     password: string()

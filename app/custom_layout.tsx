@@ -37,7 +37,7 @@ const CustomLayout = ({ children, session }: SessionProviderProps) => {
             persistor && persistor.flush();
             persistor && persistor.persist();
         };
-    }, []);
+    }, [persistor]);
 
     return (
         <SessionProvider session={session}>

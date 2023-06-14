@@ -3,9 +3,13 @@
 @tailwind utilities;
 
 .link {
-    @apply font-semibold text-xl hover:underline;
+    @apply font-semibold text-base md:text-xl hover:underline;
 }
 
 .btn {
     @apply cursor-pointer text-white rounded-lg shadow-lg select-none px-4 py-2 text-sm md:text-lg whitespace-nowrap text-center my-4;
+}
+
+.footer-link {
+    @apply hover:underline;
 }

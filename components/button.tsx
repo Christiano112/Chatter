@@ -15,9 +15,6 @@ interface ButtonType {
     style?: React.CSSProperties;
 }
 
-// const basicStyle =
-//     "cursor-pointer text-white rounded-lg shadow-lg select-none px-4 py-2 text-sm md:text-lg whitespace-nowrap text-center my-4";
-
 const getVariantClass = (variant: ButtonType["variant"]) => {
     switch (variant) {
         case "primary":
@@ -34,11 +31,11 @@ const getVariantClass = (variant: ButtonType["variant"]) => {
 const getSizeClass = (size: ButtonType["size"]) => {
     switch (size) {
         case "small":
-            return "w-[1/4]";
+            return "w-[8rem]";
         case "medium":
-            return "w-[1/2]";
+            return "w-[12rem";
         case "large":
-            return "w-[3/4]";
+            return "w-1/2";
         default:
             return "w-full";
     }

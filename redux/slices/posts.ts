@@ -1,6 +1,15 @@
-import { PayloadAction, createSlice, nanoid, createAsyncThunk, createSelector, createEntityAdapter, EntityState, EntityId } from '@reduxjs/toolkit';
-import { RootState } from '../store';
-import { formatDateTimeShort } from '@/utils/date';
+import {
+    PayloadAction,
+    createSlice,
+    nanoid,
+    createAsyncThunk,
+    createSelector,
+    createEntityAdapter,
+    EntityState,
+    EntityId,
+} from "@reduxjs/toolkit";
+import { RootState } from "../store";
+import { formatDateTimeShort } from "@/utils/date";
 
 export interface PostType {
     id: EntityId;
@@ -14,7 +23,7 @@ export interface PostType {
 }
 
 export interface PostsSliceType extends EntityState<PostType> {
-    status: 'idle' | 'loading' | 'success' | 'failed';
+    status: "idle" | "loading" | "success" | "failed";
     error: string | undefined | null;
 }
 
@@ -23,25 +32,28 @@ const postsAdapter = createEntityAdapter<PostType>({
 });
 
 const initialState: PostsSliceType = postsAdapter.getInitialState({
-    status: 'idle',
+    status: "idle",
     error: null,
 });
 
-export const fetchPosts = createAsyncThunk('posts/fetchPosts', async () => {
-    const response = await fetch('https://jsonplaceholder.typicode.com/posts');
+export const fetchPosts = createAsyncThunk("posts/fetchPosts", async () => {
+    const response = await fetch("https://jsonplaceholder.typicode.com/posts");
     return (await response.json()) as PostType[];
 });
 
-export const fetchPostsByUserId = createAsyncThunk('posts/fetchPostsByUserId', async (userId: string) => {
-    const response = await fetch(`https://jsonplaceholder.typicode.com/posts?userId=${userId}`);
-    return (await response.json()) as PostType[];
-});
+export const fetchPostsByUserId = createAsyncThunk(
+    "posts/fetchPostsByUserId",
+    async (userId: string) => {
+        const response = await fetch(`https://jsonplaceholder.typicode.com/posts?userId=${userId}`);
+        return (await response.json()) as PostType[];
+    },
+);
 
-export const addNewPost = createAsyncThunk('posts/addNewPost', async (initialPost: PostType) => {
-    const response = await fetch('https://jsonplaceholder.typicode.com/posts', {
-        method: 'POST',
+export const addNewPost = createAsyncThunk("posts/addNewPost", async (initialPost: PostType) => {
+    const response = await fetch("https://jsonplaceholder.typicode.com/posts", {
+        method: "POST",
         headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
         },
         body: JSON.stringify(initialPost),
     });
@@ -49,14 +61,18 @@ export const addNewPost = createAsyncThunk('posts/addNewPost', async (initialPos
 });
 
 const postsSlice = createSlice({
-    name: 'posts',
+    name: "posts",
     initialState,
     reducers: {
         addPost: {
             reducer(state, action: PayloadAction<PostType>) {
                 postsAdapter.addOne(state, action.payload);
             },
-            prepare(title: string, content: string, userId: string): { payload: PostType; type: string } {
+            prepare(
+                title: string,
+                content: string,
+                userId: string,
+            ): { payload: PostType; type: string } {
                 const newPost: PostType = {
                     id: nanoid(),
                     title,
@@ -79,7 +95,7 @@ const postsSlice = createSlice({
 
                 return {
                     payload: newPost,
-                    type: 'posts/addPost',
+                    type: "posts/addPost",
                 };
             },
         },
@@ -109,66 +125,65 @@ const postsSlice = createSlice({
             }
         },
     },
-    extraReducers: builder => {
+    extraReducers: (builder) => {
         builder
-            .addCase(fetchPosts.pending, state => {
-                state.status = 'loading';
+            .addCase(fetchPosts.pending, (state) => {
+                state.status = "loading";
             })
             .addCase(fetchPosts.fulfilled, (state, action) => {
-                state.status = 'success';
+                state.status = "success";
                 postsAdapter.setAll(state, action.payload);
             })
             .addCase(fetchPosts.rejected, (state, action) => {
-                state.status = 'failed';
+                state.status = "failed";
                 state.error = action.error.message;
             })
-            .addCase(fetchPostsByUserId.pending, state => {
-                state.status = 'loading';
+            .addCase(fetchPostsByUserId.pending, (state) => {
+                state.status = "loading";
             })
             .addCase(fetchPostsByUserId.fulfilled, (state, action) => {
-                state.status = 'success';
+                state.status = "success";
                 postsAdapter.setAll(state, action.payload);
             })
             .addCase(fetchPostsByUserId.rejected, (state, action) => {
-                state.status = 'failed';
+                state.status = "failed";
                 state.error = action.error.message;
             })
-            .addCase(addNewPost.pending, state => {
-                state.status = 'loading';
+            .addCase(addNewPost.pending, (state) => {
+                state.status = "loading";
             })
             .addCase(addNewPost.fulfilled, (state, action) => {
-                state.status = 'success';
+                state.status = "success";
                 postsAdapter.addOne(state, action.payload);
             })
             .addCase(addNewPost.rejected, (state, action) => {
-                state.status = 'failed';
+                state.status = "failed";
                 state.error = action.error.message;
             });
-    }
+    },
 });
 
 const selectPostsState = (state: RootState) => state.posts;
 
-export const {
-    selectAll: selectAllPosts,
-    selectById: selectPostById,
-} = postsAdapter.getSelectors<RootState>(selectPostsState);
+export const { selectAll: selectAllPosts, selectById: selectPostById } =
+    postsAdapter.getSelectors<RootState>(selectPostsState);
 
 export const selectPostsByUser = createSelector(
     [selectAllPosts, (state: RootState, userId: string) => userId],
-    (posts, userId) => posts.filter(post => post.user === userId)
+    (posts, userId) => posts.filter((post) => post.user === userId),
 );
 
 export const selectPostStatus = createSelector(
     selectPostsState,
-    (postsState: PostsSliceType) => postsState.status
+    (postsState: PostsSliceType) => postsState.status,
 );
 
 export const selectPostError = createSelector(
     selectPostsState,
-    (postsState: PostsSliceType) => postsState.error
+    (postsState: PostsSliceType) => postsState.error,
 );
 
-export const { addPost, updatePost, deletePost, reactionAdded, reactionDeleted } = postsSlice.actions;
+export const { addPost, updatePost, deletePost, reactionAdded, reactionDeleted } =
+    postsSlice.actions;
 
 export default postsSlice.reducer;

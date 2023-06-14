@@ -14,7 +14,7 @@ module.exports = {
         },
         secondary: {
           DEFAULT: '#FFEDCC',
-          50: '#FFFFFF',
+          50: '#FFEDCC80',
         },
         tertiary: {
           DEFAULT: '#111111',
@@ -22,7 +22,7 @@ module.exports = {
         },
       },
       screens: {
-        'xs': '375px',
+        'xs': '480px',
         '2xs': '576px',
       },
     },

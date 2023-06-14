@@ -1,7 +1,9 @@
+import React from "react";
+
 const Loading = () => {
     return (
-        <div className="flex justify-center items-center my-8">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-4 border-pink-800" />
+        <div className="flex justify-center items-center h-screen">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-pink-800 border-t-0"></div>
         </div>
     );
 };

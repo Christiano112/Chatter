@@ -18,12 +18,19 @@ const Header = () => {
 
     return (
         <header className="bg-white shadow-xl">
-            <nav className="container-fluid mx-auto flex items-center justify-between p-4">
+            <nav className="container-fluid mx-auto flex items-center justify-between p-2 2xs:p-4">
                 <div className="flex items-center cursor-pointer">
-                    <Image src={Logo} alt="logo" width={80} height={80} />
+                    <Image
+                        src={Logo}
+                        alt="logo"
+                        width={80}
+                        height={80}
+                        priority
+                        className="min-h-[3rem] min-w-[3rem]"
+                    />
                 </div>
                 {/* <div className={`2xs:flex ${isOpen ? 'block' : 'hidden'}`}> */}
-                <div className="flex-grow text-center">
+                <div className="hidden xs:block flex-grow text-center">
                     <ul className="flex justify-center space-x-4">
                         <li>
                             <Link href="/" className={`${isActive("/")} link`}>
@@ -60,7 +67,7 @@ const Header = () => {
                 </div>
                 {/* </div> */}
                 <FaAlignRight
-                    className="text-primary 2xs:hidden cursor-pointer w-8 h-8"
+                    className="text-primary hidden cursor-pointer w-8 h-8"
                     onClick={() => setIsOpen(!isOpen)}
                 />
             </nav>
