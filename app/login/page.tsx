@@ -11,7 +11,7 @@ import Button from "@/components/button";
 import { useSession, signIn, getProviders, getCsrfToken } from "next-auth/react";
 import type { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "../api/auth/[...nextauth]/route";
+import authOptions from "../api/auth/authOptions";
 import { useAppDispatch, useAppSelector } from "@/redux/store";
 import { login } from "@/redux/slices/user";
 
@@ -45,12 +45,11 @@ const Login = ({
     const [signedIn, setSignedIn] = React.useState(true);
 
     const onLogin: SubmitHandler<LoginType> = (data) => {
-        console.log(data);
         SuccessToast("Login Successful");
         // Redirect to homepage
         // router.push("/");
 
-        dispatch(login(data));
+        dispatch(login(session?.user));
     };
 
     const dispatch = useAppDispatch();
@@ -150,9 +149,7 @@ const Login = ({
     );
 };
 
-export default Login;
-
-export async function getServerSideProps(context: GetServerSidePropsContext) {
+export const getServerSideProps = async (context: GetServerSidePropsContext) => {
     const session = await getServerSession(context.req, context.res, authOptions);
 
     const csrfToken = await getCsrfToken(context);
@@ -162,6 +159,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
             redirect: {
                 destination: "/",
                 permanent: false,
+                statusCode: 302,
             },
         };
     }
@@ -170,8 +168,10 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
     return {
         props: {
-            providers: providers ?? [],
-            csrfToken: csrfToken ?? "",
+            providers: providers,
+            csrfToken: csrfToken,
         },
     };
-}
+};
+
+export default Login;

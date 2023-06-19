@@ -4,9 +4,10 @@ import { AiOutlineSearch } from "react-icons/ai";
 interface SearchInputType {
     placeholder?: string;
     onSearch: (query: string) => void;
+    style?: React.CSSProperties;
 }
 
-const SearchInput = ({ placeholder, onSearch }: SearchInputType) => {
+const SearchInput = ({ placeholder, onSearch, style }: SearchInputType) => {
     const [searchQuery, setSearchQuery] = useState<string>("");
 
     const handleSearch = () => {
@@ -20,7 +21,7 @@ const SearchInput = ({ placeholder, onSearch }: SearchInputType) => {
     return (
         <div className="relative">
             <input
-                type="text"
+                type="search"
                 id="search"
                 placeholder={placeholder}
                 value={searchQuery}

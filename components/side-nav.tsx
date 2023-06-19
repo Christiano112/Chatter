@@ -16,7 +16,7 @@ import NotificationIcon from "../public/notification-icon.png";
 
 const SideNav = () => {
     return (
-        <div className="max-w-[13rem] p-4 shadow-2xl min-h-screen">
+        <div className="hidden md:block max-w-[13rem] p-4 shadow-2xl min-h-screen transition-all relative">
             <h2 className="text-primary font-bold text-4xl md:text-5xl mb-12">Chatter</h2>
             <div className="flex flex-col gap-4 mb-8">
                 <h3 className="text-tertiary text-xl font-medium">Overview</h3>
@@ -97,12 +97,14 @@ const SideNav = () => {
                     </span>{" "}
                     Notifications
                 </Link>
-                <Button
-                    text={`Log out`}
-                    type="button"
-                    handleClick={() => signOut()}
-                    style={{ border: "1px solid red", color: "red" }}
-                />
+                <div className="justify-end bottom-0 absolute right-0 left-0 p-4 mb-8">
+                    <Button
+                        text={`Log out`}
+                        type="button"
+                        handleClick={() => signOut()}
+                        style={{ border: "1px solid red", color: "red" }}
+                    />
+                </div>
             </div>
         </div>
     );

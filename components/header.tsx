@@ -17,7 +17,7 @@ const Header = () => {
     const isActive = (href: string) => (pathname === href ? "text-primary" : "text-tertiary");
 
     return (
-        <header className="bg-white shadow-xl">
+        <header className="shadow">
             <nav className="container-fluid mx-auto flex items-center justify-between p-2 2xs:p-4">
                 <div className="flex items-center cursor-pointer">
                     <Image

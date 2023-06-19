@@ -1,19 +1,33 @@
 "use client";
 
 import React, { useRef } from "react";
-import { EditorState, convertToRaw } from "draft-js";
+import { EditorState, convertToRaw, Modifier, AtomicBlockUtils } from "draft-js";
 import { Editor } from "react-draft-wysiwyg";
 import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
 import { InfoToast } from "@/components/toast";
 import draftToHtml from "draftjs-to-html";
 import parse from "html-react-parser";
+import Button from "@/components/button";
+import { useAppDispatch, useAppSelector } from "@/redux/store";
+import { addPost } from "@/redux/slices/posts";
+import {
+    CustomUploadOption,
+    CustomBlockTypeOption,
+    CustomFontFamilyOption,
+    CustomFontSizeOption,
+} from "./customOptions";
 
 const TextEditor = () => {
     const [editorState, setEditorState] = React.useState<EditorState>(() =>
         EditorState.createEmpty(),
     );
     const [notes, setNotes] = React.useState<string>("");
-    const editor = useRef(null);
+    const editor = useRef<Editor>(null);
+    const dispatch = useAppDispatch();
+
+    const handleEditorStateChange = (newEditorState: EditorState) => {
+        setEditorState(newEditorState);
+    };
 
     React.useEffect(() => {
         if (editorState.getCurrentContent().hasText()) {
@@ -23,15 +37,53 @@ const TextEditor = () => {
         }
     }, [editorState, notes]);
 
+    const handlePublish = () => {
+        InfoToast("Article Published Successfully");
+        const title = parse(notes).toString().slice(0, 20);
+        const content = parse(notes).toString();
+        dispatch(addPost(title, content, "100000"));
+    };
+
     return (
-        <React.Fragment>
+        <div className="max-w-[80%] mx-auto my-20 shadow-inner rounded-lg p-4 flex flex-col justify-between gap-8">
+            <div className="flex justify-end pr-[3rem]">
+                <Button
+                    text="Publish"
+                    type="button"
+                    variant="primary"
+                    size="small"
+                    handleClick={handlePublish}
+                />
+            </div>
             <Editor
                 toolbarClassName="toolbarClassName rounded"
-                wrapperClassName="wrapperClassName bg-slate-500 mx-auto my-20 w-[80%] shadow-inner rounded-lg p-4 h-full max-h-[40rem] min-h-[20rem]"
-                editorClassName="editorClassName bg-slate-100 rounded-sm p-2 max-h-[22rem] min-h-[16rem] w-full"
+                wrapperClassName="wrapperClassName mx-auto w-[96%] shadow-inner rounded-lg p-4 h-full max-h-[40rem] min-h-[20rem]"
+                editorClassName="editorClassName bg-primary-50 rounded-sm p-4 max-h-[22rem] min-h-[16rem] w-full"
                 editorState={editorState}
-                onEditorStateChange={setEditorState}
-                wrapperId={2} // ID for server side rendering
+                onEditorStateChange={handleEditorStateChange}
+                toolbarCustomButtons={[
+                    <CustomUploadOption
+                        key={1}
+                        editorState={editorState}
+                        onChange={handleEditorStateChange}
+                    />,
+                    <CustomBlockTypeOption
+                        key={2}
+                        editorState={editorState}
+                        onChange={handleEditorStateChange}
+                    />,
+                    <CustomFontFamilyOption
+                        key={3}
+                        editorState={editorState}
+                        onChange={handleEditorStateChange}
+                    />,
+                    <CustomFontSizeOption
+                        key={4}
+                        editorState={editorState}
+                        onChange={handleEditorStateChange}
+                    />,
+                ]}
+                wrapperId={2}
                 placeholder="Start typing..."
                 spellCheck={true}
                 ref={editor}
@@ -43,33 +95,21 @@ const TextEditor = () => {
                         { text: "BANANA", value: "banana", url: "banana" },
                         { text: "CHERRY", value: "cherry", url: "cherry" },
                         { text: "DURIAN", value: "durian", url: "durian" },
-                        { text: "FIG", value: "fig", url: "fig" },
-                        { text: "GRAPEFRUIT", value: "grapefruit", url: "grapefruit" },
-                        { text: "HONEYDEW", value: "honeydew", url: "honeydew" },
                     ],
                 }}
                 hashtag={{
                     separator: " ",
                     trigger: "#",
+                    suggestions: [
+                        { text: "APPLE", value: "apple", url: "apple" },
+                        { text: "BANANA", value: "banana", url: "banana" },
+                        { text: "CHERRY", value: "cherry", url: "cherry" },
+                        { text: "DURIAN", value: "durian", url: "durian" },
+                    ],
                 }}
                 toolbar={{
-                    options: [
-                        "inline",
-                        "blockType",
-                        "fontSize",
-                        "fontFamily",
-                        "list",
-                        "textAlign",
-                        "colorPicker",
-                        "link",
-                        "embedded",
-                        "emoji",
-                        "image",
-                        "remove",
-                        "history",
-                    ],
+                    options: ["inline", "list", "textAlign", "remove", "history"],
                     inline: {
-                        inDropdown: true,
                         options: [
                             "bold",
                             "italic",
@@ -80,101 +120,25 @@ const TextEditor = () => {
                             "subscript",
                         ],
                     },
-                    blockType: {
-                        inDropdown: true,
-                        options: ["Normal", "H1", "H2", "H3", "H4", "H5", "H6"],
-                    },
-                    fontSize: {
-                        options: [8, 9, 10, 11, 12, 14, 16, 18, 24, 30, 36, 48],
-                    },
-                    fontFamily: {
-                        options: [
-                            "Arial",
-                            "Georgia",
-                            "Impact",
-                            "Tahoma",
-                            "Times New Roman",
-                            "Verdana",
-                        ],
-                    },
                     list: {
-                        inDropdown: true,
+                        inDropdown: false,
                         options: ["unordered", "ordered"],
                     },
                     textAlign: {
+                        inDropdown: false,
                         options: ["left", "center", "right", "justify"],
                     },
-                    colorPicker: {
-                        colors: [
-                            "rgb(97,189,109)",
-                            "rgb(26,188,156)",
-                            "rgb(84,172,210)",
-                            "rgb(44,130,201)",
-                            "rgb(147,101,184)",
-                            "rgb(71,85,119)",
-                            "rgb(204,204,204)",
-                            "rgb(65,168,95)",
-                            "rgb(0,168,133)",
-                            "rgb(61,142,185)",
-                            "rgb(41,105,176)",
-                            "rgb(85,57,130)",
-                            "rgb(40,50,78)",
-                            "rgb(0,0,0)",
-                            "rgb(247,218,100)",
-                            "rgb(251,160,38)",
-                            "rgb(235,107,86)",
-                            "rgb(226,80,65)",
-                            "rgb(163,143,132)",
-                            "rgb(239,239,239)",
-                            "rgb(255,255,255)",
-                            "rgb(250,197,28)",
-                            "rgb(243,121,52)",
-                            "rgb(209,72,65)",
-                            "rgb(184,49,47)",
-                            "rgb(124,112,107)",
-                            "rgb(209,213,216)",
-                        ],
-                    },
-                    link: {
-                        inDropdown: true,
-                        showOpenOptionOnHover: true,
-                        defaultTargetOption: "_self",
-                        options: ["link", "unlink"],
-                    },
-                    embedded: {
-                        inDropdown: true,
-                        options: ["embedded", "image", "video", "audio"],
-                    },
-                    emoji: {
-                        options: ["emoji"],
-                    },
-                    image: {
-                        urlEnabled: true,
-                        uploadEnabled: true,
-                        alignmentEnabled: true,
-                        uploadCallback: () => {
-                            InfoToast("Image Upload Successful");
-                        },
-                        previewImage: false,
-                        inputAccept:
-                            "image/gif,image/jpeg,image/jpg,image/png,image/svg,image/webp",
-                        alt: { present: false, mandatory: false },
-                        defaultSize: {
-                            height: "auto",
-                            width: "auto",
-                        },
-                    },
                     remove: {
-                        inDropdown: true,
                         options: ["remove", "cancel"],
                     },
                     history: {
+                        inDropdown: false,
                         options: ["undo", "redo"],
                     },
                 }}
             />
             <div>{parse(notes)}</div>
-        </React.Fragment>
+        </div>
     );
 };
 

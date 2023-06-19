@@ -1,9 +1,9 @@
-import { NextAuthOptions } from "next-auth";
+import type { AuthOptions } from "next-auth";
 import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import { randomUUID, randomBytes } from "crypto";
 
-const authOptions: NextAuthOptions = {
+const authOptions: AuthOptions = {
     providers: [
         GithubProvider({
             clientId: process.env.GITHUB_CLIENT_ID || "",
@@ -17,15 +17,15 @@ const authOptions: NextAuthOptions = {
     ],
     debug: true,
     theme: {
-        colorScheme: "auto", // "auto | dark | light"
-        brandColor: "", // hex value
-        logo: "", // path to logo img
-        buttonText: "", // hex value
+        colorScheme: "dark", // "auto | dark | light"
+        brandColor: "#543EE0", // hex value
+        logo: "/logo.png", // path to logo img
+        buttonText: "#543EE0", // hex value
     },
     secret: process.env.NEXTAUTH_SECRET,
     session: {
         //  strategy: "database", // where session is stored
-        maxAge: 30 * 24 * 60 * 60, // 30 days
+        maxAge: 2 * 24 * 60 * 60, // 2 days
         updateAge: 12 * 60 * 60, // 12 hours
         generateSessionToken: () => {
             return randomUUID?.() || randomBytes(32).toString("hex");
@@ -33,6 +33,7 @@ const authOptions: NextAuthOptions = {
     },
     callbacks: {
         async signIn({ user, account, profile, email, credentials }) {
+            console.log("signIn", { user, account, profile, email, credentials });
             // if (account?.provider === "google") {
             //     return profile?.email_verified && profile?.email?.endsWith("@example.com")
             // }
@@ -46,11 +47,10 @@ const authOptions: NextAuthOptions = {
             else if (new URL(url).origin === baseUrl) return url;
 
             // Allow signin pages to be restricted to users with access
-            if (url.startsWith(baseUrl + "/auth/signin")) return baseUrl + "/auth/signin";
-            if (url.startsWith(baseUrl + "/auth/error")) return baseUrl + "/auth/error";
-            if (url.startsWith(baseUrl + "/auth/verify-request"))
-                return baseUrl + "/auth/verify-request";
-            if (url.startsWith(baseUrl + "/auth/new-user")) return baseUrl + "/auth/new-user";
+            if (url.startsWith(baseUrl + "/signup")) return baseUrl + "/signup";
+            if (url.startsWith(baseUrl + "/error")) return baseUrl + "/error";
+            if (url.startsWith(baseUrl + "/verify-request")) return baseUrl + "/verify-request";
+            if (url.startsWith(baseUrl + "/new-user")) return baseUrl + "/new-user";
 
             return baseUrl;
         },
@@ -70,11 +70,13 @@ const authOptions: NextAuthOptions = {
             return session;
         },
     },
-    pages: {
-        signIn: '/api/auth/[...nextauth]/page',
-        signOut: '/auth/[...nextauth]/page',
-        // error: '/auth/error', // Error code passed in query string as ?error=
-        // verifyRequest: '/auth/verify-request', // (used for check email message)
-        // newUser: '/auth/new-user' // New users will be directed here on first sign in (leave the property out if not of interest)
-    },
+    // pages: {
+    //     signIn: '../login',
+    //     signOut: '../login',
+    //     error: '/auth/error', // Error code passed in query string as ?error=
+    //     verifyRequest: '/auth/verify-request', // (used for check email message)
+    //     newUser: '/auth/new-user' // New users will be directed here on first sign in (leave the property out if not of interest)
+    // },
 };
+
+export default authOptions;

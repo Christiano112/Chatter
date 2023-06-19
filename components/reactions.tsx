@@ -39,7 +39,7 @@ const ReactionButton: React.FC<ReactionButtonProps> = React.memo(({ post }) => {
     const reactionButtons = Object.entries(reactionEmojis).map(([name, emoji]) => (
         <button
             key={name}
-            className={`mr-2${selectedReaction === name ? " selected" : ""}`}
+            className={`mr-2 text-tertiary-50 ${selectedReaction === name ? " selected" : ""}`}
             onClick={() => handleReactionClick(name)}
             disabled={selectedReaction !== null && selectedReaction !== name}
         >
@@ -47,7 +47,7 @@ const ReactionButton: React.FC<ReactionButtonProps> = React.memo(({ post }) => {
         </button>
     ));
 
-    return <div className="border border-blue-600">{reactionButtons}</div>;
+    return <div className="border">{reactionButtons}</div>;
 });
 
 ReactionButton.displayName = "ReactionButton";
