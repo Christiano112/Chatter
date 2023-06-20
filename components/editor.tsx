@@ -9,41 +9,49 @@ import { addPost } from "@/redux/slices/posts";
 
 // import dynamic from "next/dynamic";
 // import ReactQuill from 'react-quill';
-import "react-quill/dist/quill.snow.css";
+import 'react-quill/dist/quill.snow.css';
 import dynamic from "next/dynamic";
 // import QuillNoSSRWrapper from 'react-quill';
 
-const QuillNoSSRWrapper = dynamic(() => import("react-quill"), { ssr: false });
+const QuillNoSSRWrapper = dynamic(
+    () => import("react-quill"),
+    { ssr: false }
+);
 
 const modules = {
     toolbar: [
-        [{ header: "1" }, { header: "2" }, { font: [] }],
+        [{ header: '1' }, { header: '2' }, { font: [] }],
         [{ size: [] }],
-        ["bold", "italic", "underline", "strike", "blockquote", "code-block"],
-        [{ list: "ordered" }, { list: "bullet" }, { indent: "-1" }, { indent: "+1" }],
-        ["link", "image", "video"],
-        ["clean"],
+        ['bold', 'italic', 'underline', 'strike', 'blockquote', 'code-block'],
+        [
+            { list: 'ordered' },
+            { list: 'bullet' },
+            { indent: '-1' },
+            { indent: '+1' },
+        ],
+        ['link', 'image', 'video'],
+        ['clean'],
     ],
     clipboard: {
         // toggle to add extra line breaks when pasting HTML:
         matchVisual: true,
     },
-};
+}
 
 const TextEditor = () => {
     const dispatch = useAppDispatch();
     // const [value, setValue] = useState('');
-    const [title, setTitle] = useState("");
-    const [content, setContent] = useState("");
+    const [title, setTitle] = useState('');
+    const [content, setContent] = useState('');
     const [isDraft, setIsDraft] = useState(true);
     const [isPublished, setIsPublished] = useState(false);
 
     useEffect(() => {
         if (content) {
             const parsedContent = parse(content) as ReactHTMLElement<HTMLElement>;
-            console.log("parsedContent", parsedContent.props.children);
+            console.log("parsedContent", parsedContent.props.children)
         }
-    }, [content]);
+    }, [content])
 
     function submitHandler(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -53,12 +61,12 @@ const TextEditor = () => {
             title: title,
             content: content,
             isDraft: isDraft,
-            isPublished: isPublished,
+            isPublished: isPublished
         };
 
-        console.log("requestObj", requestObj);
+        console.log("requestObj", requestObj)
 
-        InfoToast("Post Saved As Draft");
+        InfoToast("Post Saved As Draft")
     }
 
     const handlePublish = () => {
@@ -66,7 +74,7 @@ const TextEditor = () => {
         setIsPublished(true);
         dispatch(addPost(title, content, new Date().toISOString()));
         InfoToast("Post published successfully");
-    };
+    }
 
     return (
         <div className="max-w-[80%] mx-auto my-20 shadow-inner rounded-lg p-4 flex flex-col justify-between gap-8">
@@ -106,6 +114,7 @@ const TextEditor = () => {
                 </button>
                 <p className="text-gray-600">{content}</p>
             </form>
+
         </div>
     );
 };

@@ -5,7 +5,6 @@ import Image from "next/image";
 import { useAppDispatch, useAppSelector } from "@/redux/store";
 import { selectUser } from "@/redux/slices/user";
 import { fetchPosts, selectAllPosts, selectPostStatus } from "@/redux/slices/posts";
-import TextEditor from "../editor/page";
 import SearchInput from "@/components/search";
 import Button from "@/components/button";
 import ReactionButton from "@/components/reactions";
@@ -17,6 +16,7 @@ import ViewsIcon from "@/public/view-count-icon.png";
 import CommentIcon from "@/public/comment-icon.png";
 import ProfilePic from "@/public/man.png";
 import DesignImage from "@/public/design.jpg";
+import TextEditor from "./../../components/editor";
 
 const Feed = () => {
     const [showEditor, setShowEditor] = useState<boolean>(false);
