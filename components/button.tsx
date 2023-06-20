@@ -1,4 +1,4 @@
-import React, { ReactNode } from "react";
+import { useState, ReactNode } from "react";
 
 export interface SignInResponse {
     error: string | undefined;
@@ -42,14 +42,14 @@ const getSizeClass = (size: ButtonType["size"]) => {
 };
 
 const Button = ({ text, type, variant, handleClick, size, ...props }: ButtonType) => {
-    const [isHovered, setIsHovered] = React.useState(false);
+    const [isHovered, setIsHovered] = useState(false);
 
     const className = `btn ${getVariantClass(variant)} ${getSizeClass(size)} ${
         isHovered ? "hover:bg-opacity-90 outline outline-1" : ""
     }`;
 
     return (
-        <React.Fragment>
+        <div>
             <button
                 onClick={handleClick}
                 type={type}
@@ -60,7 +60,7 @@ const Button = ({ text, type, variant, handleClick, size, ...props }: ButtonType
             >
                 {text}
             </button>
-        </React.Fragment>
+        </div>
     );
 };
 

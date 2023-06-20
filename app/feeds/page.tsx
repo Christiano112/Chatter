@@ -1,10 +1,11 @@
 "use client";
 
-import React from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { useAppDispatch, useAppSelector } from "@/redux/store";
 import { selectUser } from "@/redux/slices/user";
 import { fetchPosts, selectAllPosts, selectPostStatus } from "@/redux/slices/posts";
+import TextEditor from "../editor/page";
 import SearchInput from "@/components/search";
 import Button from "@/components/button";
 import ReactionButton from "@/components/reactions";
@@ -18,6 +19,7 @@ import ProfilePic from "@/public/man.png";
 import DesignImage from "@/public/design.jpg";
 
 const Feed = () => {
+    const [showEditor, setShowEditor] = useState<boolean>(false);
     const user = useAppSelector(selectUser);
     const dispatch = useAppDispatch();
     const posts = useAppSelector(selectAllPosts);
@@ -49,6 +51,14 @@ const Feed = () => {
             </header>
 
             <main className="shadow-2xl rounded p-8 m-4">
+                {showEditor && (
+                    <div className="fixed top-5 flex items-center justify-center z-50 bg-black bg-opacity-50 mx-auto w-[80%]">
+                        <div className="bg-white p-1 rounded shadow-lg">
+                            <TextEditor />
+                        </div>
+                    </div>
+                )}
+
                 <div className="flex items-center justify-between gap-8">
                     <div className="flex flex-col gap-4">
                         <h1 className="font-semibold text-4xl">Feed</h1>
@@ -66,6 +76,7 @@ const Feed = () => {
                         type="button"
                         variant="primary"
                         size="medium"
+                        handleClick={() => setShowEditor(true)}
                     />
                 </div>
 

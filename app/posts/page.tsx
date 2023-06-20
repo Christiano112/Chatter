@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import Counter from "../counter";
 
 const PostMain = () => {

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 
 export interface FetcherType {
@@ -10,11 +10,11 @@ export interface FetcherType {
 }
 
 const useFetch = (url: string): FetcherType => {
-    const [data, setData] = React.useState([]);
-    const [isLoading, setIsLoading] = React.useState(true);
-    const [error, setError] = React.useState(undefined);
+    const [data, setData] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    React.useEffect(() => {
+    useEffect(() => {
         setIsLoading(true);
         axios
             .get(url)

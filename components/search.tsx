@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { AiOutlineSearch } from "react-icons/ai";
 
 interface SearchInputType {
@@ -19,7 +19,7 @@ const SearchInput = ({ placeholder, onSearch, style }: SearchInputType) => {
     };
 
     return (
-        <div className="relative">
+        <div className="relative" style={style}>
             <input
                 type="search"
                 id="search"

@@ -1,5 +1,3 @@
-import React from "react";
-
 interface SelectType {
     label?: string;
     name: string;

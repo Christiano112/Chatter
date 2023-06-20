@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Button from "@/components/button";
@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import { FaAlignRight } from "react-icons/fa";
 
 const Header = () => {
-    const [isOpen, setIsOpen] = React.useState(false);
+    const [isOpen, setIsOpen] = useState(false);
     const pathname = usePathname();
     const router = useRouter();
 
@@ -30,7 +30,7 @@ const Header = () => {
                     />
                 </div>
                 {/* <div className={`2xs:flex ${isOpen ? 'block' : 'hidden'}`}> */}
-                <div className="hidden xs:block flex-grow text-center">
+                <div className="hidden sm:block flex-grow text-center">
                     <ul className="flex justify-center space-x-4">
                         <li>
                             <Link href="/" className={`${isActive("/")} link`}>
@@ -53,7 +53,7 @@ const Header = () => {
                     <Button
                         text="Login"
                         type="button"
-                        size="large"
+                        size="small"
                         style={{ border: "1px solid #543EE0", color: "#111111" }}
                         handleClick={() => router.push("/login")}
                     />
@@ -61,7 +61,7 @@ const Header = () => {
                         text="Sign up"
                         type="button"
                         variant="primary"
-                        size="medium"
+                        size="small"
                         handleClick={() => router.push("/signup")}
                     />
                 </div>

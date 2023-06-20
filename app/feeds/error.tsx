@@ -1,9 +1,9 @@
 "use client";
 
-import React from "react";
+import { useEffect } from "react";
 
 const Error = ({ error, reset }: { error: Error; reset: () => void }) => {
-    React.useEffect(() => {
+    useEffect(() => {
         console.log(error);
     }, [error]);
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, memo } from "react";
 import { useAppDispatch } from "@/redux/store";
 import { PostType, reactionAdded, reactionDeleted } from "@/redux/slices/posts";
 
@@ -19,7 +19,7 @@ interface ReactionButtonProps {
     post: PostType;
 }
 
-const ReactionButton: React.FC<ReactionButtonProps> = React.memo(({ post }) => {
+const ReactionButton: React.FC<ReactionButtonProps> = memo(({ post }) => {
     const dispatch = useAppDispatch();
     const [selectedReaction, setSelectedReaction] = useState<string | null>(null);
 

@@ -1,4 +1,4 @@
-import React from "react";
+import { useState } from "react";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 
 interface InputType {
@@ -11,7 +11,7 @@ interface InputType {
 }
 
 const Input = ({ label, name, placeholder, type, register, errors, ...props }: InputType) => {
-    const [inputType, setInputType] = React.useState(type);
+    const [inputType, setInputType] = useState(type);
 
     const toggleInputType = () => {
         setInputType("text");

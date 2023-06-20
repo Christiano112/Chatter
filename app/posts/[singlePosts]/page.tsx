@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { usePathname } from "next/navigation";
 import { shallowEqual } from "react-redux";
 import ReactionButton from "@/components/reactions";

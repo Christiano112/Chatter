@@ -1,4 +1,3 @@
-import React from "react";
 import SideNav from "@/components/side-nav";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import { useEffect } from "react";
 import Link from "next/link";
 import { nanoid } from "@reduxjs/toolkit";
 import ReactionButton from "@/components/reactions";
@@ -18,7 +18,7 @@ const Counter = () => {
     const posts = useAppSelector(selectAllPosts);
     const status = useAppSelector(selectPostStatus);
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (status === "idle") {
             dispatch(fetchPosts());
         }

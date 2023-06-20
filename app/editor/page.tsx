@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useRef } from "react";
-import { EditorState, convertToRaw, Modifier, AtomicBlockUtils } from "draft-js";
+import { useState, useEffect, useRef } from "react";
+import { EditorState, convertToRaw } from "draft-js";
 import { Editor } from "react-draft-wysiwyg";
 import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
 import { InfoToast } from "@/components/toast";
@@ -15,13 +15,11 @@ import {
     CustomBlockTypeOption,
     CustomFontFamilyOption,
     CustomFontSizeOption,
-} from "./customOptions";
+} from "@/components/customOptions";
 
 const TextEditor = () => {
-    const [editorState, setEditorState] = React.useState<EditorState>(() =>
-        EditorState.createEmpty(),
-    );
-    const [notes, setNotes] = React.useState<string>("");
+    const [editorState, setEditorState] = useState<EditorState>(() => EditorState.createEmpty());
+    const [notes, setNotes] = useState<string>("");
     const editor = useRef<Editor>(null);
     const dispatch = useAppDispatch();
 
@@ -29,7 +27,7 @@ const TextEditor = () => {
         setEditorState(newEditorState);
     };
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (editorState.getCurrentContent().hasText()) {
             const htmlValue = draftToHtml(convertToRaw(editorState.getCurrentContent()));
             setNotes(htmlValue);

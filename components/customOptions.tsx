@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import { useRef, ChangeEvent } from "react";
 import { EditorState, AtomicBlockUtils, RichUtils } from "draft-js";
 import { BsFillCameraFill, BsCameraVideoFill } from "react-icons/bs";
 
@@ -11,36 +11,16 @@ export const CustomUploadOption = ({ onChange, editorState }: CustomOptionPropTy
     const imageInputRef = useRef<HTMLInputElement | null>(null);
     const videoInputRef = useRef<HTMLInputElement | null>(null);
 
-    const handleImageUpload = (e: any) => {
-        const file = e.target.files[0];
+    const handleFileUpload = (e: ChangeEvent<HTMLInputElement>, entityType: string) => {
+        const file = e.target.files?.[0];
         if (file) {
             const reader = new FileReader();
             reader.onload = (event) => {
-                const imageUrl = event.target?.result;
+                const fileUrl = event.target?.result;
                 const contentState = editorState.getCurrentContent();
-                const contentStateWithEntity = contentState.createEntity("IMAGE", "IMMUTABLE", {
-                    src: imageUrl,
-                    alt: "Image",
-                });
-                const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
-                const newEditorState = EditorState.set(editorState, {
-                    currentContent: contentStateWithEntity,
-                });
-                onChange(AtomicBlockUtils.insertAtomicBlock(newEditorState, entityKey, " "));
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
-    const handleVideoUpload = (e: any) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const videoUrl = event.target?.result;
-                const contentState = editorState.getCurrentContent();
-                const contentStateWithEntity = contentState.createEntity("VIDEO", "IMMUTABLE", {
-                    src: videoUrl,
+                const contentStateWithEntity = contentState.createEntity(entityType, "IMMUTABLE", {
+                    src: fileUrl,
+                    alt: entityType === "IMAGE" ? "Image" : undefined,
                 });
                 const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
                 const newEditorState = EditorState.set(editorState, {
@@ -68,14 +48,14 @@ export const CustomUploadOption = ({ onChange, editorState }: CustomOptionPropTy
                 ref={imageInputRef}
                 multiple={true}
                 style={{ display: "none" }}
-                onChange={handleImageUpload}
+                onChange={(e) => handleFileUpload(e, "IMAGE")}
             />
             <input
                 type="file"
                 accept="video/*"
                 ref={videoInputRef}
                 style={{ display: "none" }}
-                onChange={handleVideoUpload}
+                onChange={(e) => handleFileUpload(e, "VIDEO")}
             />
             <div className="flex items-center gap-2">
                 <div onClick={handleImageClick}>
@@ -88,6 +68,7 @@ export const CustomUploadOption = ({ onChange, editorState }: CustomOptionPropTy
         </div>
     );
 };
+
 export const CustomBlockTypeOption = ({ onChange, editorState }: CustomOptionPropType) => {
     const blockTypes = [
         { label: "Normal", style: "unstyled" },

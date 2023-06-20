@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { object, string, ref } from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -40,10 +40,10 @@ const SignUp = () => {
         resolver: yupResolver(signUpSchema),
     });
     const router = useRouter();
-    const [signedIn, setSignedIn] = React.useState(true);
+    const [signedIn, setSignedIn] = useState(true);
 
     const onSignUp: SubmitHandler<SignUpType> = (data) => {
-        console.log(data);
+        // console.log(data);
         SuccessToast("Sign Up Successful");
 
         // Redirect to login page

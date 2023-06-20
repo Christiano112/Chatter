@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { object, string } from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -42,14 +42,17 @@ const Login = ({
         resolver: yupResolver(loginSchema),
     });
     const router = useRouter();
-    const [signedIn, setSignedIn] = React.useState(true);
+    const [signedIn, setSignedIn] = useState(true);
 
     const onLogin: SubmitHandler<LoginType> = (data) => {
-        SuccessToast("Login Successful");
-        // Redirect to homepage
-        // router.push("/");
-
         dispatch(login(session?.user));
+
+        SuccessToast("Login Successful");
+
+        // Redirect to homepage
+        setTimeout(() => {
+            router.push("/feeds");
+        }, 3000);
     };
 
     const dispatch = useAppDispatch();
