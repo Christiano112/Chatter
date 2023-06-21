@@ -1,9 +1,9 @@
-import type { AuthOptions } from "next-auth";
+import type { NextAuthOptions } from "next-auth";
 import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import { randomUUID, randomBytes } from "crypto";
 
-const authOptions: AuthOptions = {
+const authOptions: NextAuthOptions = {
     providers: [
         GithubProvider({
             clientId: process.env.GITHUB_CLIENT_ID || "",

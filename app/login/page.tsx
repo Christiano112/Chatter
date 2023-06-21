@@ -1,22 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { object, string } from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useForm, SubmitHandler } from "react-hook-form";
+import { useForm, SubmitHandler, LiteralUnion } from "react-hook-form";
 import { SuccessToast, ErrorToast } from "@/components/toast";
 import Input from "@/components/input";
 import Button from "@/components/button";
-import { useSession, signIn, getProviders, getCsrfToken } from "next-auth/react";
-import type { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
-import { getServerSession } from "next-auth/next";
+import {
+    useSession,
+    signIn,
+    getProviders,
+    getCsrfToken,
+    ClientSafeProvider,
+} from "next-auth/react";
 import authOptions from "../api/auth/authOptions";
 import { useAppDispatch, useAppSelector } from "@/redux/store";
 import { login } from "@/redux/slices/user";
+import { BuiltInProviderType } from "next-auth/providers";
 
 export interface LoginType {
     [key: string]: string;
+}
+
+export interface LoginPropType {
+    providers: Record<LiteralUnion<BuiltInProviderType, string>, ClientSafeProvider> | null;
+    csrfToken: any;
 }
 
 const loginSchema = object({
@@ -27,12 +37,9 @@ const loginSchema = object({
         .required("Password is required"),
 }).required();
 
-const Login = ({
-    providers,
-    csrfToken,
-}: InferGetServerSidePropsType<typeof getServerSideProps>) => {
-    const { data: session } = useSession();
-    console.log("session", session);
+const Login = () => {
+    // const { data: session } = useSession();
+    // console.log("session", session);
 
     const {
         register,
@@ -43,9 +50,23 @@ const Login = ({
     });
     const router = useRouter();
     const [signedIn, setSignedIn] = useState(true);
+    const [providers, setProviders] = useState<Record<
+        LiteralUnion<BuiltInProviderType, string>,
+        ClientSafeProvider
+    > | null>();
+    const [csrfToken, setCsrfToken] = useState<any>();
+    useEffect(() => {
+        const fetchProviders = async () => {
+            const providers = await getProviders();
+            setProviders(providers);
+            // const csrfToken = await getCsrfToken(context);
+        };
+        fetchProviders();
+    }, []);
 
+    console.log("providers====", providers);
     const onLogin: SubmitHandler<LoginType> = (data) => {
-        dispatch(login(session?.user));
+        // dispatch(login(session?.user));
 
         SuccessToast("Login Successful");
 
@@ -132,7 +153,7 @@ const Login = ({
                         handleClick={() => handleSubmit(onLogin)}
                     />
                 </form>
-                <input name="csrfToken" type="hidden" defaultValue={csrfToken} />
+                {/* <input name="csrfToken" type="hidden" defaultValue={csrfToken} /> */}
                 {/* SHOW PROVIDERS FOR LOGIN */}
                 <div>
                     {providers &&
@@ -141,7 +162,7 @@ const Login = ({
                                 <Button
                                     text={`Sign In with ${provider.name}`}
                                     type="button"
-                                    variant="secondary"
+                                    variant="primary"
                                     handleClick={() => signIn(provider.id)}
                                 />
                             </div>
@@ -150,31 +171,6 @@ const Login = ({
             </section>
         </div>
     );
-};
-
-export const getServerSideProps = async (context: GetServerSidePropsContext) => {
-    const session = await getServerSession(context.req, context.res, authOptions);
-
-    const csrfToken = await getCsrfToken(context);
-
-    if (!session) {
-        return {
-            redirect: {
-                destination: "/",
-                permanent: false,
-                statusCode: 302,
-            },
-        };
-    }
-
-    const providers = await getProviders();
-
-    return {
-        props: {
-            providers: providers,
-            csrfToken: csrfToken,
-        },
-    };
 };
 
 export default Login;
