@@ -52,16 +52,16 @@ const Feed = () => {
 
             <main className="shadow-2xl rounded p-8 m-4">
                 {showEditor && (
-                    <div className="fixed top-5 flex items-center justify-center z-50 bg-black bg-opacity-50 mx-auto w-[80%]">
-                        <div className="bg-white p-1 rounded shadow-lg">
+                    <div className="absolute top-5 flex items-center justify-center z-50 mx-auto w-[90%] md:w-[80%]">
+                        <div className="bg-white rounded shadow-lg">
                             <TextEditor />
                         </div>
                     </div>
                 )}
 
-                <div className="flex items-center justify-between gap-8">
+                <div className="flex items-start sm:items-center justify-between gap-4 sm:gap-8 flex-col sm:flex-row">
                     <div className="flex flex-col gap-4">
-                        <h1 className="font-semibold text-4xl">Feed</h1>
+                        <h1 className="font-semibold text-2xl md:text-4xl">Feed</h1>
                         <p className="text-tertiary-50">Explore different content you’d love</p>
                     </div>
                     <Button
@@ -81,7 +81,7 @@ const Feed = () => {
                 </div>
 
                 <section>
-                    <ul className="flex items-center justify-between gap-8 mt-8 px-8 py-4 rounded-lg mb-2 shadow-inner">
+                    <ul className="flex items-center justify-between gap-8 mt-8 px-4 md:px-8 py-4 rounded-lg mb-2 shadow-inner">
                         <li className="text-tertiary font-medium text-xl border-b-8 border-primary hover:cursor-pointer">
                             For you
                         </li>
@@ -92,9 +92,9 @@ const Feed = () => {
                             Recent
                         </li>
                     </ul>
-                    <div className="rounded-lg shadow-inner px-8 py-4">
+                    <div className="rounded-lg shadow-inner px-4 md:px-8 py-4">
                         <div className="border-b-2 border-b-slate-700 p-4">
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-start sm:items-center gap-4 flex-col sm:flex-row">
                                 <Image
                                     src={ProfilePic}
                                     alt="profile pic"
@@ -111,7 +111,7 @@ const Feed = () => {
                                 </div>
                             </div>
                             <div className="flex flex-col gap-4 my-8">
-                                <h3 className="font-semibold text-4xl text-tertiary mb-4">
+                                <h3 className="font-semibold text-2xl md:text-4xl text-tertiary mb-4">
                                     Starting out as a product designer
                                 </h3>
                                 <h6 className="flex gap-2 items-center text-tertiary-50 text-sm">

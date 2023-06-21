@@ -6,12 +6,8 @@ import parse from "html-react-parser";
 import Button from "@/components/button";
 import { useAppDispatch, useAppSelector } from "@/redux/store";
 import { addPost } from "@/redux/slices/posts";
-
-// import dynamic from "next/dynamic";
-// import ReactQuill from 'react-quill';
 import "react-quill/dist/quill.snow.css";
 import dynamic from "next/dynamic";
-// import QuillNoSSRWrapper from 'react-quill';
 
 const QuillNoSSRWrapper = dynamic(() => import("react-quill"), { ssr: false });
 
@@ -32,7 +28,6 @@ const modules = {
 
 const TextEditor = () => {
     const dispatch = useAppDispatch();
-    // const [value, setValue] = useState('');
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
     const [isDraft, setIsDraft] = useState(true);
@@ -79,8 +74,6 @@ const TextEditor = () => {
                     handleClick={handlePublish}
                 />
             </div>
-            {/* <ReactQuill theme="snow" value={value} onChange={setValue} /> */}
-            {/* <div>{value}</div> */}
             <form onSubmit={submitHandler} className="flex flex-col gap-4">
                 <label htmlFor="title" className="text-gray-600">
                     Title
@@ -101,7 +94,7 @@ const TextEditor = () => {
                     style={{ height: "40rem" }}
                     placeholder="Start Writing..."
                 />
-                <button className="bg-primary hover:bg-opacity-70 text-white py-2 px-4 rounded-md w-[10rem] mt-12">
+                <button className="bg-primary hover:bg-opacity-70 text-white py-2 px-4 rounded-md w-[10rem] mt-[6rem]">
                     Save As Draft
                 </button>
                 <p className="text-gray-600">{content}</p>

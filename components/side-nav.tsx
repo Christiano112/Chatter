@@ -15,8 +15,8 @@ import NotificationIcon from "../public/notification-icon.png";
 
 const SideNav = () => {
     return (
-        <div className="hidden md:block max-w-[13rem] p-4 shadow-2xl min-h-screen transition-all relative">
-            <h2 className="text-primary font-bold text-4xl md:text-5xl mb-12">Chatter</h2>
+        <div className="hidden md:block max-w-[13rem] p-4 shadow-2xl transition-all relative h-full z-50 transition duration-150 ease-out md:ease-in">
+            <h2 className="text-primary font-bold text-4xl md:text-5xl mb-8">Chatter</h2>
             <div className="flex flex-col gap-4 mb-8">
                 <h3 className="text-tertiary text-xl font-medium">Overview</h3>
                 <Link href="/" className="flex gap-2 items-center text-tertiary-50 footer-link">
@@ -66,7 +66,7 @@ const SideNav = () => {
                 <Link href="/" className="text-tertiary-50 footer-link">
                     Technology
                 </Link>
-                <Link href="/" className="text-tertiary-50 footer-link">
+                {/* <Link href="/" className="text-tertiary-50 footer-link">
                     Machine Learning
                 </Link>
                 <Link href="/" className="text-tertiary-50 footer-link">
@@ -74,7 +74,7 @@ const SideNav = () => {
                 </Link>
                 <Link href="/" className="text-primary underline underline-offset-4">
                     See all
-                </Link>
+                </Link> */}
             </div>
             <div className="flex flex-col gap-4 mb-8">
                 <h3 className="text-tertiary text-xl font-medium">Personal</h3>
@@ -96,7 +96,7 @@ const SideNav = () => {
                     </span>{" "}
                     Notifications
                 </Link>
-                <div className="justify-end bottom-0 absolute right-0 left-0 p-4 mb-8">
+                <div className="justify-end bottom-0 absolute right-0 left-0 p-4 mb-[-1rem]">
                     <Button
                         text={`Log out`}
                         type="button"
