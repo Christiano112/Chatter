@@ -22,7 +22,6 @@ const authOptions: NextAuthOptions = {
         logo: "/logo.png", // path to logo img
         buttonText: "#543EE0", // hex value
     },
-    secret: process.env.NEXTAUTH_SECRET,
     session: {
         //  strategy: "database", // where session is stored
         maxAge: 2 * 24 * 60 * 60, // 2 days
