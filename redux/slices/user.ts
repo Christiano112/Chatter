@@ -1,68 +1,54 @@
+// "use client"
+
 import { PayloadAction, createSlice, createAsyncThunk, createSelector } from "@reduxjs/toolkit";
 import { RootState } from "../store";
 import useFetch from "@/hooks/useFetch";
 
-export interface UserStateType {
-    [key: string]: string;
+interface UserType {
+    first_name: string | null;
+    last_name: string | null;
+    username: string;
+    email: string;
+    join_as: string | null;
+    password: string;
+    user_id: string;
 }
 
-export interface DatabaseUserType {
-    [key: string]: string;
-}
-
-const initialUserState: UserStateType = {
+const initialState: UserType = {
     email: "",
-    image: "",
-    name: "",
-};
-
-const initialDatabaseUserState: DatabaseUserType = {
-    firstName: "",
-    lastName: "",
+    first_name: null,
+    join_as: null,
+    last_name: null,
+    password: "",
+    user_id: "",
     username: "",
-    joinAs: "",
-    email: "",
-};
-
-interface UserState {
-    user: UserStateType;
-    databaseUser: DatabaseUserType;
-}
-
-const initialState: UserState = {
-    user: initialUserState,
-    databaseUser: initialDatabaseUserState,
 };
 
 export const userSlice = createSlice({
     name: "user",
-    initialState,
+    initialState: { user: initialState },
     reducers: {
-        login: (state, action) => {
+        signUp: (state, action: PayloadAction<UserType>) => {
             state.user = action.payload;
         },
+        login: (state, action: PayloadAction<Pick<UserType, "email" | "password">>) => {
+            const { email, password } = action.payload;
+            state.user = { ...state.user, email, password };
+        },
         logout: (state) => {
-            state.user = initialState.user;
+            state.user = initialState;
         },
         updateUser: (state, action) => {
             state.user = action.payload;
         },
-        updateDatabaseUser: (state, action) => {
-            state.databaseUser = action.payload;
-        },
     },
 });
 
-export const { login, logout, updateUser, updateDatabaseUser } = userSlice.actions;
+export const { signUp, login, logout, updateUser } = userSlice.actions;
 
 export const selectUser = createSelector(
     (state: RootState) => state.user.user,
     (user) => user,
-);
-
-export const selectDatabaseUser = createSelector(
-    (state: RootState) => state.user.databaseUser,
-    (databaseUser) => databaseUser,
 );
 
 export const selectUserEmail = createSelector(

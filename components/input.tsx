@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 
@@ -8,9 +10,19 @@ interface InputType {
     type: string;
     register: any;
     errors?: any;
+    autoComplete?: string;
 }
 
-const Input = ({ label, name, placeholder, type, register, errors, ...props }: InputType) => {
+const Input = ({
+    label,
+    name,
+    placeholder,
+    type,
+    register,
+    errors,
+    autoComplete,
+    ...props
+}: InputType) => {
     const [inputType, setInputType] = useState(type);
 
     const toggleInputType = () => {
@@ -51,13 +63,7 @@ const Input = ({ label, name, placeholder, type, register, errors, ...props }: I
                     autoSave="true"
                     autoCorrect="on"
                     spellCheck={name !== "password" ? "true" : "confirmPassword" ? "true" : "false"}
-                    autoComplete={
-                        name === "confirmPassword"
-                            ? "new-password"
-                            : "password"
-                            ? "current-password"
-                            : type
-                    }
+                    autoComplete={autoComplete}
                     placeholder={placeholder}
                     className="p-1 md:p-2 rounded cursor-text text-lg border outline-none bg-white placeholder:text-slate-500 focus:border-blue-800 w-full"
                     {...props}

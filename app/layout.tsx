@@ -1,7 +1,5 @@
 import "./globals.css";
 import { Inter } from "next/font/google";
-import { Session } from "next-auth";
-import { Analytics } from "@vercel/analytics/react";
 import CustomLayout from "./custom_layout";
 
 const inter = Inter({
@@ -16,17 +14,13 @@ export const metadata = {
 
 interface LayoutProps {
     children: React.ReactNode;
-    session: Session | null;
 }
 
-export default function RootLayout({ children, session }: LayoutProps) {
+export default function RootLayout({ children }: LayoutProps) {
     return (
         <html lang="en">
             <body className={`${inter.className} m-0 p-0 box-border`}>
-                <CustomLayout session={session}>
-                    {children}
-                    <Analytics />
-                </CustomLayout>
+                <CustomLayout>{children}</CustomLayout>
             </body>
         </html>
     );

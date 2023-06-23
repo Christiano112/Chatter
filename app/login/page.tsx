@@ -1,85 +1,76 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { object, string } from "yup";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { useForm, SubmitHandler, LiteralUnion } from "react-hook-form";
+import Link from "next/link";
+import { AiFillGoogleCircle, AiFillGithub } from "react-icons/ai";
 import { SuccessToast, ErrorToast } from "@/components/toast";
 import Input from "@/components/input";
 import Button from "@/components/button";
-import {
-    useSession,
-    signIn,
-    getProviders,
-    getCsrfToken,
-    ClientSafeProvider,
-} from "next-auth/react";
-import authOptions from "../api/auth/authOptions";
-import { useAppDispatch, useAppSelector } from "@/redux/store";
+import { useAppDispatch } from "@/redux/store";
 import { login } from "@/redux/slices/user";
-import { BuiltInProviderType } from "next-auth/providers";
-
-export interface LoginType {
-    [key: string]: string;
-}
-
-export interface LoginPropType {
-    providers: Record<LiteralUnion<BuiltInProviderType, string>, ClientSafeProvider> | null;
-    csrfToken: any;
-}
-
-const loginSchema = object({
-    email: string().trim().email("Must be a valid email").required("Email is required"),
-    password: string()
-        .trim()
-        .min(8, "Password must be a minimum of 8 characters")
-        .required("Password is required"),
-}).required();
+import supaBase from "@/utils/supabase";
+import { useLoginForm, LoginType } from "@/utils/form";
 
 const Login = () => {
-    // const { data: session } = useSession();
-    // console.log("session", session);
-
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-    } = useForm({
-        resolver: yupResolver(loginSchema),
-    });
     const router = useRouter();
-    const [signedIn, setSignedIn] = useState(true);
-    const [providers, setProviders] = useState<Record<
-        LiteralUnion<BuiltInProviderType, string>,
-        ClientSafeProvider
-    > | null>();
-    const [csrfToken, setCsrfToken] = useState<any>();
-    useEffect(() => {
-        const fetchProviders = async () => {
-            const providers = await getProviders();
-            setProviders(providers);
-            // const csrfToken = await getCsrfToken(context);
-        };
-        fetchProviders();
-    }, []);
+    const dispatch = useAppDispatch();
 
-    console.log("providers====", providers);
-    const onLogin: SubmitHandler<LoginType> = (data) => {
-        // dispatch(login(session?.user));
+    const onLogin = async (data: LoginType) => {
+        const { email, password } = data;
+        try {
+            const { data, error } = await supaBase.auth.signInWithPassword({
+                email: email,
+                password: password,
+            });
+            console.log("data", data, "error", error);
+            router.refresh();
+            if (error) {
+                ErrorToast(error?.message);
+                // return;
+            }
 
-        SuccessToast("Login Successful");
+            const { data: userData, error: emailError } = await supaBase
+                .from("users")
+                .select("email, password")
+                .eq("email", email)
+                .limit(1);
 
-        // Redirect to homepage
-        setTimeout(() => {
-            router.push("/feeds");
-        }, 3000);
+            if (emailError || userData.length === 0) {
+                ErrorToast(emailError?.message || "Email does not exist");
+                return;
+            }
+
+            const user = userData[0];
+            if (user.password !== password) {
+                ErrorToast("Password is incorrect");
+                return;
+            }
+
+            SuccessToast("Login Successful");
+            // setTimeout(() => {
+            //     router.push("/feeds");
+            // }, 2000);
+            dispatch(login(user));
+        } catch (error) {
+            ErrorToast("An error occurred during login");
+        }
     };
 
-    const dispatch = useAppDispatch();
-    const currentUser = useAppSelector((state) => state.user);
+    const { register, handleFormSubmit, errors } = useLoginForm(onLogin);
 
-    console.log("currentUser", currentUser);
+    async function signInWithGoogle() {
+        const { data, error } = await supaBase.auth.signInWithOAuth({
+            provider: "google",
+        });
+        console.log("data", data, "error", error);
+    }
+
+    async function signInWithGitHub() {
+        const { data, error } = await supaBase.auth.signInWithOAuth({
+            provider: "github",
+        });
+        console.log("data", data, "error", error);
+    }
 
     return (
         <div className="flex h-[100vh] min-h-full">
@@ -93,41 +84,13 @@ const Login = () => {
                 </p>
             </div>
             <section className="w-full mt-10 flex flex-col items-center">
-                <div className="w-full flex justify-evenly bg-white shadow-lg rounded-t-lg">
-                    <button
-                        className={
-                            !signedIn
-                                ? "text-lg md:text-2xl bg-primary w-full py-4 text-white"
-                                : "text-lg md:text-2xl w-full py-4 bg-white text-primary rounded-tl-lg"
-                        }
-                        onClick={() => {
-                            setSignedIn(true);
-                            router.push("/signup");
-                        }}
-                    >
-                        Register
-                    </button>
-                    <button
-                        className={
-                            signedIn
-                                ? "text-lg md:text-2xl bg-primary w-full py-4 text-white"
-                                : "text-lg md:text-2xl w-full py-4 bg-white text-primary rounded-tr-lg"
-                        }
-                        onClick={() => {
-                            setSignedIn(false);
-                            router.push("/login");
-                        }}
-                    >
-                        Login
-                    </button>
-                </div>
                 <h1 className="text-2xl md:text-4xl text-black text-center mt-8 md:mt-[4rem] font-bold">
                     Welcome Back
                 </h1>
                 <form
                     method="post"
-                    action="/api/auth/signin/email"
-                    onSubmit={handleSubmit(onLogin)}
+                    action=""
+                    onSubmit={handleFormSubmit}
                     className="mx-auto mt-8 md:mt-[4rem] w-[90%] md:w-[80%] pb-8"
                 >
                     <Input
@@ -135,6 +98,7 @@ const Login = () => {
                         name="email"
                         placeholder="Email"
                         type="email"
+                        autoComplete="email"
                         register={register}
                         errors={errors}
                     />
@@ -143,6 +107,7 @@ const Login = () => {
                         name="password"
                         placeholder="Password"
                         type="password"
+                        autoComplete="current-password"
                         register={register}
                         errors={errors}
                     />
@@ -150,23 +115,31 @@ const Login = () => {
                         text="Login"
                         type="submit"
                         variant="primary"
-                        handleClick={() => handleSubmit(onLogin)}
+                        handleClick={handleFormSubmit}
                     />
                 </form>
-                {/* <input name="csrfToken" type="hidden" defaultValue={csrfToken} /> */}
-                {/* SHOW PROVIDERS FOR LOGIN */}
-                <div>
-                    {providers &&
-                        Object.values(providers).map((provider) => (
-                            <div key={provider.name}>
-                                <Button
-                                    text={`Sign In with ${provider.name}`}
-                                    type="button"
-                                    variant="primary"
-                                    handleClick={() => signIn(provider.id)}
-                                />
-                            </div>
-                        ))}
+                <p className="">
+                    Don{"'"}t have an account?{" "}
+                    <Link href="/signup" className="underline">
+                        Sign Up
+                    </Link>
+                </p>
+                <div className="flex flex-col items-center justify-center">
+                    <p>Sign in with Socials</p>
+                    <button
+                        className="flex items-center justify-center bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg mt-2"
+                        onClick={signInWithGoogle}
+                    >
+                        <AiFillGoogleCircle className="mr-2 text-xl" />
+                        Google
+                    </button>
+                    <button
+                        className="flex items-center justify-center bg-gray-800 hover:bg-gray-900 text-white py-2 px-4 rounded-lg mt-2"
+                        onClick={signInWithGitHub}
+                    >
+                        <AiFillGithub className="mr-2 text-xl" />
+                        GitHub
+                    </button>
                 </div>
             </section>
         </div>

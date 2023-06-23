@@ -30,8 +30,6 @@ const Feed = () => {
         console.log("Performing search:", query);
     };
 
-    // console.log("user", user);
-
     return (
         <div className="flex-grow shadow-inner rounded">
             <header className="flex items-center justify-between p-8 m-4 gap-8 border shadow">
@@ -40,13 +38,13 @@ const Feed = () => {
                 </div>
                 <div className="flex items-center gap-4 justify-end">
                     <Image src={NotificationIcon} alt="notification icon" />
-                    <Image
+                    {/* <Image
                         src={user ? user?.image : AccountIcon}
                         alt="profile pic"
                         width={30}
                         height={30}
                     />
-                    <p>{user && user.name}</p>
+                    <p>{user && user.name}</p> */}
                 </div>
             </header>
 

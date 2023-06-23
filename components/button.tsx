@@ -1,14 +1,10 @@
+"use client";
+
 import { useState, ReactNode } from "react";
 
-export interface SignInResponse {
-    error: string | undefined;
-    status: number;
-    ok: boolean;
-    url: string | null;
-}
 interface ButtonType {
     text: ReactNode;
-    handleClick?: (data: any) => void | (() => void) | Promise<SignInResponse | undefined>;
+    handleClick?: any;
     type: "submit" | "reset" | "button";
     variant?: "primary" | "secondary" | "tertiary";
     size?: "small" | "medium" | "large";

@@ -2,53 +2,63 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { object, string, ref } from "yup";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { useForm, SubmitHandler } from "react-hook-form";
+import { v4 as uuidv4 } from "uuid";
+import { useAppDispatch } from "@/redux/store";
+import { signUp } from "@/redux/slices/user";
 import { SuccessToast, ErrorToast } from "@/components/toast";
 import Input from "@/components/input";
 import Button from "@/components/button";
 import Select from "@/components/select";
+import supaBase from "@/utils/supabase";
+import { useSignUpForm, SignUpType } from "@/utils/form";
+import Link from "next/link";
 
-export interface SignUpType {
-    [key: string]: string;
-}
+const mapSignUpDataToColumns = (signUpData: SignUpType, id: string) => {
+    const { first_name, last_name, username, join_as, email, password } = signUpData;
 
-const signUpSchema = object({
-    firstName: string().trim().required("First Name is required"),
-    lastName: string().trim().required("Last Name is required"),
-    username: string().trim().required("Username is required"),
-    joinAs: string().trim().required("Select an option"),
-    email: string().trim().email("Email must be a valid email").required("Email is required"),
-    password: string()
-        .trim()
-        .min(8, "Password must be a minimum of 8 characters")
-        .required("Password is required"),
-    confirmPassword: string()
-        .trim()
-        .min(8, "Password must be a minimum of 8 characters")
-        .oneOf([ref("password"), undefined], "Passwords must match")
-        .required("Password is required"),
-});
+    return {
+        first_name,
+        last_name,
+        username,
+        join_as,
+        email,
+        password,
+        user_id: id,
+    };
+};
 
 const SignUp = () => {
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-    } = useForm({
-        resolver: yupResolver(signUpSchema),
-    });
     const router = useRouter();
-    const [signedIn, setSignedIn] = useState(true);
+    const dispatch = useAppDispatch();
+    const [user_id, setUserId] = useState("");
 
-    const onSignUp: SubmitHandler<SignUpType> = (data) => {
-        // console.log(data);
+    const onSignUp = async (data: SignUpType) => {
+        setUserId(uuidv4());
+        const mappedData = mapSignUpDataToColumns(data, user_id);
+        // const handleSignUp = async () => {
+        const { email, password } = data;
+        const { data: newData, error: newEror } = await supaBase.auth.signUp({
+            email,
+            password,
+            options: {
+                emailRedirectTo: `${location.origin}/auth/callback`,
+                // OR emailRedirectTo: `http://localhost:3000/auth/callback`,
+            },
+        });
+        console.log("data=====", newData, "error=========", newEror);
+        router.refresh();
+        // }
+        const { error } = await supaBase.from("users").insert([mappedData]);
+        if (error) {
+            ErrorToast(error?.message);
+            return;
+        }
+        dispatch(signUp(mappedData));
         SuccessToast("Sign Up Successful");
-
-        // Redirect to login page
-        router.push("/login");
+        // router.push("/feeds");
     };
+
+    const { register, handleFormSubmit, errors } = useSignUpForm(onSignUp);
 
     return (
         <div className="flex">
@@ -61,56 +71,27 @@ const SignUp = () => {
                     Unleash the Power of Words, Connect with Like-minded Readers and Writers
                 </p>
             </div>
-            <section className="w-full mt-10 flex flex-col items-center">
-                <div className="w-full flex justify-evenly bg-white shadow-lg rounded-t-lg">
-                    <button
-                        className={
-                            signedIn
-                                ? "text-lg md:text-2xl bg-primary w-full py-4 text-white"
-                                : "text-lg md:text-2xl w-full py-4 bg-white text-primary rounded-tl-lg"
-                        }
-                        onClick={() => {
-                            setSignedIn(true);
-                            router.push("/signup");
-                        }}
-                    >
-                        Register
-                    </button>
-                    <button
-                        className={
-                            !signedIn
-                                ? "text-lg md:text-2xl bg-primary w-full py-4 text-white"
-                                : "text-lg md:text-2xl w-full py-4 bg-white text-primary rounded-tr-lg"
-                        }
-                        onClick={() => {
-                            setSignedIn(false);
-                            router.push("/login");
-                        }}
-                    >
-                        Login
-                    </button>
-                </div>
-                <h1 className="text-2xl md:text-4xl text-black text-center mt-8 md:mt-[4rem] font-bold">
+            <section className="w-full my-10 flex flex-col items-center">
+                <h1 className="text-2xl md:text-4xl text-black text-center font-bold">
                     Register as a Writer/Reader
                 </h1>
-                <form
-                    onSubmit={handleSubmit(onSignUp)}
-                    className="mx-auto mt-8 md:mt-[4rem] w-[90%] md:w-[80%] pb-8"
-                >
+                <form onSubmit={handleFormSubmit} className="mx-auto mt-8 w-[90%] md:w-[80%] pb-8">
                     <div className="flex flex-col lg:flex-row gap-0 lg:gap-4 lg:items-center lg:justify-between">
                         <Input
                             label="First Name"
-                            name="firstName"
+                            name="first_name"
                             placeholder="Enter your first name"
                             type="text"
+                            autoComplete="name"
                             register={register}
                             errors={errors}
                         />
                         <Input
                             label="Last Name"
-                            name="lastName"
+                            name="last_name"
                             placeholder="Enter your last name"
                             type="text"
+                            autoComplete="name"
                             register={register}
                             errors={errors}
                         />
@@ -120,12 +101,13 @@ const SignUp = () => {
                         name="username"
                         placeholder="Enter your username"
                         type="text"
+                        autoComplete="username"
                         register={register}
                         errors={errors}
                     />
                     <Select
                         label="You are joining as"
-                        name="joinAs"
+                        name="join_as"
                         register={register}
                         options={["writer", "reader"]}
                         errors={errors}
@@ -135,6 +117,7 @@ const SignUp = () => {
                         name="email"
                         placeholder="Email"
                         type="email"
+                        autoComplete="email"
                         register={register}
                         errors={errors}
                     />
@@ -143,6 +126,7 @@ const SignUp = () => {
                         name="password"
                         placeholder="Password"
                         type="password"
+                        autoComplete="new-password"
                         register={register}
                         errors={errors}
                     />
@@ -151,6 +135,7 @@ const SignUp = () => {
                         name="confirmPassword"
                         placeholder="Confirm Password"
                         type="password"
+                        autoComplete="new-password"
                         register={register}
                         errors={errors}
                     />
@@ -158,9 +143,15 @@ const SignUp = () => {
                         text="Create account"
                         type="submit"
                         variant="primary"
-                        handleClick={() => handleSubmit(onSignUp)}
+                        handleClick={handleFormSubmit}
                     />
                 </form>
+                <p className="">
+                    Already have an account?{" "}
+                    <Link href="/login" className="underline">
+                        Login
+                    </Link>
+                </p>
             </section>
         </div>
     );

@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, memo } from "react";
 import { useAppDispatch } from "@/redux/store";
 import { PostType, reactionAdded, reactionDeleted } from "@/redux/slices/posts";
