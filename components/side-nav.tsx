@@ -1,9 +1,7 @@
-"use client";
+// "use client";
 
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import Button from "./button";
 import TrendingIcon from "../public/trending-icon.png";
 import FeedIcon from "../public/feed-icon.png";
 import BookmarkIcon from "../public/bookmark-icon.png";
@@ -12,20 +10,9 @@ import DraftIcon from "../public/draft-icon.png";
 import AnalyticsIcon from "../public/analytics-icon.png";
 import AccountIcon from "../public/account-icon.png";
 import NotificationIcon from "../public/notification-icon.png";
-import supaBase from "@/utils/supabase";
-import { ErrorToast, SuccessToast } from "./toast";
+import SignOutBtn from "./signOutBtn";
 
 const SideNav = () => {
-    const router = useRouter();
-    const signOut = async () => {
-        const { error } = await supaBase.auth.signOut();
-        if (error) {
-            ErrorToast(error?.message);
-        }
-        SuccessToast("Bye for now, See you soon!");
-        router.refresh();
-    };
-
     return (
         <div className="hidden md:block max-w-[13rem] p-4 shadow-2xl relative h-full z-50 transition-all duration-150 ease-out md:ease-in">
             <h2 className="text-primary font-bold text-4xl md:text-5xl mb-8">Chatter</h2>
@@ -100,12 +87,7 @@ const SideNav = () => {
                     Notifications
                 </Link>
                 <div className="justify-end bottom-0 absolute right-0 left-0 p-4 mb-[-1rem]">
-                    <Button
-                        text={`Log out`}
-                        type="button"
-                        style={{ border: "1px solid red", color: "red" }}
-                        handleClick={() => signOut()}
-                    />
+                    <SignOutBtn />
                 </div>
             </div>
         </div>

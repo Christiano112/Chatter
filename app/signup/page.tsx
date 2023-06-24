@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
+// import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { v4 as uuidv4 } from "uuid";
 import { useAppDispatch } from "@/redux/store";
 import { signUp } from "@/redux/slices/user";
 import { SuccessToast, ErrorToast } from "@/components/toast";
@@ -14,7 +13,7 @@ import { useSignUpForm, SignUpType } from "@/utils/form";
 import Link from "next/link";
 
 const mapSignUpDataToColumns = (signUpData: SignUpType, id: string) => {
-    const { first_name, last_name, username, join_as, email, password } = signUpData;
+    const { first_name, last_name, username, join_as, email } = signUpData;
 
     return {
         first_name,
@@ -22,7 +21,6 @@ const mapSignUpDataToColumns = (signUpData: SignUpType, id: string) => {
         username,
         join_as,
         email,
-        password,
         user_id: id,
     };
 };
@@ -30,32 +28,39 @@ const mapSignUpDataToColumns = (signUpData: SignUpType, id: string) => {
 const SignUp = () => {
     const router = useRouter();
     const dispatch = useAppDispatch();
-    const [user_id, setUserId] = useState("");
 
     const onSignUp = async (data: SignUpType) => {
-        setUserId(uuidv4());
-        const mappedData = mapSignUpDataToColumns(data, user_id);
-        // const handleSignUp = async () => {
         const { email, password } = data;
         const { data: newData, error: newEror } = await supaBase.auth.signUp({
             email,
             password,
             options: {
-                emailRedirectTo: `${location.origin}/auth/callback`,
-                // OR emailRedirectTo: `http://localhost:3000/auth/callback`,
+                emailRedirectTo: `${location.origin}api/auth/callback/route`,
             },
         });
-        console.log("data=====", newData, "error=========", newEror);
-        router.refresh();
-        // }
-        const { error } = await supaBase.from("users").insert([mappedData]);
-        if (error) {
-            ErrorToast(error?.message);
-            return;
+        if (newData?.user?.id) {
+            const mappedData = mapSignUpDataToColumns(data, newData.user.id);
+            const { error } = await supaBase.from("users").insert([mappedData]);
+
+            if (error) {
+                if (error?.message.includes("duplicate") && error?.message.includes("username")) {
+                    ErrorToast("Username already exists");
+                    return;
+                }
+                if (error?.message.includes("duplicate") && error?.message.includes("email")) {
+                    ErrorToast("Email already exists");
+                    return;
+                }
+                ErrorToast(error?.message);
+                return;
+            }
+
+            console.log("data=====", newData, "error=========", newEror);
+            dispatch(signUp(mappedData));
+            SuccessToast("Sign Up Successful");
+            router.refresh();
+            // router.push("/feeds");
         }
-        dispatch(signUp(mappedData));
-        SuccessToast("Sign Up Successful");
-        // router.push("/feeds");
     };
 
     const { register, handleFormSubmit, errors } = useSignUpForm(onSignUp);
@@ -101,7 +106,7 @@ const SignUp = () => {
                         name="username"
                         placeholder="Enter your username"
                         type="text"
-                        autoComplete="username"
+                        // autoComplete="username"
                         register={register}
                         errors={errors}
                     />

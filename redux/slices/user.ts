@@ -1,4 +1,4 @@
-// "use client"
+"use client";
 
 import { PayloadAction, createSlice, createAsyncThunk, createSelector } from "@reduxjs/toolkit";
 import { RootState } from "../store";
@@ -10,7 +10,6 @@ interface UserType {
     username: string;
     email: string;
     join_as: string | null;
-    password: string;
     user_id: string;
 }
 
@@ -19,7 +18,6 @@ const initialState: UserType = {
     first_name: null,
     join_as: null,
     last_name: null,
-    password: "",
     user_id: "",
     username: "",
 };
@@ -31,9 +29,9 @@ export const userSlice = createSlice({
         signUp: (state, action: PayloadAction<UserType>) => {
             state.user = action.payload;
         },
-        login: (state, action: PayloadAction<Pick<UserType, "email" | "password">>) => {
-            const { email, password } = action.payload;
-            state.user = { ...state.user, email, password };
+        login: (state, action: PayloadAction<Pick<UserType, "email" | "user_id">>) => {
+            const { email, user_id } = action.payload;
+            state.user = { ...state.user, email, user_id };
         },
         logout: (state) => {
             state.user = initialState;

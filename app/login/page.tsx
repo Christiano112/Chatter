@@ -10,6 +10,7 @@ import { useAppDispatch } from "@/redux/store";
 import { login } from "@/redux/slices/user";
 import supaBase from "@/utils/supabase";
 import { useLoginForm, LoginType } from "@/utils/form";
+import { getURL } from "@/utils/urls";
 
 const Login = () => {
     const router = useRouter();
@@ -23,34 +24,28 @@ const Login = () => {
                 password: password,
             });
             console.log("data", data, "error", error);
-            router.refresh();
             if (error) {
                 ErrorToast(error?.message);
-                // return;
-            }
-
-            const { data: userData, error: emailError } = await supaBase
-                .from("users")
-                .select("email, password")
-                .eq("email", email)
-                .limit(1);
-
-            if (emailError || userData.length === 0) {
-                ErrorToast(emailError?.message || "Email does not exist");
                 return;
             }
 
-            const user = userData[0];
-            if (user.password !== password) {
-                ErrorToast("Password is incorrect");
-                return;
-            }
+            // const { data: userData, error: emailError } = await supaBase
+            //     .from("users")
+            //     .select("email")
+            //     .eq("email", email)
+            //     .limit(1);
+
+            // if (emailError || userData.length === 0) {
+            //     ErrorToast(emailError?.message || "Email does not exist");
+            //     // return;
+            // }
 
             SuccessToast("Login Successful");
-            // setTimeout(() => {
-            //     router.push("/feeds");
-            // }, 2000);
-            dispatch(login(user));
+            router.refresh();
+            setTimeout(() => {
+                router.push("/protected");
+            }, 2000);
+            // dispatch(login(data));
         } catch (error) {
             ErrorToast("An error occurred during login");
         }
@@ -61,15 +56,23 @@ const Login = () => {
     async function signInWithGoogle() {
         const { data, error } = await supaBase.auth.signInWithOAuth({
             provider: "google",
+            options: {
+                redirectTo: getURL(),
+            },
         });
-        console.log("data", data, "error", error);
+        if (error) {
+            ErrorToast(error?.message);
+            return;
+        }
     }
 
     async function signInWithGitHub() {
         const { data, error } = await supaBase.auth.signInWithOAuth({
             provider: "github",
+            options: {
+                redirectTo: getURL(),
+            },
         });
-        console.log("data", data, "error", error);
     }
 
     return (

@@ -29,7 +29,7 @@ const Input = ({
         setInputType("text");
         setTimeout(() => {
             setInputType("password");
-        }, 1500);
+        }, 3000);
     };
 
     return (

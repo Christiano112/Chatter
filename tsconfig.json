@@ -33,7 +33,7 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    "app/api/auth/[...nextauth]/route.ts",
+    "app/api/auth/**/route.ts",
     ".next/types/**/*.ts"
   ],
   "exclude": [

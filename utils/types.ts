@@ -11,7 +11,6 @@ export interface DatabaseUserType {
                     id: number;
                     join_as: string | null;
                     last_name: string | null;
-                    password: string;
                     user_id: string;
                     username: string;
                 };
@@ -22,7 +21,6 @@ export interface DatabaseUserType {
                     id?: number;
                     join_as?: string | null;
                     last_name?: string | null;
-                    password: string;
                     user_id: string;
                     username: string;
                 };
@@ -33,7 +31,6 @@ export interface DatabaseUserType {
                     id?: number;
                     join_as?: string | null;
                     last_name?: string | null;
-                    password?: string;
                     user_id?: string;
                     username?: string;
                 };
