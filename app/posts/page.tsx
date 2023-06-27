@@ -40,7 +40,7 @@ const Posts = () => {
         dispatch(fetchPosts());
     }, [dispatch]);
 
-    console.log("posts", posts)
+    console.log("posts", posts);
 
     return (
         <div className="p-8">
@@ -49,7 +49,10 @@ const Posts = () => {
                 <h1>Posts</h1>
                 {posts &&
                     posts.map((post) => (
-                        <div key={post?.post_id} className="border p-9 border-red-800 flex flex-col gap-4">
+                        <div
+                            key={post?.post_id}
+                            className="border p-9 border-red-800 flex flex-col gap-4"
+                        >
                             <p>id: {post?.post_id}</p>
                             <h1>title: {post?.title}</h1>
                             <p>content: {parse(post?.content)}</p>

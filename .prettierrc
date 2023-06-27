@@ -8,11 +8,5 @@
     "arrowParens": "always",
     "proseWrap": "preserve",
     "htmlWhitespaceSensitivity": "css",
-    "endOfLine": "auto",
-    "editor.formatOnSave": true,
-    "editor.formatOnPaste": true,
-    "importFormatting": "auto",
-    "insertSpaceAfterCommaDelimiter": true,
-    "insertSpaceAfterConstructor": true,
-    "insertSpaceAfterFunctionKeywordForAnonymousFunctions": true
+    "endOfLine": "auto"
 }

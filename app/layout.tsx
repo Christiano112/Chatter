@@ -1,7 +1,7 @@
 import "./globals.css";
 import { Inter } from "next/font/google";
 import CustomLayout from "./custom_layout";
-import { Session } from '@supabase/auth-helpers-react'
+import { Session } from "@supabase/auth-helpers-react";
 
 const inter = Inter({
     subsets: ["latin"],

@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useState, useEffect } from "react";
 import { InfoToast } from "@/components/toast";
@@ -16,13 +16,13 @@ const useOnline = () => {
         };
     }, []);
 
-    console.log("online", online)
+    console.log("online", online);
 
     if (!online) {
         InfoToast("You are offline, kindly connect to the internet");
     }
 
     return online;
-}
+};
 
 export default useOnline;

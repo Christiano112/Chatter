@@ -6,7 +6,7 @@ import {
     createAsyncThunk,
     createSelector,
     createEntityAdapter,
-    EntityState
+    EntityState,
 } from "@reduxjs/toolkit";
 import { RootState } from "../store";
 import { formatDateTimeShort } from "@/utils/date";
@@ -40,10 +40,10 @@ const initialState: PostsSliceType = postsAdapter.getInitialState({
 
 export const fetchPosts = createAsyncThunk("posts/fetchPosts", async () => {
     let { data: posts, error } = await supaBase
-        .from('posts')
-        .select('*')
-        .order('created_at', { ascending: false })
-    if (error) throw error
+        .from("posts")
+        .select("*")
+        .order("created_at", { ascending: false });
+    if (error) throw error;
     return posts as PostType[];
 });
 
@@ -51,21 +51,18 @@ export const fetchPostsByAuthorId = createAsyncThunk(
     "posts/fetchPostsByAuthorId",
     async (author_id: string) => {
         let { data: posts, error } = await supaBase
-            .from('posts')
-            .select('*')
-            .eq('author_id', author_id)
-            .order('created_at', { ascending: false })
-        if (error) throw error
+            .from("posts")
+            .select("*")
+            .eq("author_id", author_id)
+            .order("created_at", { ascending: false });
+        if (error) throw error;
         return posts as PostType[];
     },
 );
 
 export const addNewPost = createAsyncThunk("posts/addPost", async (initialPost: PostType) => {
-    const { data: post, error } = await supaBase
-        .from('posts')
-        .insert(initialPost)
-        .single()
-    if (error) throw error
+    const { data: post, error } = await supaBase.from("posts").insert(initialPost).single();
+    if (error) throw error;
     return post as PostType;
 });
 
@@ -177,8 +174,7 @@ const postsSlice = createSlice({
 
 const selectPostsState = (state: RootState) => state.posts;
 
-export const { selectAll: selectAllPosts } =
-    postsAdapter.getSelectors<RootState>(selectPostsState);
+export const { selectAll: selectAllPosts } = postsAdapter.getSelectors<RootState>(selectPostsState);
 
 export const selectPostById = createSelector(
     [selectAllPosts, (state: RootState, post_id: string) => post_id],
