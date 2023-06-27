@@ -1,6 +1,6 @@
 "use client";
 
-// import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/redux/store";
 import { signUp } from "@/redux/slices/user";
@@ -10,7 +10,6 @@ import Button from "@/components/button";
 import Select from "@/components/select";
 import supaBase from "@/utils/supabase";
 import { useSignUpForm, SignUpType } from "@/utils/form";
-import Link from "next/link";
 
 const mapSignUpDataToColumns = (signUpData: SignUpType, id: string) => {
     const { first_name, last_name, username, join_as, email } = signUpData;
@@ -31,7 +30,7 @@ const SignUp = () => {
 
     const onSignUp = async (data: SignUpType) => {
         const { email, password } = data;
-        const { data: newData, error: newEror } = await supaBase.auth.signUp({
+        const { data: newData, error: newError } = await supaBase.auth.signUp({
             email,
             password,
             options: {
@@ -55,11 +54,11 @@ const SignUp = () => {
                 return;
             }
 
-            console.log("data=====", newData, "error=========", newEror);
+            console.log("data=====", newData, "error=========", newError);
             dispatch(signUp(mappedData));
-            SuccessToast("Sign Up Successful");
+            SuccessToast("Check your email for verification");
             router.refresh();
-            // router.push("/feeds");
+            // router.push("/feeds");67x_5Q2jtFSx-RM
         }
     };
 
@@ -78,7 +77,7 @@ const SignUp = () => {
             </div>
             <section className="w-full my-10 flex flex-col items-center">
                 <h1 className="text-2xl md:text-4xl text-black text-center font-bold">
-                    Register as a Writer/Reader
+                    Register to enjoy <span className="text-primary">Chatter</span>
                 </h1>
                 <form onSubmit={handleFormSubmit} className="mx-auto mt-8 w-[90%] md:w-[80%] pb-8">
                     <div className="flex flex-col lg:flex-row gap-0 lg:gap-4 lg:items-center lg:justify-between">
@@ -106,7 +105,7 @@ const SignUp = () => {
                         name="username"
                         placeholder="Enter your username"
                         type="text"
-                        // autoComplete="username"
+                        autoComplete="username"
                         register={register}
                         errors={errors}
                     />

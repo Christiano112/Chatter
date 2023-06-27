@@ -11,13 +11,15 @@ interface UserType {
     email: string;
     join_as: string | null;
     user_id: string;
+    created_at?: string | null;
+    id?: number;
 }
 
 const initialState: UserType = {
     email: "",
     first_name: null,
-    join_as: null,
     last_name: null,
+    join_as: null,
     user_id: "",
     username: "",
 };
@@ -29,9 +31,8 @@ export const userSlice = createSlice({
         signUp: (state, action: PayloadAction<UserType>) => {
             state.user = action.payload;
         },
-        login: (state, action: PayloadAction<Pick<UserType, "email" | "user_id">>) => {
-            const { email, user_id } = action.payload;
-            state.user = { ...state.user, email, user_id };
+        login: (state, action: PayloadAction<UserType>) => {
+            state.user = action.payload;
         },
         logout: (state) => {
             state.user = initialState;

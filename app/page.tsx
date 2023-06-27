@@ -1,11 +1,8 @@
-"use client";
-
 import React from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
-import Button from "@/components/button";
+import { NavigateBtn } from "@/components/button";
 import People from "/public//people.jpeg";
 import AnalyticImage from "/public/analytics.png";
 import SocialImage from "/public/social.png";
@@ -36,8 +33,6 @@ const whyContent = [
 ];
 
 export default function Home() {
-    const router = useRouter();
-
     return (
         <React.Fragment>
             <Header />
@@ -54,13 +49,7 @@ export default function Home() {
                 <p className="text-white text-medium">
                     Unleash the Power of Words, Connect with Like-minded Readers and Writers
                 </p>
-                <Button
-                    text="Get Started"
-                    type="button"
-                    variant="primary"
-                    size="small"
-                    handleClick={() => router.push("/login")}
-                />
+                <NavigateBtn text="Get Started" direction="feeds" size="small" />
             </main>
             <section className="flex flex-col gap-8 md:gap-12 justify-between items-center md:flex-row py-[5rem] mx-auto w-[90%]">
                 <div className="md:w-[60%]">
@@ -121,13 +110,7 @@ export default function Home() {
                         Patrick Lean,{" "}
                         <span className="font-normal text-base">Software developer at Apple</span>
                     </h3>
-                    <Button
-                        text="Join Chatter"
-                        type="button"
-                        variant="primary"
-                        size="small"
-                        handleClick={() => router.push("/login")}
-                    />
+                    <NavigateBtn text="Join Chatter" direction="feeds" size="small" />
                 </div>
             </section>
             <section className="flex flex-col gap-6 justify-between items-center md:flex-row py-[5rem] px-6 md:px-8">
@@ -162,13 +145,7 @@ export default function Home() {
                         Share people your great ideas, and also read write-ups based on your
                         interests. connect with people of same interests and goals.
                     </p>
-                    <Button
-                        text="Get Started"
-                        type="button"
-                        variant="primary"
-                        size="small"
-                        handleClick={() => router.push("/login")}
-                    />
+                    <NavigateBtn text="Get Started" direction="feeds" size="small" />
                 </div>
             </section>
             <Footer />

@@ -1,6 +1,7 @@
 import "./globals.css";
 import { Inter } from "next/font/google";
 import CustomLayout from "./custom_layout";
+import { Session } from '@supabase/auth-helpers-react'
 
 const inter = Inter({
     subsets: ["latin"],
@@ -14,13 +15,14 @@ export const metadata = {
 
 interface LayoutProps {
     children: React.ReactNode;
+    initialSession: Session;
 }
 
-export default function RootLayout({ children }: LayoutProps) {
+export default function RootLayout({ children, initialSession }: LayoutProps) {
     return (
         <html lang="en">
             <body className={`${inter.className} m-0 p-0 box-border`}>
-                <CustomLayout>{children}</CustomLayout>
+                <CustomLayout initialSession={initialSession}>{children}</CustomLayout>
             </body>
         </html>
     );

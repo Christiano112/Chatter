@@ -36,7 +36,7 @@
 //     return (await response.json()) as PostType[];
 // });
 
-// const fetchPostsByUserId = createAsyncThunk("posts/fetchPostsByUserId", async (userId: string) => {
+// const fetchPostsByAuthorId = createAsyncThunk("posts/fetchPostsByAuthorId", async (userId: string) => {
 //     const response = await fetch(`https://jsonplaceholder.typicode.com/posts?userId=${userId}`);
 //     return (await response.json()) as PostType[];
 // });
@@ -143,14 +143,14 @@
 //                 state.status = "failed";
 //                 state.error = action.error.message;
 //             })
-//             .addCase(fetchPostsByUserId.pending, (state) => {
+//             .addCase(fetchPostsByAuthorId.pending, (state) => {
 //                 state.status = "loading";
 //             })
-//             .addCase(fetchPostsByUserId.fulfilled, (state, action) => {
+//             .addCase(fetchPostsByAuthorId.fulfilled, (state, action) => {
 //                 state.status = "success";
 //                 state.posts = action.payload;
 //             })
-//             .addCase(fetchPostsByUserId.rejected, (state, action) => {
+//             .addCase(fetchPostsByAuthorId.rejected, (state, action) => {
 //                 state.status = "failed";
 //                 state.error = action.error.message;
 //             })

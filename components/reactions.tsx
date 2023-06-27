@@ -8,13 +8,12 @@ export const reactionEmojis = {
     like: "👍",
     love: "❤️️",
     haha: "😂",
-    wow: "😮",
-    sad: "😢",
-    angry: "😡",
-    thumbsUp: "👍",
+    // wow: "😮",
+    // sad: "😢",
+    // angry: "😡",
     thumbsDown: "👎",
-    fire: "🔥",
-    clapping: "👏",
+    // fire: "🔥",
+    // clapping: "👏",
 };
 
 interface ReactionButtonProps {
@@ -27,13 +26,13 @@ const ReactionButton: React.FC<ReactionButtonProps> = memo(({ post }) => {
 
     const handleReactionClick = (reaction: string) => {
         if (selectedReaction === reaction) {
-            dispatch(reactionDeleted({ postId: post.id, reaction }));
+            dispatch(reactionDeleted({ post_id: post.post_id, reaction }));
             setSelectedReaction(null);
         } else {
             if (selectedReaction) {
-                dispatch(reactionDeleted({ postId: post.id, reaction: selectedReaction }));
+                dispatch(reactionDeleted({ post_id: post.post_id, reaction: selectedReaction }));
             }
-            dispatch(reactionAdded({ postId: post.id, reaction }));
+            dispatch(reactionAdded({ post_id: post.post_id, reaction }));
             setSelectedReaction(reaction);
         }
     };

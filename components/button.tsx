@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, ReactNode } from "react";
+import { useRouter } from "next/navigation";
 
 interface ButtonType {
     text: ReactNode;
@@ -9,6 +10,12 @@ interface ButtonType {
     variant?: "primary" | "secondary" | "tertiary";
     size?: "small" | "medium" | "large";
     style?: React.CSSProperties;
+}
+
+export interface NavigateBtnProps {
+    direction?: string;
+    text: React.ReactNode;
+    size?: "small" | "medium" | "large";
 }
 
 const getVariantClass = (variant: ButtonType["variant"]) => {
@@ -61,3 +68,17 @@ const Button = ({ text, type, variant, handleClick, size, ...props }: ButtonType
 };
 
 export default Button;
+
+export const NavigateBtn = ({ direction, text, size, ...props }: NavigateBtnProps) => {
+    const router = useRouter();
+    return (
+        <Button
+            text={text}
+            type="button"
+            variant="primary"
+            size={size}
+            handleClick={() => router.push(`/${direction}`)}
+            {...props}
+        />
+    );
+};

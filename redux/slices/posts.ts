@@ -3,63 +3,70 @@
 import {
     PayloadAction,
     createSlice,
-    nanoid,
     createAsyncThunk,
     createSelector,
     createEntityAdapter,
-    EntityState,
-    EntityId,
+    EntityState
 } from "@reduxjs/toolkit";
 import { RootState } from "../store";
 import { formatDateTimeShort } from "@/utils/date";
+import supaBase from "@/utils/supabase";
 
 export interface PostType {
-    id: EntityId;
+    post_id: string;
     title: string;
     content: string;
-    date: string;
-    user?: string;
+    created_at?: any;
+    author_id: string;
     reactions?: {
         [key: string]: number;
     };
+    status?: "draft" | "published" | "deleted" | "archived" | "edited" | "";
 }
 
 export interface PostsSliceType extends EntityState<PostType> {
-    status: "idle" | "loading" | "success" | "failed";
-    error: string | undefined | null;
+    fetchStatus: "idle" | "loading" | "success" | "failed";
+    fetchError: string | undefined | null;
 }
 
 const postsAdapter = createEntityAdapter<PostType>({
-    sortComparer: (a, b) => b.date?.localeCompare(a.date),
+    sortComparer: (a, b) => b.created_at?.localeCompare(a.created_at),
 });
 
 const initialState: PostsSliceType = postsAdapter.getInitialState({
-    status: "idle",
-    error: null,
+    fetchStatus: "idle",
+    fetchError: null,
 });
 
 export const fetchPosts = createAsyncThunk("posts/fetchPosts", async () => {
-    const response = await fetch("https://jsonplaceholder.typicode.com/posts");
-    return (await response.json()) as PostType[];
+    let { data: posts, error } = await supaBase
+        .from('posts')
+        .select('*')
+        .order('created_at', { ascending: false })
+    if (error) throw error
+    return posts as PostType[];
 });
 
-export const fetchPostsByUserId = createAsyncThunk(
-    "posts/fetchPostsByUserId",
-    async (userId: string) => {
-        const response = await fetch(`https://jsonplaceholder.typicode.com/posts?userId=${userId}`);
-        return (await response.json()) as PostType[];
+export const fetchPostsByAuthorId = createAsyncThunk(
+    "posts/fetchPostsByAuthorId",
+    async (author_id: string) => {
+        let { data: posts, error } = await supaBase
+            .from('posts')
+            .select('*')
+            .eq('author_id', author_id)
+            .order('created_at', { ascending: false })
+        if (error) throw error
+        return posts as PostType[];
     },
 );
 
-export const addNewPost = createAsyncThunk("posts/addNewPost", async (initialPost: PostType) => {
-    const response = await fetch("https://jsonplaceholder.typicode.com/posts", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(initialPost),
-    });
-    return (await response.json()) as PostType;
+export const addNewPost = createAsyncThunk("posts/addPost", async (initialPost: PostType) => {
+    const { data: post, error } = await supaBase
+        .from('posts')
+        .insert(initialPost)
+        .single()
+    if (error) throw error
+    return post as PostType;
 });
 
 const postsSlice = createSlice({
@@ -71,27 +78,29 @@ const postsSlice = createSlice({
                 postsAdapter.addOne(state, action.payload);
             },
             prepare(
+                author_id: string,
                 title: string,
                 content: string,
-                userId: string,
+                post_id: string,
+                status?: "draft" | "published" | "deleted" | "archived" | "edited" | "",
             ): { payload: PostType; type: string } {
                 const newPost: PostType = {
-                    id: nanoid(),
+                    author_id,
                     title,
                     content,
-                    date: formatDateTimeShort(new Date().toISOString()),
-                    user: userId,
+                    created_at: formatDateTimeShort(new Date().toISOString()),
+                    post_id,
+                    status,
                     reactions: {
                         like: 0,
                         love: 0,
                         haha: 0,
-                        wow: 0,
-                        sad: 0,
-                        angry: 0,
-                        thumbsUp: 0,
+                        // wow: 0,
+                        // sad: 0,
+                        // angry: 0,
                         thumbsDown: 0,
-                        fire: 0,
-                        clapping: 0,
+                        // fire: 0,
+                        // clapping: 0,
                     },
                 };
 
@@ -103,9 +112,9 @@ const postsSlice = createSlice({
         },
         updatePost: postsAdapter.updateOne,
         deletePost: postsAdapter.removeOne,
-        reactionAdded(state, action: PayloadAction<{ postId: EntityId; reaction: string }>) {
-            const { postId, reaction } = action.payload;
-            const existingPost = state.entities[postId];
+        reactionAdded(state, action: PayloadAction<{ post_id: string; reaction: string }>) {
+            const { post_id, reaction } = action.payload;
+            const existingPost = state.entities[post_id];
             if (existingPost) {
                 if (existingPost.reactions && existingPost.reactions[reaction]) {
                     existingPost.reactions[reaction]++;
@@ -117,9 +126,10 @@ const postsSlice = createSlice({
                 }
             }
         },
-        reactionDeleted(state, action: PayloadAction<{ postId: EntityId; reaction: string }>) {
-            const { postId, reaction } = action.payload;
-            const existingPost = state.entities[postId];
+        reactionDeleted(state, action: PayloadAction<{ post_id: string; reaction: string }>) {
+            const { post_id, reaction } = action.payload;
+            const existingPost = state.entities[post_id];
+            // const existingPost = state.posts.find((post) => post.id === post_id);
             if (existingPost) {
                 if (existingPost.reactions && existingPost.reactions[reaction]) {
                     existingPost.reactions[reaction]--;
@@ -130,59 +140,59 @@ const postsSlice = createSlice({
     extraReducers: (builder) => {
         builder
             .addCase(fetchPosts.pending, (state) => {
-                state.status = "loading";
+                state.fetchStatus = "loading";
             })
             .addCase(fetchPosts.fulfilled, (state, action) => {
-                state.status = "success";
+                state.fetchStatus = "success";
                 postsAdapter.setAll(state, action.payload);
             })
             .addCase(fetchPosts.rejected, (state, action) => {
-                state.status = "failed";
-                state.error = action.error.message;
+                state.fetchStatus = "failed";
+                state.fetchError = action.error.message;
             })
-            .addCase(fetchPostsByUserId.pending, (state) => {
-                state.status = "loading";
+            .addCase(fetchPostsByAuthorId.pending, (state) => {
+                state.fetchStatus = "loading";
             })
-            .addCase(fetchPostsByUserId.fulfilled, (state, action) => {
-                state.status = "success";
+            .addCase(fetchPostsByAuthorId.fulfilled, (state, action) => {
+                state.fetchStatus = "success";
                 postsAdapter.setAll(state, action.payload);
             })
-            .addCase(fetchPostsByUserId.rejected, (state, action) => {
-                state.status = "failed";
-                state.error = action.error.message;
+            .addCase(fetchPostsByAuthorId.rejected, (state, action) => {
+                state.fetchStatus = "failed";
+                state.fetchError = action.error.message;
             })
             .addCase(addNewPost.pending, (state) => {
-                state.status = "loading";
+                state.fetchStatus = "loading";
             })
             .addCase(addNewPost.fulfilled, (state, action) => {
-                state.status = "success";
+                state.fetchStatus = "success";
                 postsAdapter.addOne(state, action.payload);
             })
             .addCase(addNewPost.rejected, (state, action) => {
-                state.status = "failed";
-                state.error = action.error.message;
+                state.fetchStatus = "failed";
+                state.fetchError = action.error.message;
             });
     },
 });
 
 const selectPostsState = (state: RootState) => state.posts;
 
-export const { selectAll: selectAllPosts, selectById: selectPostById } =
+export const { selectAll: selectAllPosts } =
     postsAdapter.getSelectors<RootState>(selectPostsState);
 
-export const selectPostsByUser = createSelector(
+export const selectPostById = createSelector(
+    [selectAllPosts, (state: RootState, post_id: string) => post_id],
+    (posts, post_id) => posts.find((post) => post.post_id === post_id),
+);
+
+export const selectPostsByAuthor = createSelector(
     [selectAllPosts, (state: RootState, userId: string) => userId],
-    (posts, userId) => posts.filter((post) => post.user === userId),
+    (posts, userId) => posts.filter((post) => post.author_id === userId),
 );
 
-export const selectPostStatus = createSelector(
+export const selectPostFetchStatus = createSelector(
     selectPostsState,
-    (postsState: PostsSliceType) => postsState.status,
-);
-
-export const selectPostError = createSelector(
-    selectPostsState,
-    (postsState: PostsSliceType) => postsState.error,
+    (postsState: PostsSliceType) => postsState.fetchStatus,
 );
 
 export const { addPost, updatePost, deletePost, reactionAdded, reactionDeleted } =

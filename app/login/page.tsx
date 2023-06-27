@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { AiFillGoogleCircle, AiFillGithub } from "react-icons/ai";
 import { SuccessToast, ErrorToast } from "@/components/toast";
 import Input from "@/components/input";
@@ -11,6 +11,19 @@ import { login } from "@/redux/slices/user";
 import supaBase from "@/utils/supabase";
 import { useLoginForm, LoginType } from "@/utils/form";
 import { getURL } from "@/utils/urls";
+
+const mapLoginDataFromColumns = (userData: any) => {
+    const { first_name, last_name, username, join_as, email, user_id } = userData;
+
+    return {
+        first_name,
+        last_name,
+        username,
+        join_as,
+        email,
+        user_id,
+    };
+};
 
 const Login = () => {
     const router = useRouter();
@@ -29,23 +42,25 @@ const Login = () => {
                 return;
             }
 
-            // const { data: userData, error: emailError } = await supaBase
-            //     .from("users")
-            //     .select("email")
-            //     .eq("email", email)
-            //     .limit(1);
+            const { data: userData, error: emailError } = await supaBase
+                .from("users")
+                .select("*")
+                .eq("email", email)
+                .limit(1);
 
-            // if (emailError || userData.length === 0) {
-            //     ErrorToast(emailError?.message || "Email does not exist");
-            //     // return;
-            // }
+            if (emailError || userData.length === 0) {
+                ErrorToast(emailError?.message || "Email does not exist");
+                return;
+            }
 
+            const mappedData = mapLoginDataFromColumns(userData[0]);
+
+            dispatch(login(mappedData));
             SuccessToast("Login Successful");
             router.refresh();
             setTimeout(() => {
-                router.push("/protected");
+                router.push("/feeds");
             }, 2000);
-            // dispatch(login(data));
         } catch (error) {
             ErrorToast("An error occurred during login");
         }
@@ -73,6 +88,10 @@ const Login = () => {
                 redirectTo: getURL(),
             },
         });
+        if (error) {
+            ErrorToast(error?.message);
+            return;
+        }
     }
 
     return (
@@ -86,9 +105,9 @@ const Login = () => {
                     Unleash the Power of Words, Connect with Like-minded Readers and Writers
                 </p>
             </div>
-            <section className="w-full mt-10 flex flex-col items-center">
-                <h1 className="text-2xl md:text-4xl text-black text-center mt-8 md:mt-[4rem] font-bold">
-                    Welcome Back
+            <section className="w-full my-10 flex flex-col items-center">
+                <h1 className="text-2xl md:text-4xl text-black text-center font-bold">
+                    Welcome Back to <span className="text-primary">Chatter</span>
                 </h1>
                 <form
                     method="post"
@@ -121,29 +140,32 @@ const Login = () => {
                         handleClick={handleFormSubmit}
                     />
                 </form>
-                <p className="">
-                    Don{"'"}t have an account?{" "}
-                    <Link href="/signup" className="underline">
-                        Sign Up
-                    </Link>
-                </p>
-                <div className="flex flex-col items-center justify-center">
-                    <p>Sign in with Socials</p>
+                <div className="flex flex-col items-center justify-center p-4 rounded shadow-inner w-[80%] mx-auto">
+                    <h5 className="font-medium text-xl">Or Sign in with Socials</h5>
                     <button
                         className="flex items-center justify-center bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg mt-2"
                         onClick={signInWithGoogle}
                     >
-                        <AiFillGoogleCircle className="mr-2 text-xl" />
+                        <AiFillGoogleCircle className="mr-2 text-4xl" />
                         Google
                     </button>
                     <button
                         className="flex items-center justify-center bg-gray-800 hover:bg-gray-900 text-white py-2 px-4 rounded-lg mt-2"
                         onClick={signInWithGitHub}
                     >
-                        <AiFillGithub className="mr-2 text-xl" />
+                        <AiFillGithub className="mr-2 text-4xl" />
                         GitHub
                     </button>
                 </div>
+                <p className="mt-10">
+                    Don{"'"}t have an account?{" "}
+                    <Link
+                        href="/signup"
+                        className="underline hover:text-blue-800 hover:underline-offset-8"
+                    >
+                        Sign Up
+                    </Link>
+                </p>
             </section>
         </div>
     );

@@ -28,6 +28,12 @@ const SearchInput = ({ placeholder, onSearch, style }: SearchInputType) => {
                 placeholder={placeholder}
                 value={searchQuery}
                 onChange={handleChange}
+                onKeyUp={(event) => {
+                    if (event.key === "Enter") {
+                        handleSearch();
+                    }
+                }}
+                // add on clear function to set the query to ""
                 className="w-full py-2 pl-8 pr-2 text-sm text-tertiary bg-white border border-primary-50 rounded-md focus:ring-1 focus:ring-primary focus:outline-none focus:ring-opacity-50"
             />
             <AiOutlineSearch
