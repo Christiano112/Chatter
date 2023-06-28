@@ -92,12 +92,7 @@ const postsSlice = createSlice({
                         like: 0,
                         love: 0,
                         haha: 0,
-                        // wow: 0,
-                        // sad: 0,
-                        // angry: 0,
                         thumbsDown: 0,
-                        // fire: 0,
-                        // clapping: 0,
                     },
                 };
 
@@ -112,25 +107,15 @@ const postsSlice = createSlice({
         reactionAdded(state, action: PayloadAction<{ post_id: string; reaction: string }>) {
             const { post_id, reaction } = action.payload;
             const existingPost = state.entities[post_id];
-            if (existingPost) {
-                if (existingPost.reactions && existingPost.reactions[reaction]) {
-                    existingPost.reactions[reaction]++;
-                } else {
-                    existingPost.reactions = {
-                        ...existingPost.reactions,
-                        [reaction]: 1,
-                    };
-                }
+            if (existingPost && existingPost.reactions && existingPost.reactions[reaction]) {
+                existingPost.reactions[reaction] += 4;
             }
         },
         reactionDeleted(state, action: PayloadAction<{ post_id: string; reaction: string }>) {
             const { post_id, reaction } = action.payload;
             const existingPost = state.entities[post_id];
-            // const existingPost = state.posts.find((post) => post.id === post_id);
-            if (existingPost) {
-                if (existingPost.reactions && existingPost.reactions[reaction]) {
-                    existingPost.reactions[reaction]--;
-                }
+            if (existingPost && existingPost.reactions && existingPost.reactions[reaction]) {
+                existingPost.reactions[reaction] -= 4;
             }
         },
     },
@@ -178,12 +163,12 @@ export const { selectAll: selectAllPosts } = postsAdapter.getSelectors<RootState
 
 export const selectPostById = createSelector(
     [selectAllPosts, (state: RootState, post_id: string) => post_id],
-    (posts, post_id) => posts.find((post) => post.post_id === post_id),
+    (posts, post_id) => posts?.find((post) => post?.post_id === post_id),
 );
 
 export const selectPostsByAuthor = createSelector(
     [selectAllPosts, (state: RootState, userId: string) => userId],
-    (posts, userId) => posts.filter((post) => post.author_id === userId),
+    (posts, userId) => posts?.filter((post) => post?.author_id === userId),
 );
 
 export const selectPostFetchStatus = createSelector(

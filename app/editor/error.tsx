@@ -1,11 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
 const Error = ({ error, reset }: { error: Error; reset: () => void }) => {
-    useEffect(() => {
-        console.log(error);
-    }, [error]);
-
     return (
         <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
             <h1 className="text-3xl font-bold mb-4">Something Went Wrong</h1>

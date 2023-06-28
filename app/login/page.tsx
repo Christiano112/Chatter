@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AiFillGoogleCircle, AiFillGithub } from "react-icons/ai";
 import { SuccessToast, ErrorToast } from "@/components/toast";
 import Input from "@/components/input";
@@ -27,7 +27,9 @@ const mapLoginDataFromColumns = (userData: any) => {
 
 const Login = () => {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const dispatch = useAppDispatch();
+    const redirectedFromUrl = searchParams.get("redirectedFrom");
 
     const onLogin = async (data: LoginType) => {
         const { email, password } = data;
@@ -36,7 +38,7 @@ const Login = () => {
                 email: email,
                 password: password,
             });
-            console.log("data", data, "error", error);
+            // console.log("data", data, "error", error);
             if (error) {
                 ErrorToast(error?.message);
                 return;
@@ -58,9 +60,7 @@ const Login = () => {
             dispatch(login(mappedData));
             SuccessToast("Login Successful");
             router.refresh();
-            setTimeout(() => {
-                router.push("/feeds");
-            }, 2000);
+            router.push(redirectedFromUrl || "/feeds");
         } catch (error) {
             ErrorToast("An error occurred during login");
         }
@@ -68,7 +68,7 @@ const Login = () => {
 
     const { register, handleFormSubmit, errors } = useLoginForm(onLogin);
 
-    async function signInWithGoogle() {
+    const signInWithGoogle = async () => {
         const { data, error } = await supaBase.auth.signInWithOAuth({
             provider: "google",
             options: {
@@ -79,9 +79,9 @@ const Login = () => {
             ErrorToast(error?.message);
             return;
         }
-    }
+    };
 
-    async function signInWithGitHub() {
+    const signInWithGitHub = async () => {
         const { data, error } = await supaBase.auth.signInWithOAuth({
             provider: "github",
             options: {
@@ -92,7 +92,7 @@ const Login = () => {
             ErrorToast(error?.message);
             return;
         }
-    }
+    };
 
     return (
         <div className="flex h-[100vh] min-h-full">

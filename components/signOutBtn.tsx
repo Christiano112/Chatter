@@ -4,8 +4,11 @@ import supaBase from "@/utils/supabase";
 import { useRouter } from "next/navigation";
 import Button from "./button";
 import { ErrorToast, SuccessToast } from "./toast";
+import { useAppDispatch } from "@/redux/store";
+import { logOut } from "@/redux/slices/user";
 
 const SignOutBtn = () => {
+    const dispatch = useAppDispatch();
     const router = useRouter();
     const signOut = async () => {
         const { error } = await supaBase.auth.signOut();
@@ -13,6 +16,7 @@ const SignOutBtn = () => {
             ErrorToast(error?.message);
             return;
         }
+        dispatch(logOut());
         SuccessToast("Bye for now, See you soon!");
         router.refresh();
     };

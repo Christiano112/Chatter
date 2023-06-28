@@ -8,12 +8,7 @@ export const reactionEmojis = {
     like: "👍",
     love: "❤️️",
     haha: "😂",
-    // wow: "😮",
-    // sad: "😢",
-    // angry: "😡",
     thumbsDown: "👎",
-    // fire: "🔥",
-    // clapping: "👏",
 };
 
 interface ReactionButtonProps {
@@ -40,11 +35,11 @@ const ReactionButton: React.FC<ReactionButtonProps> = memo(({ post }) => {
     const reactionButtons = Object.entries(reactionEmojis).map(([name, emoji]) => (
         <button
             key={name}
-            className={`mr-2 text-tertiary-50 ${selectedReaction === name ? " selected" : ""}`}
+            className={`mr-2 text-tertiary-50 ${selectedReaction === name ? " font-bold" : ""}`}
             onClick={() => handleReactionClick(name)}
             disabled={selectedReaction !== null && selectedReaction !== name}
         >
-            {emoji} {post.reactions?.[name] || 0}
+            {emoji} {post?.reactions?.[name] || 0}
         </button>
     ));
 

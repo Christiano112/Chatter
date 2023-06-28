@@ -34,7 +34,7 @@ export const userSlice = createSlice({
         login: (state, action: PayloadAction<UserType>) => {
             state.user = action.payload;
         },
-        logout: (state) => {
+        logOut: (state) => {
             state.user = initialState;
         },
         updateUser: (state, action) => {
@@ -43,7 +43,7 @@ export const userSlice = createSlice({
     },
 });
 
-export const { signUp, login, logout, updateUser } = userSlice.actions;
+export const { signUp, login, logOut, updateUser } = userSlice.actions;
 
 export const selectUser = createSelector(
     (state: RootState) => state.user.user,

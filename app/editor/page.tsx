@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { InfoToast, ErrorToast } from "@/components/toast";
 import dynamic from "next/dynamic";
@@ -32,12 +32,24 @@ const TextEditor = () => {
     const editor = useRef<SunEditorCore>();
     const dispatch = useAppDispatch();
     const user = useAppSelector(selectUser);
+    const [showEditor, setShowEditor] = useState(true);
+    const [showPopup, setShowPopup] = useState(false);
     const [title, setTitle] = useState("");
-    const [content, setContent] = useState<string>("");
+    const [content, setContent] = useState<string>(" ");
     const [author_id, setAuthorId] = useState("");
-    const [status, setStatus] = useState<
-        "draft" | "published" | "deleted" | "archived" | "edited" | ""
-    >("");
+
+    const handleCloseEditor = () => {
+        setShowPopup(true);
+    };
+
+    const handleConfirmCloseEditor = () => {
+        setShowEditor(false);
+        setShowPopup(false);
+    };
+
+    const handleCancelCloseEditor = () => {
+        setShowPopup(false);
+    };
 
     useEffect(() => {
         if (user.user_id) {
@@ -58,15 +70,16 @@ const TextEditor = () => {
     const handleSave = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const post_id = uuidv4();
-        setStatus("draft");
+        const status = "draft";
 
-        InfoToast("Post Saved As Draft");
         dispatch(addPost(author_id, title, content, post_id, status));
+        InfoToast("Post Saved As Draft");
     };
 
     const handlePublish = async () => {
         const post_id = uuidv4();
-        setStatus("published");
+        const status = "published";
+
         if (!title || !content) {
             ErrorToast("Please add title and content");
             return;
@@ -77,7 +90,7 @@ const TextEditor = () => {
             ErrorToast("Please add content");
             return;
         }
-        console.log("title::", title, "author_id::", author_id, "content::", content);
+        // console.log("title::", title, "author_id::", author_id, "content::", content);
 
         if (title && content && author_id) {
             const mappedData = mapPostDataToColumns({ author_id, title, content, post_id });
@@ -97,61 +110,112 @@ const TextEditor = () => {
     };
 
     return (
-        <div className="max-w-[80%] mx-auto my-20 shadow-inner rounded-lg p-4 flex flex-col justify-between gap-8">
-            <div className="flex justify-end pr-[3rem]">
-                <Button
-                    text="Publish"
-                    type="button"
-                    variant="primary"
-                    size="small"
-                    handleClick={handlePublish}
-                />
-            </div>
-            <form onSubmit={handleSave} className="flex flex-col">
-                <label htmlFor="title" className="text-gray-600">
-                    Title
-                </label>
-                <input
-                    type="text"
-                    value={title}
-                    name="title"
-                    placeholder="Enter a title"
-                    onChange={(e) => setTitle(e.target.value)}
-                    className="border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:border-blue-500 text-2xl"
-                    required
-                />
-                <SunEditor
-                    getSunEditorInstance={getSunEditorInstance}
-                    onChange={handleChange}
-                    name={`${author_id}-editor` ?? "text-editor"}
-                    width="100%"
-                    height="500"
-                    placeholder="Start writing..."
-                    setOptions={{
-                        height: "400",
-                        buttonList: [
-                            ["font", "fontSize", "formatBlock"],
-                            ["paragraphStyle", "blockquote"],
-                            ["bold", "underline", "italic", "strike", "subscript", "superscript"],
-                            ["fontColor", "hiliteColor", "textStyle"],
-                            ["removeFormat"],
-                            // "/", // Line break
-                            ["outdent", "indent"],
-                            ["align", "horizontalRule", "list", "lineHeight"],
-                            ["table", "link", "image", "video", "audio"],
-                            ["fullScreen", "showBlocks", "codeView"],
-                            ["save"],
-                            ["imageGallery"],
-                            ["preview", "print"],
-                            ["undo", "redo"],
-                        ],
-                    }}
-                />
-                <button className="bg-primary hover:bg-opacity-70 text-white py-2 px-4 rounded-md w-[10rem] mt-[5rem]">
-                    Save As Draft
-                </button>
-            </form>
-        </div>
+        <React.Fragment>
+            {showEditor && (
+                <div className="max-w-[92%] md:max-w-[80%] mx-auto my-8 md:my-20 shadow-inner rounded-lg p-4 flex flex-col justify-between gap-8">
+                    <div className="flex justify-end pr-[1.5rem] md:pr-[3rem]">
+                        <Button
+                            text="Publish"
+                            type="button"
+                            variant="primary"
+                            size="small"
+                            handleClick={handlePublish}
+                        />
+                    </div>
+                    <form onSubmit={handleSave} className="flex flex-col">
+                        <label htmlFor="title" className="text-gray-600">
+                            Title
+                        </label>
+                        <input
+                            type="text"
+                            value={title}
+                            name="title"
+                            placeholder="Enter a title"
+                            onChange={(e) => setTitle(e.target.value)}
+                            className="border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:border-blue-500 text-2xl"
+                            required
+                        />
+                        <SunEditor
+                            getSunEditorInstance={getSunEditorInstance}
+                            onChange={handleChange}
+                            name={`${author_id}-editor` ?? "text-editor"}
+                            width="100%"
+                            height="500"
+                            placeholder="Start writing..."
+                            setOptions={{
+                                // height: "400",
+                                buttonList: [
+                                    ["font", "fontSize", "formatBlock"],
+                                    ["paragraphStyle", "blockquote"],
+                                    [
+                                        "bold",
+                                        "underline",
+                                        "italic",
+                                        "strike",
+                                        "subscript",
+                                        "superscript",
+                                    ],
+                                    ["fontColor", "hiliteColor", "textStyle"],
+                                    ["removeFormat"],
+                                    ["outdent", "indent"],
+                                    ["align", "horizontalRule", "list", "lineHeight"],
+                                    ["table", "link", "image", "video", "audio"],
+                                    ["fullScreen", "showBlocks", "codeView"],
+                                    ["save"],
+                                    ["imageGallery"],
+                                    ["preview", "print"],
+                                    ["undo", "redo"],
+                                ],
+                            }}
+                        />
+                        <div className="flex flex-col xs:flex-row xs:items-center gap-4 sm:gap-8 mt-[5rem]">
+                            <button
+                                type="submit"
+                                className="bg-primary hover:bg-opacity-70 text-white py-2 px-4 rounded-md w-[10rem]"
+                            >
+                                Save As Draft
+                            </button>
+                            <button
+                                type="button"
+                                className="bg-primary-50 hover:bg-opacity-70 text-red-800 font-bold py-2 px-4 rounded-md w-[10rem]"
+                                onClick={handleCloseEditor}
+                            >
+                                Close Editor
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            )}
+            {showPopup && (
+                <div className="fixed z-50 inset-0 flex items-center justify-center bg-gray-700 bg-opacity-75">
+                    <div className="bg-white rounded-lg shadow-lg px-4 sm:px-8 pt-4 sm:pt-8 pb-0 m-4 max-w-lg w-full">
+                        <h2 className="text-xl font-semibold text-tertiary mb-4">
+                            Confirm Close Editor
+                        </h2>
+                        <p className="text-gray-700 mb-4">
+                            Are you sure you want to close the editor?
+                        </p>
+                        <div className="flex justify-end gap-4 pl-4">
+                            <Button
+                                text="No"
+                                type="button"
+                                variant="primary"
+                                size="small"
+                                handleClick={handleCancelCloseEditor}
+                            />
+                            <Button
+                                text="Yes"
+                                type="button"
+                                variant="secondary"
+                                size="small"
+                                style={{ fontWeight: "800" }}
+                                handleClick={handleConfirmCloseEditor}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
+        </React.Fragment>
     );
 };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import parse from "html-react-parser";
 import { useAppDispatch, useAppSelector } from "@/redux/store";
@@ -18,12 +18,76 @@ import ProfilePic from "@/public/man.png";
 import supaBase from "@/utils/supabase";
 import { ErrorToast } from "@/components/toast";
 import { formatDateTimeShort } from "@/utils/date";
+import calculateReadingTime from "@/utils/reading_time";
 
 const Feed = () => {
     const [showEditor, setShowEditor] = useState<boolean>(false);
     const [posts, setPosts] = useState<PostType[]>(useAppSelector(selectAllPosts));
+    const [authors, setAuthors] = useState<any[]>([]);
+    const [comments, setComments] = useState<any[]>([]);
+    const [selectedPost, setSelectedPost] = useState<PostType | null>(null);
     const user = useAppSelector(selectUser);
     const dispatch = useAppDispatch();
+
+    // fetch posts
+    useEffect(() => {
+        const fetchPosts = async () => {
+            let { data: posts, error } = await supaBase
+                .from("posts")
+                .select("*")
+                .order("created_at", { ascending: false });
+
+            if (error || !posts) {
+                ErrorToast(error?.message ?? "Error fetching updated posts");
+                return;
+            } else {
+                setPosts(posts);
+            }
+        };
+
+        fetchPosts();
+    }, []);
+
+    // fetch authors
+    useEffect(() => {
+        const fetchAuthors = async () => {
+            let { data: authorNames, error: authorNamesError } = await supaBase
+                .from("posts")
+                .select(
+                    `author_id,
+            users (
+                first_name,
+                last_name
+            )`,
+                )
+                .order("created_at", { ascending: false });
+
+            if (authorNamesError || !authorNames) {
+                ErrorToast(authorNamesError?.message ?? "Error fetching authors");
+                return;
+            }
+            setAuthors(authorNames);
+        };
+
+        fetchAuthors();
+    }, []);
+
+    // fetch comments
+    useEffect(() => {
+        const fetchComments = async () => {
+            let { data: comments, error: commentsError } = await supaBase
+                .from("comments")
+                .select(`*`);
+
+            if (commentsError || !comments) {
+                ErrorToast(commentsError?.message ?? "Error fetching comments");
+                return;
+            }
+            setComments(comments);
+        };
+
+        fetchComments();
+    }, []);
 
     const handleSearch = async (query: string) => {
         let { data: filteredPosts, error } = await supaBase
@@ -31,7 +95,7 @@ const Feed = () => {
             .select("*")
             .or(`content.ilike.*${query}*, title.ilike.*${query}*`);
 
-        // let { data: posts, error: errorPosts } = await supabase
+        // let { data: userNames, error: userNamesError } = await supaBase
         //     .from('posts')
         //     .select(`author_id,
         //     users (
@@ -39,15 +103,16 @@ const Feed = () => {
         //         last_name
         //     )`)
 
-        //     console.log("posts==", posts, "errorPosts==", errorPosts);
-
         if (error || !filteredPosts || filteredPosts.length === 0) {
-            ErrorToast("No posts found");
+            ErrorToast(error?.message ?? "No posts found");
             return;
         } else {
             setPosts(filteredPosts);
-            console.log(filteredPosts);
         }
+    };
+
+    const handleCommentClick = (post: PostType) => {
+        setSelectedPost(post);
     };
 
     return (
@@ -111,58 +176,97 @@ const Feed = () => {
                     </ul>
                     <div className="rounded-lg shadow-inner px-4 md:px-8 py-4">
                         {!posts || posts.length === 0 ? (
-                            <div>No Post Found</div>
+                            <div className="flex justify-center items-center h-screen text-4xl text-gray-800">
+                                No Post Found
+                            </div>
                         ) : (
-                            posts.map((post) => (
-                                <div
-                                    key={post.post_id}
-                                    className="border-b-2 border-b-slate-700 p-4"
-                                >
-                                    <div className="flex items-start sm:items-center gap-4 flex-col sm:flex-row">
-                                        <Image
-                                            src={ProfilePic}
-                                            alt="profile pic"
-                                            className="rounded-full"
-                                        />
-                                        <div className="flex flex-col gap-3">
-                                            <h4 className="font-medium text-2xl text-tertiary">
-                                                Grace Ikpang
-                                            </h4>
-                                            <p className="text-tertiary-50">
-                                                Product Designer,{" "}
-                                                <span className="font-medium">
-                                                    {formatDateTimeShort(post.created_at)}
-                                                </span>
-                                            </p>
+                            posts.map((post) => {
+                                const readingTime = calculateReadingTime(post?.content) + " mins";
+                                return (
+                                    <div
+                                        key={post?.post_id}
+                                        className="border-b-2 border-b-slate-700 p-4"
+                                    >
+                                        <div className="flex items-start sm:items-center gap-4 flex-col sm:flex-row">
+                                            <Image
+                                                src={ProfilePic}
+                                                alt="profile pic"
+                                                className="rounded-full"
+                                            />
+                                            <div className="flex flex-col gap-3">
+                                                <h4 className="font-medium text-2xl text-tertiary">
+                                                    Grace Ikpang
+                                                </h4>
+                                                <p className="text-tertiary-50">
+                                                    Product Designer,{" "}
+                                                    <span className="font-medium">
+                                                        {formatDateTimeShort(post?.created_at)}
+                                                    </span>
+                                                </p>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="flex flex-col gap-4 my-8">
-                                        <h3 className="font-semibold text-2xl md:text-4xl text-tertiary">
-                                            {post.title}
-                                        </h3>
-                                        <h6 className="flex gap-2 items-center text-tertiary-50 text-sm">
-                                            <span>
-                                                <Image src={BookIcon} alt="book icon" />
-                                            </span>{" "}
-                                            10 mins read
-                                        </h6>
-                                        <div className="text-tertiary-50">
-                                            {parse(post.content)}
+                                        <div className="flex flex-col gap-4 my-8">
+                                            <h3 className="font-semibold text-2xl md:text-4xl text-tertiary">
+                                                {post?.title}
+                                            </h3>
+                                            <h6 className="flex gap-2 items-center text-tertiary-50 text-sm">
+                                                <span>
+                                                    <Image src={BookIcon} alt="book icon" />
+                                                </span>{" "}
+                                                {readingTime}
+                                            </h6>
+                                            <div className="text-tertiary-50">
+                                                {parse(post?.content ?? "")}
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="flex items-center justify-between gap- border-4 px-2 py-4">
-                                        <div className="flex items-center gap-2">
-                                            <Image src={CommentIcon} alt="comment icon" />
-                                            <p className="text-tertiary-50">200</p>
+                                        <div className="flex items-center justify-between gap-4 border-2 px-2 py-4">
+                                            <button
+                                                className="flex items-center gap-2"
+                                                onClick={() => handleCommentClick(post)}
+                                            >
+                                                <Image src={CommentIcon} alt="comment icon" />
+                                                <p className="text-tertiary-50">200</p>
+                                            </button>
+                                            {<ReactionButton post={post} />}
                                         </div>
-                                        {<ReactionButton post={post} />}
-                                        {/* <div className="flex items-center gap-2">
-                                        <Image src={ViewsIcon} alt="views count icon" />
-                                        <p className="text-tertiary-50">2980</p>
-                                    </div> */}
+                                        {selectedPost && (
+                                            <div className="flex z-50 items-center justify-center gap-4">
+                                                <div className="bg-white rounded shadow-lg px-2 py-4 w-full flex-grow">
+                                                    <h3 className="font-semibold text-xl md:text-2xl mb-4">
+                                                        Comments
+                                                    </h3>
+                                                    {/* Render comments for selected post */}
+                                                    {/* {selectedPost.comments.map((comment) => (
+                                                    <div key={comment.id} className="flex items-start gap-4 mb-4">
+                                                        <Image src={comment.author.profilePic} alt="profile pic" className="rounded-full" width={30} height={30} />
+                                                        <div className="flex flex-col">
+                                                            <h4 className="font-medium text-tertiary">{comment.author.name}</h4>
+                                                            <p className="text-tertiary-50">{comment.text}</p>
+                                                        </div>
+                                                    </div>
+                                                ))} */}
+                                                    {/* Comment input */}
+                                                    <form className="flex items-center mt-4">
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Add a comment..."
+                                                            className="px-4 py-2 border rounded flex-grow"
+                                                            required
+                                                            spellCheck={true}
+                                                        />
+                                                        <button
+                                                            type="submit"
+                                                            className="px-4 py-2 ml-4 text-white bg-primary rounded outline-0 select-none"
+                                                        >
+                                                            Post
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
-                                </div>
-                            ))
+                                );
+                            })
                         )}
                     </div>
                 </section>

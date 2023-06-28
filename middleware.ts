@@ -6,7 +6,7 @@ export async function middleware(req: NextRequest) {
     const res = NextResponse.next();
 
     const supabase = createMiddlewareClient({ req, res });
-    
+
     const {
         data: { session },
     } = await supabase.auth.getSession()
@@ -25,9 +25,9 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-    matchers: [
+    matcher: [
         '/posts/:path*',
-        'feeds/:path*',
+        '/feeds/:path*',
         '/editor/:path*',
     ],
 }

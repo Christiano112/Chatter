@@ -40,7 +40,7 @@ const Posts = () => {
         dispatch(fetchPosts());
     }, [dispatch]);
 
-    console.log("posts", posts);
+    // console.log("posts", posts);
 
     return (
         <div className="p-8">

@@ -57,9 +57,9 @@ const Button = ({ text, type, variant, handleClick, size, ...props }: ButtonType
                 onClick={handleClick}
                 type={type}
                 className={className}
-                {...props}
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
+                {...props}
             >
                 {text}
             </button>

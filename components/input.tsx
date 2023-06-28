@@ -65,7 +65,7 @@ const Input = ({
                     spellCheck={name !== "password" ? "true" : "confirmPassword" ? "true" : "false"}
                     autoComplete={autoComplete}
                     placeholder={placeholder}
-                    className="p-1 md:p-2 rounded cursor-text text-lg border outline-none bg-white placeholder:text-slate-500 focus:border-blue-800 w-full"
+                    className="input"
                     {...props}
                 />
                 {type === "password" && (

@@ -54,7 +54,7 @@ const SignUp = () => {
                 return;
             }
 
-            console.log("data=====", newData, "error=========", newError);
+            // console.log("data=====", newData, "error=========", newError);
             dispatch(signUp(mappedData));
             SuccessToast("Check your email for verification");
             router.refresh();

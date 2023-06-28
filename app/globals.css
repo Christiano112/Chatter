@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+.input {
+    @apply p-1 md:p-2 rounded cursor-text text-lg border outline-none bg-white placeholder:text-slate-500 focus:border-blue-800 w-full;
+}
+
 .link {
     @apply font-semibold text-base md:text-xl hover:underline;
 }
