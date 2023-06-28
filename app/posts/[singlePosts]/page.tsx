@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
+import parse from "html-react-parser";
 import { shallowEqual } from "react-redux";
 import ReactionButton from "@/components/reactions";
 import { useAppSelector, useAppDispatch } from "@/redux/store";
@@ -26,7 +27,7 @@ const SinglePost = () => {
         <div className="p-2">
             <p>id: {post?.post_id}</p>
             <h1>title: {post?.title}</h1>
-            <p>content: {post?.content}</p>
+            <p>content: {parse(post?.content ?? "")}</p>
             <p>date: {formatDateTimeShort(post?.created_at)}</p>
             <p>author: {post?.author_id}</p>
             {post?.reactions && <ReactionButton post={post} />}

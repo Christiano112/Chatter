@@ -69,7 +69,7 @@ const SideNav = () => {
             <div className="flex flex-col gap-4 mb-8">
                 <h3 className="text-tertiary text-xl font-medium">Personal</h3>
                 <Link
-                    href="/account"
+                    href="/profile"
                     className="flex gap-2 items-center text-tertiary-50 footer-link"
                 >
                     <span>
@@ -77,7 +77,7 @@ const SideNav = () => {
                     </span>{" "}
                     Account
                 </Link>
-                <Link
+                {/* <Link
                     href="/notification"
                     className="flex gap-2 items-center text-tertiary-50 footer-link"
                 >
@@ -85,7 +85,7 @@ const SideNav = () => {
                         <Image src={NotificationIcon} alt="notification icon" />
                     </span>{" "}
                     Notifications
-                </Link>
+                </Link> */}
                 <div className="justify-end bottom-0 absolute right-0 left-0 p-4 mb-[-1rem]">
                     <SignOutBtn />
                 </div>

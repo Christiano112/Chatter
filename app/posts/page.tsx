@@ -55,8 +55,8 @@ const Posts = () => {
                         >
                             <p>id: {post?.post_id}</p>
                             <h1>title: {post?.title}</h1>
-                            <p>content: {parse(post?.content)}</p>
-                            <p>date: {formatDateTimeShort(post.created_at)}</p>
+                            <p>content: {parse(post?.content ?? "")}</p>
+                            <p>date: {formatDateTimeShort(post?.created_at)}</p>
                             <p>author: {post?.author_id}</p>
                             {post?.reactions && <ReactionButton post={post} />}
                             <Link href={`/posts/${post?.post_id}`}>View Post</Link>

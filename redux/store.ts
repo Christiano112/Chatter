@@ -13,6 +13,7 @@ import {
 import storage from "redux-persist/lib/storage";
 import userReducer from "./slices/user";
 import postsReducer from "./slices/posts";
+import commentsReducer from "./slices/comments";
 
 const persistConfig = {
     key: "root",
@@ -22,15 +23,11 @@ const persistConfig = {
 const rootReducer = combineReducers({
     user: userReducer,
     posts: postsReducer,
-    // comments: commentsReducer,
+    comments: commentsReducer,
     // notifications: notificationsReducer,
     // messages: messagesReducer,
-    // search: searchReducer,
     // tags: tagsReducer,
     // follows: followsReducer,
-    // settings: settingsReducer,
-    // theme: themeReducer,
-    // auth: authReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -46,11 +43,9 @@ const store = configureStore({
         }),
 });
 
-// Infer the `RootState` and `AppDispatch` types from the store itself
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 
-// Use throughout the app instead of plain `useDispatch` and `useSelector`
 export const useAppDispatch = () => useDispatch<AppDispatch>();
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
 
