@@ -48,14 +48,14 @@ const Posts = () => {
                         >
                             <p>id: {post?.post_id}</p>
                             <h1>title: {post?.title}</h1>
-                            <p>content: {parse(post?.content ?? "")}</p>
+                            <div>content: {parse(post?.content ?? "")}</div>
                             <p>date: {formatDateTimeShort(post?.created_at)}</p>
                             <p>author: {post?.author_id}</p>
                             {post?.reactions && <ReactionButton post={post} />}
                             <Link href={`/posts/${post?.post_id}`}>View Post</Link>
-                            <button onClick={() => dispatch(deletePost(post?.post_id))}>
+                            {/* <button onClick={() => dispatch(deletePost(post?.post_id))}>
                                 Delete Post
-                            </button>
+                            </button> */}
                         </div>
                     ))}
             </div>

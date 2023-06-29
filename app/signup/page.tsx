@@ -72,11 +72,9 @@ const SignUp = () => {
                 return;
             }
 
-            // console.log("data=====", newData, "error=========", newError);
             dispatch(signUp(mappedData));
             SuccessToast("Check your email for verification");
-            router.refresh();
-            // router.push("/feeds");67x_5Q2jtFSx-RM
+            router.push("/feeds");
         }
     };
 

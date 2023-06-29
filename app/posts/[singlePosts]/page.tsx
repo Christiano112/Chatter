@@ -24,11 +24,11 @@ const SinglePost = () => {
         <div className="p-2">
             <p>id: {post?.post_id}</p>
             <h1>title: {post?.title}</h1>
-            <p>content: {parse(post?.content ?? "")}</p>
+            <div>content: {parse(post?.content ?? "")}</div>
             <p>date: {formatDateTimeShort(post?.created_at)}</p>
             <p>author: {post?.author_id}</p>
             {post?.reactions && <ReactionButton post={post} />}
-            <button onClick={() => dispatch(deletePost(post?.post_id))}>Delete Post</button>
+            {/* <button onClick={() => dispatch(deletePost(post?.post_id))}>Delete Post</button> */}
         </div>
     );
 };

@@ -39,7 +39,7 @@ export default function Home() {
             <main
                 className="py-[5rem] px-4 sm:px-8 flex flex-col gap-6 bg-slate-950 text-center"
                 style={{
-                    background: "url('/main-bg.png') center no-repeat",
+                    background: "url('/main-bg.webp') center no-repeat",
                     backgroundSize: "cover",
                 }}
             >
@@ -54,7 +54,7 @@ export default function Home() {
             <section className="flex flex-col gap-8 md:gap-12 justify-between items-center md:flex-row py-[5rem] mx-auto w-[90%]">
                 <div className="md:w-[60%]">
                     <h2 className="text-tertiary font-bold text-2xl md:text-5xl mb-4 md:mb-8">
-                        About Chatter
+                        About <span className="text-primary">Chatter</span>
                     </h2>
                     <p className="text-tertiary">
                         Chatter is a multi-functional platform where authors and readers can have
@@ -70,7 +70,7 @@ export default function Home() {
             <section className="flex flex-col gap-8 md:gap-12 justify-between items-center py-[5rem] mx-auto w-[90%]">
                 <div className="text-center">
                     <h2 className="text-tertiary font-bold text-2xl md:text-5xl mb-4 md:mb-8">
-                        Why you should join chatter
+                        Why you should join <span className="text-primary">Chatter</span>
                     </h2>
                     <p className="text-tertiary">
                         Our goal is to make writers and readers see our platform as their next
@@ -139,7 +139,8 @@ export default function Home() {
                 </div>
                 <div className="md:w-[60%]">
                     <h2 className="text-tertiary font-bold text-2xl md:text-5xl mb-4 md:mb-8">
-                        Write, read and connect with great minds on chatter
+                        Write, read and connect with great minds on{" "}
+                        <span className="text-primary">Chatter</span>
                     </h2>
                     <p className="text-tertiary">
                         Share people your great ideas, and also read write-ups based on your

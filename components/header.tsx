@@ -1,29 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useUser } from "@supabase/auth-helpers-react";
 import Button from "@/components/button";
 import Logo from "@/public/logo.png";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { FaAlignRight } from "react-icons/fa";
+import { useCheckAuth } from "@/utils/custom";
 
 const Header = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const [authenticated, setAuthenticated] = useState(false);
+    const authenticated = useCheckAuth();
     const pathname = usePathname();
     const router = useRouter();
-    const user = useUser();
-
-    useEffect(() => {
-        if (user && user.role === "authenticated" && user.id) {
-            setAuthenticated(true);
-        } else {
-            setAuthenticated(false);
-        }
-    }, [user]);
 
     const isActive = (href: string) => (pathname === href ? "text-primary" : "text-tertiary");
 
@@ -49,13 +40,13 @@ const Header = () => {
                             </Link>
                         </li>
                         <li>
-                            <Link href="/about" className={`${isActive("/Feeds")} link`}>
+                            <Link href="/feeds" className={`${isActive("/feeds")} link`}>
                                 Feeds
                             </Link>
                         </li>
                         <li>
-                            <Link href="/contact" className={`${isActive("/posts")} link`}>
-                                Posts
+                            <Link href="/posts" className={`${isActive("/editor")} link`}>
+                                Editor
                             </Link>
                         </li>
                     </ul>

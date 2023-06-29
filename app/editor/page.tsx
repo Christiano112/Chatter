@@ -9,7 +9,8 @@ import "suneditor/dist/css/suneditor.min.css";
 import SunEditorCore from "suneditor/src/lib/core";
 import supaBase from "@/utils/supabase";
 // import parse from "html-react-parser";
-import Button from "@/components/button";
+import Button, { SavingSpinner } from "@/components/button";
+import Header from "@/components/header";
 import { initialReactionValues } from "@/components/reactions";
 import { useAppDispatch, useAppSelector } from "@/redux/store";
 import { selectUser } from "@/redux/slices/user";
@@ -32,15 +33,16 @@ const mapPostDataToColumns = (postData: PostType) => {
 };
 
 const TextEditor = () => {
+    const authUser = useUser();
     const editor = useRef<SunEditorCore>();
     const user = useAppSelector(selectUser);
     const dispatch = useAppDispatch();
+    const [save, setSave] = useState(false);
     const [showEditor, setShowEditor] = useState(true);
     const [showPopup, setShowPopup] = useState(false);
     const [title, setTitle] = useState("");
     const [content, setContent] = useState<string>(" ");
-    const [author_id, setAuthorId] = useState("");
-    const authUser = useUser();
+    const [author_id, setAuthorId] = useState(user.user_id);
 
     useEffect(() => {
         if (authUser?.id || user.user_id) {
@@ -49,6 +51,39 @@ const TextEditor = () => {
             ErrorToast("No user found, can't make post");
         }
     }, [authUser, user]);
+
+    // Get saved content from localStorage
+    useEffect(() => {
+        const savedTitle = localStorage.getItem(`${author_id}-editorTitle`);
+        const savedContent = localStorage.getItem(`${author_id}-editorContent`);
+        if (savedTitle) {
+            setTitle(savedTitle);
+        }
+        if (savedContent) {
+            setContent(savedContent);
+        }
+    }, [author_id]);
+
+    // Save content to localStorage every 3 minutes
+    useEffect(() => {
+        const saveContentInterval = setInterval(() => {
+            try {
+                if (title) localStorage.setItem(`${author_id}-editorTitle`, title);
+                if (content) localStorage.setItem(`${author_id}-editorContent`, content);
+                setSave(true);
+            } catch (error) {
+                throw new Error();
+            } finally {
+                setTimeout(() => {
+                    setSave(false);
+                }, 1000);
+            }
+        }, 3 * 60 * 1000);
+
+        return () => {
+            clearInterval(saveContentInterval);
+        };
+    }, [title, content, author_id]);
 
     const handleCloseEditor = () => {
         setShowPopup(true);
@@ -78,6 +113,12 @@ const TextEditor = () => {
 
         dispatch(addPost(author_id, title, content, post_id, status, initialReactionValues));
         InfoToast("Post Saved As Draft");
+
+        // Clear localStorage and reset the title and content
+        localStorage.removeItem(`${author_id}-editorTitle`);
+        localStorage.removeItem(`${author_id}-editorContent`);
+        setTitle("");
+        setContent("");
     };
 
     const handlePublish = async () => {
@@ -117,15 +158,25 @@ const TextEditor = () => {
 
         dispatch(addPost(author_id, title, content, post_id, status, initialReactionValues));
         InfoToast("Post published successfully");
+
+        // Clear localStorage and reset the title and content
+        localStorage.removeItem(`${author_id}-editorTitle`);
+        localStorage.removeItem(`${author_id}-editorContent`);
+        setTitle("");
+        setContent("");
     };
 
     return (
         <React.Fragment>
+            <Header />
+            <h2 className="text-primary text-lg sm:text-2xl my-4 md:my-8 px-2 text-center font-bold">
+                Elevate Your Content Creation: Chatter{`'`}s Text Editor is at Your Fingertips
+            </h2>
             {showEditor && (
                 <div className="max-w-[92%] md:max-w-[80%] mx-auto my-8 md:my-20 shadow-inner rounded-lg p-4 flex flex-col justify-between gap-8 ">
                     <div className="flex justify-end pr-[1.5rem] md:pr-[3rem]">
                         <Button
-                            text="Publish"
+                            text={save ? <SavingSpinner /> : "Publish"}
                             type="button"
                             variant="primary"
                             size="small"
@@ -148,6 +199,7 @@ const TextEditor = () => {
                         <SunEditor
                             getSunEditorInstance={getSunEditorInstance}
                             onChange={handleChange}
+                            defaultValue={content}
                             name={`${author_id}-editor` ?? "text-editor"}
                             width="100%"
                             height="500"
@@ -183,7 +235,7 @@ const TextEditor = () => {
                                 type="submit"
                                 className="bg-primary hover:bg-opacity-70 text-white py-2 px-4 rounded-md w-[10rem]"
                             >
-                                Save As Draft
+                                {save ? <SavingSpinner /> : "Save as Draft"}
                             </button>
                             <button
                                 type="button"
