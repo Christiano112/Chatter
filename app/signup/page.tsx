@@ -11,6 +11,24 @@ import Select from "@/components/select";
 import supaBase from "@/utils/supabase";
 import { useSignUpForm, SignUpType } from "@/utils/form";
 
+const professions = [
+    "Chef",
+    "Database Administrator",
+    "IT Support Specialist",
+    "Software Engineer",
+    "UX/UI Designer",
+    "Web Developer",
+    "Nurse",
+    "Teacher",
+    "Marketing Manager",
+    "Cybersecurity Analyst",
+    "Network Administrator",
+    "Writer",
+    "Data Scientist",
+    "Systems Analyst",
+    "Product Manager",
+];
+
 const mapSignUpDataToColumns = (signUpData: SignUpType, id: string) => {
     const { first_name, last_name, username, join_as, email } = signUpData;
 
@@ -37,7 +55,7 @@ const SignUp = () => {
                 emailRedirectTo: `${location.origin}api/auth/callback/route`,
             },
         });
-        if (newData?.user?.id) {
+        if (newData?.user?.id && !newError) {
             const mappedData = mapSignUpDataToColumns(data, newData.user.id);
             const { error } = await supaBase.from("users").insert([mappedData]);
 
@@ -113,7 +131,7 @@ const SignUp = () => {
                         label="You are joining as"
                         name="join_as"
                         register={register}
-                        options={["writer", "reader"]}
+                        options={professions}
                         errors={errors}
                     />
                     <Input

@@ -1,15 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import parse from "html-react-parser";
 import { useAppDispatch, useAppSelector } from "@/redux/store";
 import { selectUser } from "@/redux/slices/user";
 import { PostType, selectAllPosts } from "@/redux/slices/posts";
-import { CommentsType, addComment, selectComments } from "@/redux/slices/comments";
+import { addComment } from "@/redux/slices/comments";
 import SearchInput from "@/components/search";
 import Button from "@/components/button";
 import ReactionButton from "@/components/reactions";
+import NotFound from "@/components/not-found";
+import Loading from "@/app/loading";
 import NotificationIcon from "@/public/notification-icon.png";
 import AccountIcon from "@/public/account-icon.png";
 import PostIcon from "@/public/post-icon.png";
@@ -20,36 +23,42 @@ import supaBase from "@/utils/supabase";
 import { ErrorToast } from "@/components/toast";
 import { formatDateTimeShort } from "@/utils/date";
 import calculateReadingTime from "@/utils/reading_time";
+import { formatName } from "@/utils/format";
 
 const Feed = () => {
     const [showEditor, setShowEditor] = useState<boolean>(false);
     const [posts, setPosts] = useState<PostType[] | any[]>(useAppSelector(selectAllPosts));
-    const [selectedPostComments, setSelectedPostComments] = useState<CommentsType[]>([]);
+    const [selectedPostComments, setSelectedPostComments] = useState<any[]>([]);
     const [newComment, setNewComment] = useState<string>("");
     const [selectedPost, setSelectedPost] = useState<PostType | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
     const user = useAppSelector(selectUser);
     const dispatch = useAppDispatch();
+    const excerptLimit = 500;
 
-    // fetch posts
     useEffect(() => {
         const fetchPosts = async () => {
-            let { data: posts, error } = await supaBase
-                .from("posts")
-                .select(
-                    `*,
-                        author_id:users(user_id),
-                        author:users(first_name, last_name)
-                    `,
-                )
-                .order("created_at", { ascending: false });
+            try {
+                setIsLoading(true);
+                let { data: posts, error } = await supaBase
+                    .from("posts")
+                    .select(
+                        `*,
+                    author:users(first_name, last_name, username, join_as),
+                    comments:comments(id)`,
+                    )
+                    .order("created_at", { ascending: false });
 
-            console.log("posta=", posts, "errora=", error);
+                if (error || !posts) {
+                    ErrorToast(error?.message ?? "Error fetching updated posts");
+                    return;
+                }
 
-            if (error || !posts) {
-                ErrorToast(error?.message ?? "Error fetching updated posts");
-                return;
-            } else {
                 setPosts(posts);
+            } catch (error: any) {
+                throw new Error();
+            } finally {
+                setIsLoading(false);
             }
         };
 
@@ -59,7 +68,12 @@ const Feed = () => {
     const fetchCommentsForPost = async (post_id: string) => {
         let { data: comments, error: commentsError } = await supaBase
             .from("comments")
-            .select("*")
+            .select(
+                `
+                    *,
+                    author:users(first_name, last_name, username)
+                `,
+            )
             .eq("comment_id", post_id);
 
         if (commentsError || !comments) {
@@ -71,6 +85,8 @@ const Feed = () => {
     };
 
     const handleCommentClick = async (post: PostType) => {
+        setNewComment("");
+        setSelectedPostComments([]);
         setSelectedPost(post);
         await fetchCommentsForPost(post.post_id);
     };
@@ -87,7 +103,6 @@ const Feed = () => {
             .from("comments")
             .insert([
                 {
-                    // post_id: selectedPost?.post_id,
                     author_id: user?.user_id,
                     comment_id: selectedPost.post_id,
                     content: newComment,
@@ -108,8 +123,13 @@ const Feed = () => {
     const handleSearch = async (query: string) => {
         let { data: filteredPosts, error } = await supaBase
             .from("posts")
-            .select("*")
-            .or(`content.ilike.*${query}*, title.ilike.*${query}*`);
+            .select(
+                `*,
+                        author:users(first_name, last_name, username, join_as)
+                    `,
+            )
+            .or(`content.ilike.*${query}*, title.ilike.*${query}*`)
+            .order("created_at", { ascending: false });
 
         if (error || !filteredPosts || filteredPosts.length === 0) {
             ErrorToast(error?.message ?? "No posts found");
@@ -179,13 +199,16 @@ const Feed = () => {
                         </li>
                     </ul>
                     <div className="rounded-lg shadow-inner px-2 sm:px-4 md:px-8 py-4">
-                        {!posts || posts.length === 0 ? (
-                            <div className="flex justify-center items-center h-screen text-4xl text-gray-800">
-                                No Post Found
-                            </div>
+                        {isLoading ? (
+                            <Loading />
+                        ) : !posts || posts.length === 0 ? (
+                            <NotFound text="No posts found" />
                         ) : (
                             posts.map((post) => {
                                 const readingTime = calculateReadingTime(post?.content) + " mins";
+                                const commentsCount = Object.keys(post?.comments ?? {}).length;
+                                const contentLength = post?.content.length || 0;
+                                const excerpt = post?.content.slice(0, excerptLimit);
                                 return (
                                     <div
                                         key={post?.post_id}
@@ -199,11 +222,11 @@ const Feed = () => {
                                             />
                                             <div className="flex flex-col gap-3">
                                                 <h4 className="font-medium text-2xl text-tertiary">
-                                                    {post.author?.first_name}{" "}
-                                                    {post.author?.last_name}
+                                                    {post?.author?.first_name}{" "}
+                                                    {post?.author?.last_name}
                                                 </h4>
-                                                <p className="text-tertiary-50">
-                                                    Product Designer,{" "}
+                                                <p className="text-tertiary-50 capitalize">
+                                                    {post?.author?.join_as},{" "}
                                                     <span className="font-medium">
                                                         {formatDateTimeShort(post?.created_at)}
                                                     </span>
@@ -221,49 +244,65 @@ const Feed = () => {
                                                 {readingTime}
                                             </h6>
                                             <div className="text-tertiary-50">
-                                                {parse(post?.content ?? "")}
+                                                {/* {parse(post?.content ?? "")} */}
+                                                {parse(excerpt)}
+                                                {contentLength > excerptLimit && (
+                                                    <Link
+                                                        href={`/feeds/${post?.post_id}`}
+                                                        className="underline text-primary cursor-pointer"
+                                                        target="_blank"
+                                                    >
+                                                        Read more...
+                                                    </Link>
+                                                )}
                                             </div>
                                         </div>
                                         <div className="flex items-center justify-between gap-4 border-2 px-2 py-4">
                                             <button
-                                                className="flex items-center gap-2"
+                                                className="flex items-center gap-1 outline-0 select-none"
                                                 onClick={() => handleCommentClick(post)}
                                             >
                                                 <Image src={CommentIcon} alt="comment icon" />
-                                                <p className="text-tertiary-50">200</p>
+                                                <p className="text-tertiary-50">{commentsCount}</p>
                                             </button>
                                             {<ReactionButton post={post} />}
                                         </div>
                                         {selectedPost && selectedPost.post_id === post.post_id && (
                                             <div className="flex z-50 items-center justify-center gap-4">
                                                 <div className="bg-white rounded shadow-lg px-2 py-4 w-full flex-grow">
-                                                    <h3 className="font-semibold text-xl md:text-2xl mb-4">
+                                                    <h3 className="font-semibold text-xl md:text-2xl mb-4 ml-2">
                                                         Comments
                                                     </h3>
                                                     {/* Render comments for selected post */}
                                                     {selectedPostComments &&
-                                                        selectedPostComments?.map((comment) => (
-                                                            <div
-                                                                key={comment.id}
-                                                                className="flex items-start gap-4 mb-4"
-                                                            >
-                                                                {/* <Image
-                                                                    src={comment.author.profilePic}
-                                                                    alt="profile pic"
-                                                                    className="rounded-full"
-                                                                    width={30}
-                                                                    height={30}
-                                                                /> */}
-                                                                <div className="flex flex-col">
-                                                                    <h4 className="font-medium text-tertiary">
-                                                                        {comment.author_id}
-                                                                    </h4>
-                                                                    <p className="text-tertiary-50">
-                                                                        {comment.content}
-                                                                    </p>
+                                                        selectedPostComments?.map((comment) => {
+                                                            const initials = formatName(
+                                                                comment.author.first_name,
+                                                                comment.author.last_name,
+                                                            );
+                                                            return (
+                                                                <div
+                                                                    key={comment.id}
+                                                                    className="flex items-center gap-2 mb-4 border-b"
+                                                                >
+                                                                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white">
+                                                                        {initials}
+                                                                    </div>
+                                                                    <div className="flex flex-col">
+                                                                        <h4 className="font-medium text-tertiary">
+                                                                            {
+                                                                                comment.author
+                                                                                    ?.username
+                                                                            }{" "}
+                                                                            {`:`}
+                                                                        </h4>
+                                                                        <p className="text-tertiary-50">
+                                                                            {comment.content}
+                                                                        </p>
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                        ))}
+                                                            );
+                                                        })}
                                                     {/* Comment input */}
                                                     <form className="flex items-center mt-4">
                                                         <input

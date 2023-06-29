@@ -2,19 +2,13 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { v4 as uuidv4 } from "uuid";
+// import { v4 as uuidv4 } from "uuid";
 import parse from "html-react-parser";
 import ReactionButton from "@/components/reactions";
 import { useAppDispatch, useAppSelector } from "@/redux/store";
-import {
-    addPost,
-    fetchPosts,
-    deletePost,
-    selectAllPosts,
-    selectPostFetchStatus,
-} from "@/redux/slices/posts";
-import supaBase from "@/utils/supabase";
-import type { DatabaseType } from "@/utils/types";
+import { addPost, fetchPosts, deletePost, selectAllPosts } from "@/redux/slices/posts";
+// import supaBase from "@/utils/supabase";
+// import type { DatabaseType } from "@/utils/types";
 import { selectUser } from "@/redux/slices/user";
 import { ErrorToast } from "@/components/toast";
 import { formatDateTimeShort } from "@/utils/date";
@@ -23,9 +17,8 @@ const Posts = () => {
     const dispatch = useAppDispatch();
     const posts = useAppSelector(selectAllPosts);
     const user = useAppSelector(selectUser);
-    const status = useAppSelector(selectPostFetchStatus);
-    const [title, setTitle] = useState("");
-    const [content, setContent] = useState("");
+    // const [title, setTitle] = useState("");
+    // const [content, setContent] = useState("");
     const [author_id, setAuthorId] = useState("");
 
     useEffect(() => {

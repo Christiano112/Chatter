@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { useUser } from "@supabase/auth-helpers-react";
 import { v4 as uuidv4 } from "uuid";
 import { InfoToast, ErrorToast } from "@/components/toast";
 import dynamic from "next/dynamic";
@@ -9,6 +10,7 @@ import SunEditorCore from "suneditor/src/lib/core";
 import supaBase from "@/utils/supabase";
 // import parse from "html-react-parser";
 import Button from "@/components/button";
+import { initialReactionValues } from "@/components/reactions";
 import { useAppDispatch, useAppSelector } from "@/redux/store";
 import { selectUser } from "@/redux/slices/user";
 import { PostType, addPost } from "@/redux/slices/posts";
@@ -25,18 +27,28 @@ const mapPostDataToColumns = (postData: PostType) => {
         title,
         content,
         post_id,
+        reactions: initialReactionValues,
     };
 };
 
 const TextEditor = () => {
     const editor = useRef<SunEditorCore>();
-    const dispatch = useAppDispatch();
     const user = useAppSelector(selectUser);
+    const dispatch = useAppDispatch();
     const [showEditor, setShowEditor] = useState(true);
     const [showPopup, setShowPopup] = useState(false);
     const [title, setTitle] = useState("");
     const [content, setContent] = useState<string>(" ");
     const [author_id, setAuthorId] = useState("");
+    const authUser = useUser();
+
+    useEffect(() => {
+        if (authUser?.id || user.user_id) {
+            setAuthorId(authUser?.id ?? user.user_id);
+        } else {
+            ErrorToast("No user found, can't make post");
+        }
+    }, [authUser, user]);
 
     const handleCloseEditor = () => {
         setShowPopup(true);
@@ -51,14 +63,6 @@ const TextEditor = () => {
         setShowPopup(false);
     };
 
-    useEffect(() => {
-        if (user.user_id) {
-            setAuthorId(user.user_id);
-        } else {
-            ErrorToast("No user found, can't make post");
-        }
-    }, [user]);
-
     const getSunEditorInstance = (sunEditor: SunEditorCore) => {
         editor.current = sunEditor;
     };
@@ -72,7 +76,7 @@ const TextEditor = () => {
         const post_id = uuidv4();
         const status = "draft";
 
-        dispatch(addPost(author_id, title, content, post_id, status));
+        dispatch(addPost(author_id, title, content, post_id, status, initialReactionValues));
         InfoToast("Post Saved As Draft");
     };
 
@@ -93,7 +97,13 @@ const TextEditor = () => {
         // console.log("title::", title, "author_id::", author_id, "content::", content);
 
         if (title && content && author_id) {
-            const mappedData = mapPostDataToColumns({ author_id, title, content, post_id });
+            const mappedData = mapPostDataToColumns({
+                author_id,
+                title,
+                content,
+                post_id,
+                reactions: initialReactionValues,
+            });
             const { error } = await supaBase.from("posts").insert([mappedData]);
 
             if (error) {
@@ -105,14 +115,14 @@ const TextEditor = () => {
             return;
         }
 
-        dispatch(addPost(author_id, title, content, post_id, status));
+        dispatch(addPost(author_id, title, content, post_id, status, initialReactionValues));
         InfoToast("Post published successfully");
     };
 
     return (
         <React.Fragment>
             {showEditor && (
-                <div className="max-w-[92%] md:max-w-[80%] mx-auto my-8 md:my-20 shadow-inner rounded-lg p-4 flex flex-col justify-between gap-8">
+                <div className="max-w-[92%] md:max-w-[80%] mx-auto my-8 md:my-20 shadow-inner rounded-lg p-4 flex flex-col justify-between gap-8 ">
                     <div className="flex justify-end pr-[1.5rem] md:pr-[3rem]">
                         <Button
                             text="Publish"

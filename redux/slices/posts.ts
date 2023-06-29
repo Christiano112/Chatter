@@ -80,12 +80,13 @@ const postsSlice = createSlice({
                 content: string,
                 post_id: string,
                 status?: "draft" | "published" | "deleted" | "archived" | "edited" | "",
+                created_at?: any,
             ): { payload: PostType; type: string } {
                 const newPost: PostType = {
                     author_id,
                     title,
                     content,
-                    created_at: formatDateTimeShort(new Date().toISOString()),
+                    created_at: created_at ?? formatDateTimeShort(new Date().toISOString()),
                     post_id,
                     status,
                     reactions: {
@@ -108,14 +109,14 @@ const postsSlice = createSlice({
             const { post_id, reaction } = action.payload;
             const existingPost = state.entities[post_id];
             if (existingPost && existingPost.reactions && existingPost.reactions[reaction]) {
-                existingPost.reactions[reaction] += 4;
+                existingPost.reactions[reaction] += 1;
             }
         },
         reactionDeleted(state, action: PayloadAction<{ post_id: string; reaction: string }>) {
             const { post_id, reaction } = action.payload;
             const existingPost = state.entities[post_id];
             if (existingPost && existingPost.reactions && existingPost.reactions[reaction]) {
-                existingPost.reactions[reaction] -= 4;
+                existingPost.reactions[reaction] -= 1;
             }
         },
     },
@@ -167,8 +168,8 @@ export const selectPostById = createSelector(
 );
 
 export const selectPostsByAuthor = createSelector(
-    [selectAllPosts, (state: RootState, userId: string) => userId],
-    (posts, userId) => posts?.filter((post) => post?.author_id === userId),
+    [selectAllPosts, (state: RootState, user_id: string) => user_id],
+    (posts, user_id) => posts?.filter((post) => post?.author_id === user_id),
 );
 
 export const selectPostFetchStatus = createSelector(

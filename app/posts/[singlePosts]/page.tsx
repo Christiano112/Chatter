@@ -1,21 +1,18 @@
 "use client";
 
-import { useEffect } from "react";
-import { usePathname } from "next/navigation";
+// import { useEffect } from "react";
 import parse from "html-react-parser";
 import { shallowEqual } from "react-redux";
 import ReactionButton from "@/components/reactions";
 import { useAppSelector, useAppDispatch } from "@/redux/store";
-import { deletePost, fetchPosts, selectPostById, selectPostsByAuthor } from "@/redux/slices/posts";
+import { deletePost, selectPostById } from "@/redux/slices/posts";
 import { formatDateTimeShort } from "@/utils/date";
+import { usePathId } from "@/utils/custom";
 
 const SinglePost = () => {
     const dispatch = useAppDispatch();
-    const pathname = usePathname();
-    const lastPath = pathname.split("/");
-    const id = lastPath[lastPath.length - 1];
-
-    const post = useAppSelector((state) => selectPostById(state, id), shallowEqual);
+    const pathId = usePathId();
+    const post = useAppSelector((state) => selectPostById(state, pathId), shallowEqual);
 
     // console.log("post", post);
 

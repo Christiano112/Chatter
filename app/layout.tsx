@@ -1,4 +1,5 @@
 import "./globals.css";
+import { ReactNode } from "react";
 import { Inter } from "next/font/google";
 import CustomLayout from "./custom_layout";
 import { Session } from "@supabase/auth-helpers-react";
@@ -14,7 +15,7 @@ export const metadata = {
 };
 
 interface LayoutProps {
-    children: React.ReactNode;
+    children: ReactNode;
     initialSession: Session;
 }
 

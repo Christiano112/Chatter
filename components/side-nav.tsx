@@ -9,7 +9,7 @@ import TeamBlogsIcon from "../public/team-icon.png";
 import DraftIcon from "../public/draft-icon.png";
 import AnalyticsIcon from "../public/analytics-icon.png";
 import AccountIcon from "../public/account-icon.png";
-import NotificationIcon from "../public/notification-icon.png";
+// import NotificationIcon from "../public/notification-icon.png";
 import SignOutBtn from "./signOutBtn";
 
 const SideNav = () => {

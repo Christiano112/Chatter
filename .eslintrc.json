@@ -8,6 +8,9 @@
     ],
     "rules": {
         "prettier/prettier": "warn",
-        "no-console": "warn"
+        "no-console": "warn",
+        "no-unused-vars": 1,
+        "no-unused-expressions": "warn",
+        "no-undef": "warn"
     }
 }

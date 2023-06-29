@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, CSSProperties, ChangeEvent } from "react";
 import { AiOutlineSearch } from "react-icons/ai";
 
 interface SearchInputType {
     placeholder?: string;
-    onSearch: (query: string) => void;
-    style?: React.CSSProperties;
+    onSearch: (searchQuery: string) => void;
+    style?: CSSProperties;
 }
 
 const SearchInput = ({ placeholder, onSearch, style }: SearchInputType) => {
@@ -16,7 +16,7 @@ const SearchInput = ({ placeholder, onSearch, style }: SearchInputType) => {
         onSearch(searchQuery);
     };
 
-    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
         setSearchQuery(event.target.value);
     };
 
@@ -37,7 +37,7 @@ const SearchInput = ({ placeholder, onSearch, style }: SearchInputType) => {
                 className="w-full py-2 pl-8 pr-2 text-sm text-tertiary bg-white border border-primary-50 rounded-md focus:ring-1 focus:ring-primary focus:outline-none focus:ring-opacity-50"
             />
             <AiOutlineSearch
-                className="absolute top-1/2 left-2 transform -translate-y-1/2 text-slate-400"
+                className="absolute top-1/2 left-2 transform -translate-y-1/2 text-slate-400 cursor-pointer"
                 size={20}
                 onClick={handleSearch}
             />

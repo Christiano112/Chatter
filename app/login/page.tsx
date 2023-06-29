@@ -38,7 +38,7 @@ const Login = () => {
                 email: email,
                 password: password,
             });
-            // console.log("data", data, "error", error);
+
             if (error) {
                 ErrorToast(error?.message);
                 return;

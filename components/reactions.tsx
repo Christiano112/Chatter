@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, memo } from "react";
+import React, { useState, memo } from "react";
 import { useAppDispatch } from "@/redux/store";
 import { PostType, reactionAdded, reactionDeleted } from "@/redux/slices/posts";
 
@@ -11,6 +11,13 @@ export const reactionEmojis = {
     thumbsDown: "👎",
 };
 
+export const initialReactionValues = {
+    like: 0,
+    love: 0,
+    haha: 0,
+    thumbsDown: 0,
+};
+
 interface ReactionButtonProps {
     post: PostType;
 }
@@ -18,6 +25,10 @@ interface ReactionButtonProps {
 const ReactionButton: React.FC<ReactionButtonProps> = memo(({ post }) => {
     const dispatch = useAppDispatch();
     const [selectedReaction, setSelectedReaction] = useState<string | null>(null);
+
+    // if (!post?.reactions) {
+    //     post.reactions = { ...initialReactionValues };
+    // }
 
     const handleReactionClick = (reaction: string) => {
         if (selectedReaction === reaction) {

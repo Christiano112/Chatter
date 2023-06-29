@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, ReactNode } from "react";
+import React, { useState, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 
 interface ButtonType {
@@ -12,7 +12,7 @@ interface ButtonType {
     style?: React.CSSProperties;
 }
 
-export interface NavigateBtnProps {
+export interface NavigateButtonProps {
     direction?: string;
     text: React.ReactNode;
     size?: "small" | "medium" | "large";
@@ -69,7 +69,7 @@ const Button = ({ text, type, variant, handleClick, size, ...props }: ButtonType
 
 export default Button;
 
-export const NavigateBtn = ({ direction, text, size, ...props }: NavigateBtnProps) => {
+export const NavigateButton = ({ direction, text, size, ...props }: NavigateButtonProps) => {
     const router = useRouter();
     return (
         <Button

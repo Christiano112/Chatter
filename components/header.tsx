@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useUser } from "@supabase/auth-helpers-react";
 import Button from "@/components/button";
 import Logo from "@/public/logo.png";
 import { usePathname } from "next/navigation";
@@ -11,8 +12,18 @@ import { FaAlignRight } from "react-icons/fa";
 
 const Header = () => {
     const [isOpen, setIsOpen] = useState(false);
+    const [authenticated, setAuthenticated] = useState(false);
     const pathname = usePathname();
     const router = useRouter();
+    const user = useUser();
+
+    useEffect(() => {
+        if (user && user.role === "authenticated" && user.id) {
+            setAuthenticated(true);
+        } else {
+            setAuthenticated(false);
+        }
+    }, [user]);
 
     const isActive = (href: string) => (pathname === href ? "text-primary" : "text-tertiary");
 
@@ -38,33 +49,43 @@ const Header = () => {
                             </Link>
                         </li>
                         <li>
-                            <Link href="/about" className={`${isActive("/about")} link`}>
-                                About
+                            <Link href="/about" className={`${isActive("/Feeds")} link`}>
+                                Feeds
                             </Link>
                         </li>
                         <li>
-                            <Link href="/contact" className={`${isActive("/contact")} link`}>
-                                Contact
+                            <Link href="/contact" className={`${isActive("/posts")} link`}>
+                                Posts
                             </Link>
                         </li>
                     </ul>
                 </div>
-                <div className="flex items-center space-x-4">
+                {authenticated ? (
                     <Button
-                        text="Login"
-                        type="button"
-                        size="small"
-                        style={{ border: "1px solid #543EE0", color: "#111111" }}
-                        handleClick={() => router.push("/login")}
-                    />
-                    <Button
-                        text="Sign up"
+                        text="Profile"
                         type="button"
                         variant="primary"
                         size="small"
-                        handleClick={() => router.push("/signup")}
+                        handleClick={() => router.push("/profile")}
                     />
-                </div>
+                ) : (
+                    <div className="flex items-center space-x-4">
+                        <Button
+                            text="Login"
+                            type="button"
+                            size="small"
+                            style={{ border: "1px solid #543EE0", color: "#111111" }}
+                            handleClick={() => router.push("/login")}
+                        />
+                        <Button
+                            text="Sign up"
+                            type="button"
+                            variant="primary"
+                            size="small"
+                            handleClick={() => router.push("/signup")}
+                        />
+                    </div>
+                )}
                 {/* </div> */}
                 <FaAlignRight
                     className="text-primary hidden cursor-pointer w-8 h-8"

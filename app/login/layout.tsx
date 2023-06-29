@@ -1,7 +1,8 @@
 import React from "react";
+import Loading from "@/app/loading";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
-    return <React.Fragment>{children}</React.Fragment>;
+    return <React.Suspense fallback={<Loading />}>{children}</React.Suspense>;
 };
 
 export default Layout;
