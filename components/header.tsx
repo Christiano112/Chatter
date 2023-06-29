@@ -45,7 +45,7 @@ const Header = () => {
                             </Link>
                         </li>
                         <li>
-                            <Link href="/posts" className={`${isActive("/editor")} link`}>
+                            <Link href="/editor" className={`${isActive("/editor")} link`}>
                                 Editor
                             </Link>
                         </li>
