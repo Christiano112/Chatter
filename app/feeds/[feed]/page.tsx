@@ -56,7 +56,7 @@ const SingleFeed = () => {
 
                 setPost(post[0]);
             } catch (error: any) {
-                throw new Error();
+                ErrorToast(error?.message ?? "Error fetching updated post");
             } finally {
                 setIsLoading(false);
             }

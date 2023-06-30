@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useUser } from "@supabase/auth-helpers-react";
 import { v4 as uuidv4 } from "uuid";
-import { InfoToast, ErrorToast } from "@/components/toast";
+import { SuccessToast, InfoToast, ErrorToast } from "@/components/toast";
 import dynamic from "next/dynamic";
 import "suneditor/dist/css/suneditor.min.css";
 import SunEditorCore from "suneditor/src/lib/core";
@@ -71,8 +71,8 @@ const TextEditor = () => {
                 if (title) localStorage.setItem(`${author_id}-editorTitle`, title);
                 if (content) localStorage.setItem(`${author_id}-editorContent`, content);
                 setSave(true);
-            } catch (error) {
-                throw new Error();
+            } catch (error: any) {
+                ErrorToast(error?.message);
             } finally {
                 setTimeout(() => {
                     setSave(false);
@@ -157,7 +157,7 @@ const TextEditor = () => {
         }
 
         dispatch(addPost(author_id, title, content, post_id, status, initialReactionValues));
-        InfoToast("Post published successfully");
+        SuccessToast("Post published successfully");
 
         // Clear localStorage and reset the title and content
         localStorage.removeItem(`${author_id}-editorTitle`);
@@ -202,13 +202,14 @@ const TextEditor = () => {
                             defaultValue={content}
                             name={`${author_id}-editor` ?? "text-editor"}
                             width="100%"
-                            height="500"
+                            height="100%"
                             placeholder="Start writing..."
                             setOptions={{
-                                // height: "400",
+                                // maxCharCount: 1000000000,
+                                // charCounter: true,
+                                // charCounterLabel: "Characters",
                                 buttonList: [
                                     ["font", "fontSize", "formatBlock"],
-                                    ["paragraphStyle", "blockquote"],
                                     [
                                         "bold",
                                         "underline",
@@ -218,7 +219,7 @@ const TextEditor = () => {
                                         "superscript",
                                     ],
                                     ["fontColor", "hiliteColor", "textStyle"],
-                                    ["removeFormat"],
+                                    ["removeFormat", "paragraphStyle", "blockquote"],
                                     ["outdent", "indent"],
                                     ["align", "horizontalRule", "list", "lineHeight"],
                                     ["table", "link", "image", "video", "audio"],

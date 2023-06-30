@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import parse from "html-react-parser";
+import { useUser } from "@supabase/auth-helpers-react";
 import { useAppDispatch, useAppSelector } from "@/redux/store";
 import { selectUser } from "@/redux/slices/user";
 import { PostType, selectAllPosts } from "@/redux/slices/posts";
@@ -26,15 +27,27 @@ import calculateReadingTime from "@/utils/reading_time";
 import { formatName } from "@/utils/format";
 
 const Feed = () => {
+    const authUser = useUser();
+    const dispatch = useAppDispatch();
+    const user = useAppSelector(selectUser);
     const [showEditor, setShowEditor] = useState<boolean>(false);
     const [posts, setPosts] = useState<PostType[] | any[]>(useAppSelector(selectAllPosts));
     const [selectedPostComments, setSelectedPostComments] = useState<any[]>([]);
     const [newComment, setNewComment] = useState<string>("");
     const [selectedPost, setSelectedPost] = useState<PostType | null>(null);
+    const [author_id, setAuthorId] = useState(user.user_id);
     const [isLoading, setIsLoading] = useState(true);
-    const user = useAppSelector(selectUser);
-    const dispatch = useAppDispatch();
+    const [page, setPage] = useState(1);
+    const pageSize = 10;
     const excerptLimit = 500;
+
+    useEffect(() => {
+        if (authUser?.id || user.user_id) {
+            setAuthorId(authUser?.id ?? user.user_id);
+        } else {
+            ErrorToast("No user found, can't make post");
+        }
+    }, [authUser, user]);
 
     useEffect(() => {
         const fetchPosts = async () => {
@@ -44,9 +57,10 @@ const Feed = () => {
                     .from("posts")
                     .select(
                         `*,
-                    author:users(first_name, last_name, username, join_as),
+                    author:users(first_name, last_name, username, join_as, user_id),
                     comments:comments(id)`,
                     )
+                    .range((page - 1) * pageSize, page * pageSize - 1)
                     .order("created_at", { ascending: false });
 
                 if (error || !posts) {
@@ -56,14 +70,14 @@ const Feed = () => {
 
                 setPosts(posts);
             } catch (error: any) {
-                throw new Error();
+                ErrorToast(error?.message ?? "Error fetching updated post");
             } finally {
                 setIsLoading(false);
             }
         };
 
         fetchPosts();
-    }, []);
+    }, [page]);
 
     const fetchCommentsForPost = async (post_id: string) => {
         let { data: comments, error: commentsError } = await supaBase
@@ -103,7 +117,7 @@ const Feed = () => {
             .from("comments")
             .insert([
                 {
-                    author_id: user?.user_id,
+                    author_id: author_id,
                     comment_id: selectedPost.post_id,
                     content: newComment,
                 },
@@ -125,7 +139,7 @@ const Feed = () => {
             .from("posts")
             .select(
                 `*,
-                        author:users(first_name, last_name, username, join_as)
+                        author:users(first_name, last_name, username, join_as, user_id)
                     `,
             )
             .or(`content.ilike.*${query}*, title.ilike.*${query}*`)
@@ -154,7 +168,9 @@ const Feed = () => {
                         width={30}
                         height={30}
                     />
-                    <p>{user && user.username}</p>
+                    <Link href={`/profile/${user.user_id}`} className="cursor-pointer">
+                        {user && user.username}
+                    </Link>
                 </div>
             </header>
 
@@ -202,7 +218,7 @@ const Feed = () => {
                         {isLoading ? (
                             <Loading />
                         ) : !posts || posts.length === 0 ? (
-                            <NotFound text="No posts found" />
+                            <NotFound text="No more posts" />
                         ) : (
                             posts.map((post) => {
                                 const readingTime = calculateReadingTime(post?.content) + " mins";
@@ -215,16 +231,21 @@ const Feed = () => {
                                         className="border-b-2 border-b-slate-700 p-2 sm:p-4"
                                     >
                                         <div className="flex items-start sm:items-center gap-4 flex-col sm:flex-row">
-                                            <Image
-                                                src={ProfilePic}
-                                                alt="profile pic"
-                                                className="rounded-full"
-                                            />
+                                            <Link href={`/profile/${post?.author?.user_id}`}>
+                                                <Image
+                                                    src={ProfilePic}
+                                                    alt="profile pic"
+                                                    className="rounded-full cursor-pointer"
+                                                />
+                                            </Link>
                                             <div className="flex flex-col gap-3">
-                                                <h4 className="font-medium text-2xl text-tertiary">
+                                                <Link
+                                                    href={`/profile/${post?.author?.user_id}`}
+                                                    className="font-medium text-2xl text-tertiary cursor-pointer"
+                                                >
                                                     {post?.author?.first_name}{" "}
                                                     {post?.author?.last_name}
-                                                </h4>
+                                                </Link>
                                                 <p className="text-tertiary-50 capitalize">
                                                     {post?.author?.join_as},{" "}
                                                     <span className="font-medium">
@@ -331,6 +352,21 @@ const Feed = () => {
                                 );
                             })
                         )}
+                    </div>
+                    <div className="flex items-center justify-end mt-4">
+                        <button
+                            onClick={() => setPage((page) => page - 1)}
+                            disabled={page === 1}
+                            className="px-4 py-2 mr-2 text-white bg-primary rounded outline-0 select-none"
+                        >
+                            Previous
+                        </button>
+                        <button
+                            onClick={() => setPage((page) => page + 1)}
+                            className="px-4 py-2 text-white bg-primary rounded outline-0 select-none"
+                        >
+                            Next
+                        </button>
                     </div>
                 </section>
             </main>

@@ -12,7 +12,7 @@ import { useCheckAuth } from "@/utils/custom";
 
 const Header = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const authenticated = useCheckAuth();
+    const { user, authenticated } = useCheckAuth();
     const pathname = usePathname();
     const router = useRouter();
 
@@ -57,7 +57,7 @@ const Header = () => {
                         type="button"
                         variant="primary"
                         size="small"
-                        handleClick={() => router.push("/profile")}
+                        handleClick={() => router.push(`/profile/${user?.id}`)}
                     />
                 ) : (
                     <div className="flex items-center space-x-4">

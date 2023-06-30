@@ -24,7 +24,7 @@ export const useCheckAuth = () => {
         }
     }, [user]);
 
-    return authenticated;
+    return { user, authenticated };
 };
 
 export const useCheckAuthRedirect = () => {
@@ -43,5 +43,5 @@ export const useCheckAuthRedirect = () => {
         }
     }, [user, router, redirectedFromUrl]);
 
-    return { authenticated, redirectedFromUrl };
+    return { user, authenticated, redirectedFromUrl };
 };
