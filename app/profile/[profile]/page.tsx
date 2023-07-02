@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { usePathId } from "@/utils/custom";
+import { usePathId, useCheckAuth } from "@/utils/custom";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -16,15 +16,38 @@ import {
 import Button from "@/components/button";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 // import "react-tabs/style/react-tabs.css";
-// import { useAppDispatch, useAppSelector } from "@/redux/store";
+import { useAppDispatch, useAppSelector } from "@/redux/store";
+import { selectUser } from "@/redux/slices/user";
+import {
+    useFetchPostsByAuthorId,
+    useFetchCommentsForPost,
+    usePostInteraction,
+    useSearchPosts,
+} from "@/hooks/useDBFetch";
+import PostComponent from "@/components/post";
 
 const Profile = () => {
     const pathId = usePathId();
+    const { user } = useCheckAuth();
+    const { user: pathUser } = useAppSelector<any>(selectUser);
+    const [page, setPage] = useState(1);
     const [activeTabIndex, setActiveTabIndex] = useState(2);
+    const currentVisitor = user?.id === pathId ? "owner" : "visitor";
+    const dispatch = useAppDispatch();
+    const author_id = pathUser?.user_id ?? user?.id ?? pathId;
+    const { isLoading, posts } = useFetchPostsByAuthorId(page, 3, author_id);
+    const { selectedPostComments, fetchCommentsForPost } = useFetchCommentsForPost();
+    const { selectedPost, newComment, handleCommentClick, handleAddComment } = usePostInteraction({
+        author_id,
+        fetchCommentsForPost,
+    });
+    const { filteredPosts, handleSearch } = useSearchPosts({ author_id });
 
     const handleTabChange = (index: number) => {
         setActiveTabIndex(index);
     };
+
+    const setNewComment = () => {};
 
     return (
         <React.Fragment>
@@ -45,36 +68,42 @@ const Profile = () => {
             </header>
             <div className="bg-primary-50 flex justify-between items-center p-8 shadow-inner pl-[15rem] mx-4 rounded-b-lg">
                 <div>
-                    <h2 className="text-primary text-2xl font-bold">Charles Deo</h2>
-                    <p className="text-primary text-sm font-light">Software Engineer</p>
+                    <h2 className="text-primary text-2xl font-bold">
+                        {posts[0]?.author?.first_name} {posts[0]?.author?.last_name}
+                    </h2>
+                    <p className="text-primary text-base capitalize">{posts[0]?.author?.join_as}</p>
                 </div>
                 <div className="flex items-center gap-4">
-                    <AiFillMessage
-                        className="text-4xl text-primary cursor-pointer"
-                        title="Send a message"
-                    />
-                    <Button
-                        text="Follow"
-                        type="button"
-                        size="small"
-                        variant="primary"
-                        // handleClick={}
-                    />
-                    {/* For Owner */}
-                    {/* <Button
-                        text="Edit Profile"
-                        type="button"
-                        size="small"
-                        variant="primary"
-                    // handleClick={}
-                    /> */}
+                    {currentVisitor === "owner" ? (
+                        <Button
+                            text="Edit Profile"
+                            type="button"
+                            size="small"
+                            variant="primary"
+                            // handleClick={}
+                        />
+                    ) : (
+                        <>
+                            <AiFillMessage
+                                className="text-4xl text-primary cursor-pointer"
+                                title="Send a message"
+                            />
+                            <Button
+                                text="Follow"
+                                type="button"
+                                size="small"
+                                variant="primary"
+                                // handleClick={}
+                            />
+                        </>
+                    )}
                 </div>
             </div>
             <div className="flex justify-between gap-4 m-4">
-                <div className="flex flex-col gap-8 px-4 py-8 rounded-lg bg-primary-50 flex-grow">
+                <div className="flex flex-col gap-8 px-4 py-8 rounded-lg bg-primary-50 flex-grow max-h-[40rem]">
                     <h3 className="text-primary text-xl font-bold">Socials</h3>
                     <Link
-                        href={""}
+                        href={"/profile"}
                         rel="noreferrer"
                         className="text-primary cursor-pointer flex items-center gap-2"
                     >
@@ -82,7 +111,7 @@ const Profile = () => {
                         <span>Facebook</span>
                     </Link>
                     <Link
-                        href={""}
+                        href={"/profile"}
                         rel="noreferrer"
                         className="text-primary cursor-pointer flex items-center gap-2"
                     >
@@ -90,7 +119,7 @@ const Profile = () => {
                         <span>Instagram</span>
                     </Link>
                     <Link
-                        href={""}
+                        href={"/profile"}
                         rel="noreferrer"
                         className="text-primary cursor-pointer flex items-center gap-2"
                     >
@@ -98,7 +127,7 @@ const Profile = () => {
                         <span>Twitter</span>
                     </Link>
                     <Link
-                        href={""}
+                        href={"/profile"}
                         rel="noreferrer"
                         className="text-primary cursor-pointer flex items-center gap-2"
                     >
@@ -106,7 +135,7 @@ const Profile = () => {
                         <span>Linkedin</span>
                     </Link>
                     <Link
-                        href={""}
+                        href={"/profile"}
                         rel="noreferrer"
                         className="text-primary cursor-pointer flex items-center gap-2"
                     >
@@ -114,7 +143,7 @@ const Profile = () => {
                         <span>Github</span>
                     </Link>
                     <Link
-                        href={""}
+                        href={"/profile"}
                         rel="noreferrer"
                         className="text-primary cursor-pointer flex items-center gap-2"
                     >
@@ -155,14 +184,25 @@ const Profile = () => {
                             <h2>Following Posts</h2>
                         </TabPanel>
                         <TabPanel>
-                            <h2>Personal Posts</h2>
+                            <PostComponent
+                                isLoading={isLoading}
+                                posts={posts}
+                                handleCommentClick={handleCommentClick}
+                                selectedPost={selectedPost}
+                                selectedPostComments={selectedPostComments}
+                                newComment={newComment}
+                                handleAddComment={handleAddComment}
+                                setPage={setPage}
+                                page={page}
+                                setNewComment={setNewComment}
+                            />
                         </TabPanel>
                     </Tabs>
                 </div>
-                <div className="flex flex-col gap-8 px-4 py-8 rounded-lg bg-primary-50 flex-grow">
+                <div className="flex flex-col gap-8 px-4 py-8 rounded-lg bg-primary-50 flex-grow max-h-[40rem]">
                     <h3 className="text-primary text-xl font-medium">You might know</h3>
                     <Link
-                        href={""}
+                        href={"/profile"}
                         rel="noreferrer"
                         className="text-primary cursor-pointer flex items-center gap-2"
                     >
@@ -170,7 +210,7 @@ const Profile = () => {
                         <span>Lobanovskiy</span>
                     </Link>
                     <Link
-                        href={""}
+                        href={"/profile"}
                         rel="noreferrer"
                         className="text-primary cursor-pointer flex items-center gap-2"
                     >
@@ -178,7 +218,7 @@ const Profile = () => {
                         <span>Eddie</span>
                     </Link>
                     <Link
-                        href={""}
+                        href={"/profile"}
                         rel="noreferrer"
                         className="text-primary cursor-pointer flex items-center gap-2"
                     >
@@ -186,7 +226,7 @@ const Profile = () => {
                         <span>Tkacheve</span>
                     </Link>
                     <Link
-                        href={""}
+                        href={"/profile"}
                         rel="noreferrer"
                         className="text-primary cursor-pointer flex items-center gap-2"
                     >

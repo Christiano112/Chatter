@@ -81,6 +81,7 @@ const postsSlice = createSlice({
                 post_id: string,
                 status?: "draft" | "published" | "deleted" | "archived" | "edited" | "",
                 created_at?: any,
+                reactions?: any,
             ): { payload: PostType; type: string } {
                 const newPost: PostType = {
                     author_id,
@@ -89,7 +90,7 @@ const postsSlice = createSlice({
                     created_at: created_at ?? formatDateTimeShort(new Date().toISOString()),
                     post_id,
                     status,
-                    reactions: {
+                    reactions: reactions ?? {
                         like: 0,
                         love: 0,
                         haha: 0,
@@ -163,18 +164,23 @@ const selectPostsState = (state: RootState) => state.posts;
 export const { selectAll: selectAllPosts } = postsAdapter.getSelectors<RootState>(selectPostsState);
 
 export const selectPostById = createSelector(
-    [selectAllPosts, (state: RootState, post_id: string) => post_id],
+    [selectAllPosts, (_state: RootState, post_id: string) => post_id],
     (posts, post_id) => posts?.find((post) => post?.post_id === post_id),
 );
 
 export const selectPostsByAuthor = createSelector(
-    [selectAllPosts, (state: RootState, user_id: string) => user_id],
+    [selectAllPosts, (_state: RootState, user_id: string) => user_id],
     (posts, user_id) => posts?.filter((post) => post?.author_id === user_id),
 );
 
 export const selectPostFetchStatus = createSelector(
     selectPostsState,
     (postsState: PostsSliceType) => postsState.fetchStatus,
+);
+
+export const selectPostsByStatus = createSelector(
+    [selectAllPosts, (_state: RootState, status: string) => status],
+    (posts, status) => posts?.filter((post) => post.status === status),
 );
 
 export const { addPost, updatePost, deletePost, reactionAdded, reactionDeleted } =

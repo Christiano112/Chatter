@@ -1,8 +1,7 @@
 "use client";
 
-import { PayloadAction, createSlice, createAsyncThunk, createSelector } from "@reduxjs/toolkit";
+import { PayloadAction, createSlice, createSelector } from "@reduxjs/toolkit";
 import { RootState } from "../store";
-import useFetch from "@/hooks/useFetch";
 
 interface UserType {
     first_name: string | null;

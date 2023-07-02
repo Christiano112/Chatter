@@ -41,13 +41,13 @@ const Feed = () => {
     const pageSize = 10;
     const excerptLimit = 500;
 
-    useEffect(() => {
-        if (authUser?.id || user.user_id) {
-            setAuthorId(authUser?.id ?? user.user_id);
-        } else {
-            ErrorToast("No user found, can't make post");
-        }
-    }, [authUser, user]);
+    // useEffect(() => {
+    //     if (authUser?.id || user.user_id) {
+    //         setAuthorId(authUser?.id ?? user.user_id);
+    //     } else {
+    //         ErrorToast("No user found, can't make post");
+    //     }
+    // }, [authUser, user]);
 
     useEffect(() => {
         const fetchPosts = async () => {
@@ -135,6 +135,10 @@ const Feed = () => {
     };
 
     const handleSearch = async (query: string) => {
+        if (!query.trim()) {
+            return;
+        }
+
         let { data: filteredPosts, error } = await supaBase
             .from("posts")
             .select(

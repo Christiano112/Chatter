@@ -111,14 +111,20 @@ const TextEditor = () => {
         const post_id = uuidv4();
         const status = "draft";
 
+        if (post_id || author_id || status !== "draft") {
+            ErrorToast("Error Saving Post as Draft");
+            return;
+        }
+
+        setTitle("");
+        setContent("");
+
         dispatch(addPost(author_id, title, content, post_id, status, initialReactionValues));
         InfoToast("Post Saved As Draft");
 
         // Clear localStorage and reset the title and content
         localStorage.removeItem(`${author_id}-editorTitle`);
         localStorage.removeItem(`${author_id}-editorContent`);
-        setTitle("");
-        setContent("");
     };
 
     const handlePublish = async () => {
@@ -156,14 +162,14 @@ const TextEditor = () => {
             return;
         }
 
+        setTitle("");
+        setContent("");
         dispatch(addPost(author_id, title, content, post_id, status, initialReactionValues));
         SuccessToast("Post published successfully");
 
         // Clear localStorage and reset the title and content
         localStorage.removeItem(`${author_id}-editorTitle`);
         localStorage.removeItem(`${author_id}-editorContent`);
-        setTitle("");
-        setContent("");
     };
 
     return (

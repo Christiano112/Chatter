@@ -2,38 +2,33 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-// import { v4 as uuidv4 } from "uuid";
 import parse from "html-react-parser";
 import ReactionButton from "@/components/reactions";
 import { useAppDispatch, useAppSelector } from "@/redux/store";
-import { addPost, fetchPosts, deletePost, selectAllPosts } from "@/redux/slices/posts";
-// import supaBase from "@/utils/supabase";
-// import type { DatabaseType } from "@/utils/types";
+import { fetchPosts, deletePost, selectAllPosts, selectPostsByStatus } from "@/redux/slices/posts";
 import { selectUser } from "@/redux/slices/user";
 import { ErrorToast } from "@/components/toast";
 import { formatDateTimeShort } from "@/utils/date";
 
 const Posts = () => {
     const dispatch = useAppDispatch();
-    const posts = useAppSelector(selectAllPosts);
+    // const posts = useAppSelector(selectAllPosts);
+    const posts = useAppSelector((state) => selectPostsByStatus(state, "draft"));
     const user = useAppSelector(selectUser);
-    // const [title, setTitle] = useState("");
-    // const [content, setContent] = useState("");
-    const [author_id, setAuthorId] = useState("");
+    // const [author_id, setAuthorId] = useState("");
 
-    useEffect(() => {
-        if (user.user_id) {
-            setAuthorId(user.user_id);
-        } else {
-            ErrorToast("No user found, can't make post");
-        }
-    }, [user]);
+    // useEffect(() => {
+    //     if (user.user_id) {
+    //         setAuthorId(user.user_id);
+    //     } else {
+    //         ErrorToast("No user found, can't make post");
+    //     }
+    // }, [user]);
+    // console.log("posts", posts);
 
     useEffect(() => {
         dispatch(fetchPosts());
     }, [dispatch]);
-
-    // console.log("posts", posts);
 
     return (
         <div className="p-8">

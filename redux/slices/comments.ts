@@ -2,9 +2,7 @@
 
 import { RootState } from "../store";
 import { formatDateTimeShort } from "@/utils/date";
-import { PayloadAction, createSlice, createAsyncThunk, createSelector } from "@reduxjs/toolkit";
-
-// slice for posts comments
+import { PayloadAction, createSlice, createSelector } from "@reduxjs/toolkit";
 
 export interface CommentsType {
     id: number;
