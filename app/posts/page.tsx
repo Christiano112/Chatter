@@ -26,9 +26,9 @@ const Posts = () => {
     // }, [user]);
     // console.log("posts", posts);
 
-    useEffect(() => {
-        dispatch(fetchPosts());
-    }, [dispatch]);
+    // useEffect(() => {
+    //     dispatch(fetchPosts());
+    // }, [dispatch]);
 
     return (
         <div className="p-8">

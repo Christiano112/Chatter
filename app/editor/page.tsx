@@ -56,6 +56,7 @@ const TextEditor = () => {
     useEffect(() => {
         const savedTitle = localStorage.getItem(`${author_id}-editorTitle`);
         const savedContent = localStorage.getItem(`${author_id}-editorContent`);
+        if (title.trim() === "" && content.trim() === "") return;
         if (savedTitle) {
             setTitle(savedTitle);
         }
@@ -64,12 +65,14 @@ const TextEditor = () => {
         }
     }, [author_id]);
 
-    // Save content to localStorage every 3 minutes
+    // Save content to localStorage every 2 minutes
     useEffect(() => {
         const saveContentInterval = setInterval(() => {
             try {
-                if (title) localStorage.setItem(`${author_id}-editorTitle`, title);
-                if (content) localStorage.setItem(`${author_id}-editorContent`, content);
+                if (title.trim() === "" && content.trim() === "") return;
+                if (title.trim() !== "") localStorage.setItem(`${author_id}-editorTitle`, title);
+                if (content.trim() !== "")
+                    localStorage.setItem(`${author_id}-editorContent`, content);
                 setSave(true);
             } catch (error: any) {
                 ErrorToast(error?.message);
@@ -78,7 +81,7 @@ const TextEditor = () => {
                     setSave(false);
                 }, 1000);
             }
-        }, 3 * 60 * 1000);
+        }, 2 * 60 * 1000);
 
         return () => {
             clearInterval(saveContentInterval);
@@ -111,20 +114,19 @@ const TextEditor = () => {
         const post_id = uuidv4();
         const status = "draft";
 
-        if (post_id || author_id || status !== "draft") {
+        if (!post_id || !author_id || status !== "draft") {
             ErrorToast("Error Saving Post as Draft");
             return;
         }
 
+        dispatch(addPost(author_id, title, content, post_id, status, initialReactionValues));
         setTitle("");
         setContent("");
-
-        dispatch(addPost(author_id, title, content, post_id, status, initialReactionValues));
         InfoToast("Post Saved As Draft");
-
         // Clear localStorage and reset the title and content
         localStorage.removeItem(`${author_id}-editorTitle`);
         localStorage.removeItem(`${author_id}-editorContent`);
+        console.log(author_id, title, content, post_id, status, initialReactionValues);
     };
 
     const handlePublish = async () => {
@@ -141,7 +143,6 @@ const TextEditor = () => {
             ErrorToast("Please add content");
             return;
         }
-        // console.log("title::", title, "author_id::", author_id, "content::", content);
 
         if (title && content && author_id) {
             const mappedData = mapPostDataToColumns({
@@ -162,11 +163,10 @@ const TextEditor = () => {
             return;
         }
 
+        dispatch(addPost(author_id, title, content, post_id, status, initialReactionValues));
         setTitle("");
         setContent("");
-        dispatch(addPost(author_id, title, content, post_id, status, initialReactionValues));
         SuccessToast("Post published successfully");
-
         // Clear localStorage and reset the title and content
         localStorage.removeItem(`${author_id}-editorTitle`);
         localStorage.removeItem(`${author_id}-editorContent`);
@@ -205,7 +205,7 @@ const TextEditor = () => {
                         <SunEditor
                             getSunEditorInstance={getSunEditorInstance}
                             onChange={handleChange}
-                            defaultValue={content}
+                            // defaultValue={content}
                             name={`${author_id}-editor` ?? "text-editor"}
                             width="100%"
                             height="100%"

@@ -30,6 +30,7 @@ export interface PostsSliceType extends EntityState<PostType> {
 }
 
 const postsAdapter = createEntityAdapter<PostType>({
+    selectId: (post) => post.post_id,
     sortComparer: (a, b) => b.created_at?.localeCompare(a.created_at),
 });
 
@@ -60,11 +61,11 @@ export const fetchPostsByAuthorId = createAsyncThunk(
     },
 );
 
-export const addNewPost = createAsyncThunk("posts/addPost", async (initialPost: PostType) => {
-    const { data: post, error } = await supaBase.from("posts").insert(initialPost).single();
-    if (error) throw error;
-    return post as PostType;
-});
+// export const addNewPost = createAsyncThunk("posts/addPost", async (initialPost: PostType) => {
+//     const { data: post, error } = await supaBase.from("posts").insert(initialPost).single();
+//     if (error) throw error;
+//     return post as PostType;
+// });
 
 const postsSlice = createSlice({
     name: "posts",
@@ -80,16 +81,15 @@ const postsSlice = createSlice({
                 content: string,
                 post_id: string,
                 status?: "draft" | "published" | "deleted" | "archived" | "edited" | "",
-                created_at?: any,
                 reactions?: any,
             ): { payload: PostType; type: string } {
                 const newPost: PostType = {
                     author_id,
                     title,
                     content,
-                    created_at: created_at ?? formatDateTimeShort(new Date().toISOString()),
+                    created_at: formatDateTimeShort(new Date().toISOString()),
                     post_id,
-                    status,
+                    status: status ?? "draft",
                     reactions: reactions ?? {
                         like: 0,
                         love: 0,
@@ -144,18 +144,18 @@ const postsSlice = createSlice({
             .addCase(fetchPostsByAuthorId.rejected, (state, action) => {
                 state.fetchStatus = "failed";
                 state.fetchError = action.error.message;
-            })
-            .addCase(addNewPost.pending, (state) => {
-                state.fetchStatus = "loading";
-            })
-            .addCase(addNewPost.fulfilled, (state, action) => {
-                state.fetchStatus = "success";
-                postsAdapter.addOne(state, action.payload);
-            })
-            .addCase(addNewPost.rejected, (state, action) => {
-                state.fetchStatus = "failed";
-                state.fetchError = action.error.message;
             });
+        // .addCase(addNewPost.pending, (state) => {
+        //     state.fetchStatus = "loading";
+        // })
+        // .addCase(addNewPost.fulfilled, (state, action) => {
+        //     state.fetchStatus = "success";
+        //     postsAdapter.addOne(state, action.payload);
+        // })
+        // .addCase(addNewPost.rejected, (state, action) => {
+        //     state.fetchStatus = "failed";
+        //     state.fetchError = action.error.message;
+        // });
     },
 });
 
@@ -180,7 +180,7 @@ export const selectPostFetchStatus = createSelector(
 
 export const selectPostsByStatus = createSelector(
     [selectAllPosts, (_state: RootState, status: string) => status],
-    (posts, status) => posts?.filter((post) => post.status === status),
+    (posts, status) => posts?.filter((post) => post?.status === status),
 );
 
 export const { addPost, updatePost, deletePost, reactionAdded, reactionDeleted } =
