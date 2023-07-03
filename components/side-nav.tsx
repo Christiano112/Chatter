@@ -1,12 +1,9 @@
-// "use client";
-
 import Link from "next/link";
 import Image from "next/image";
 import TrendingIcon from "../public/trending-icon.png";
 import FeedIcon from "../public/feed-icon.png";
 import BookmarkIcon from "../public/bookmark-icon.png";
 import TeamBlogsIcon from "../public/team-icon.png";
-import DraftIcon from "../public/draft-icon.png";
 import AnalyticsIcon from "../public/analytics-icon.png";
 import AccountIcon from "../public/account-icon.png";
 // import NotificationIcon from "../public/notification-icon.png";
@@ -35,12 +32,6 @@ const SideNav = () => {
                         <Image src={TeamBlogsIcon} alt="blog icon" />
                     </span>{" "}
                     Team Blogs
-                </Link>
-                <Link href="/" className="flex gap-2 items-center text-tertiary-50 footer-link">
-                    <span>
-                        <Image src={DraftIcon} alt="drafts icon" />
-                    </span>{" "}
-                    Drafts
                 </Link>
                 <Link href="/" className="flex gap-2 items-center text-tertiary-50 footer-link">
                     <span>

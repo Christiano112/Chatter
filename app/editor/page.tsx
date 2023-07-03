@@ -205,7 +205,7 @@ const TextEditor = () => {
                         <SunEditor
                             getSunEditorInstance={getSunEditorInstance}
                             onChange={handleChange}
-                            // defaultValue={content}
+                            defaultValue={content}
                             name={`${author_id}-editor` ?? "text-editor"}
                             width="100%"
                             height="100%"

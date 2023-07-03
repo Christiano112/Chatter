@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { usePathId, useCheckAuth } from "@/utils/custom";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
     AiFillMessage,
     AiFillFacebook,
@@ -12,6 +13,7 @@ import {
     AiFillInstagram,
     AiFillGithub,
     AiFillMediumSquare,
+    AiOutlineForm,
 } from "react-icons/ai";
 import Button from "@/components/button";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
@@ -29,6 +31,7 @@ import PostComponent from "@/components/post";
 const Profile = () => {
     const pathId = usePathId();
     const { user } = useCheckAuth();
+    const router = useRouter();
     const { user: pathUser } = useAppSelector<any>(selectUser);
     const [page, setPage] = useState(1);
     const [activeTabIndex, setActiveTabIndex] = useState(2);
@@ -75,13 +78,29 @@ const Profile = () => {
                 </div>
                 <div className="flex items-center gap-4">
                     {currentVisitor === "owner" ? (
-                        <Button
-                            text="Edit Profile"
-                            type="button"
-                            size="small"
-                            variant="primary"
-                            // handleClick={}
-                        />
+                        <>
+                            <Button
+                                text="Edit Profile"
+                                type="button"
+                                size="small"
+                                variant="primary"
+                                // handleClick={}
+                            />
+                            <Button
+                                text={
+                                    <Link
+                                        href="/drafts"
+                                        className="flex gap-2 items-center justify-center text-white"
+                                    >
+                                        <AiOutlineForm />
+                                        <span>Drafts</span>
+                                    </Link>
+                                }
+                                type="button"
+                                size="small"
+                                variant="primary"
+                            />
+                        </>
                     ) : (
                         <>
                             <AiFillMessage

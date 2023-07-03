@@ -40,7 +40,7 @@ const PostComponent = ({
     excerptLimit = 500,
 }: PostComponentProps) => {
     return (
-        <div className="rounded-lg shadow-inner px-2 sm:px-4 md:px-8 py-4">
+        <div className="rounded-lg shadow-inner px-2 sm:px-4 py-4">
             {isLoading ? (
                 <Loading />
             ) : !posts || posts.length === 0 ? (

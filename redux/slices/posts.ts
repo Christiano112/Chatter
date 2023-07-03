@@ -21,7 +21,7 @@ export interface PostType {
     reactions?: {
         [key: string]: number;
     };
-    status?: "draft" | "published" | "deleted" | "archived" | "edited" | "";
+    status?: "draft" | "published" | "deleted" | "archived" | "edited";
 }
 
 export interface PostsSliceType extends EntityState<PostType> {
@@ -31,7 +31,7 @@ export interface PostsSliceType extends EntityState<PostType> {
 
 const postsAdapter = createEntityAdapter<PostType>({
     selectId: (post) => post.post_id,
-    sortComparer: (a, b) => b.created_at?.localeCompare(a.created_at),
+    // sortComparer: (a, b) => b.created_at?.localeCompare(a.created_at),
 });
 
 const initialState: PostsSliceType = postsAdapter.getInitialState({
@@ -80,7 +80,7 @@ const postsSlice = createSlice({
                 title: string,
                 content: string,
                 post_id: string,
-                status?: "draft" | "published" | "deleted" | "archived" | "edited" | "",
+                status?: "draft" | "published" | "deleted" | "archived" | "edited",
                 reactions?: any,
             ): { payload: PostType; type: string } {
                 const newPost: PostType = {
