@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { CSSProperties, useState } from "react";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 
 interface InputType {
@@ -11,6 +11,11 @@ interface InputType {
     register: any;
     errors?: any;
     autoComplete?: string;
+    disabled?: boolean;
+    style?: CSSProperties;
+    value?: string;
+    onChange?: any;
+    readOnly?: boolean;
 }
 
 const Input = ({
@@ -21,6 +26,7 @@ const Input = ({
     register,
     errors,
     autoComplete,
+    disabled,
     ...props
 }: InputType) => {
     const [inputType, setInputType] = useState(type);
@@ -35,7 +41,12 @@ const Input = ({
     return (
         <div className="flex flex-col gap-2 mb-8">
             {label && (
-                <label htmlFor={name} className="text-sm md:text-lg text-slate-800">
+                <label
+                    htmlFor={name}
+                    className={`text-sm md:text-lg ${
+                        disabled === true ? "text-red-600" : "text-slate-800"
+                    }`}
+                >
                     {label}
                 </label>
             )}
@@ -65,7 +76,7 @@ const Input = ({
                     spellCheck={name !== "password" ? "true" : "confirmPassword" ? "true" : "false"}
                     autoComplete={autoComplete}
                     placeholder={placeholder}
-                    className="input"
+                    className={`input ${disabled === true ? "cursor-not-allowed" : "cursor-text"}`}
                     {...props}
                 />
                 {type === "password" && (

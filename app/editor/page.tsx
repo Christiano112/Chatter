@@ -277,7 +277,7 @@ const TextEditor = () => {
                                 type="button"
                                 variant="secondary"
                                 size="small"
-                                style={{ fontWeight: "800" }}
+                                style={{ fontWeight: "800", backgroundColor: "red" }}
                                 handleClick={handleConfirmCloseEditor}
                             />
                         </div>

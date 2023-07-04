@@ -9,7 +9,7 @@ interface UserType {
     username: string;
     email: string;
     join_as: string | null;
-    user_id: string;
+    user_id?: string;
     created_at?: string | null;
     id?: number;
 }

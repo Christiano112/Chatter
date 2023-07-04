@@ -9,25 +9,7 @@ import Input from "@/components/input";
 import Button from "@/components/button";
 import Select from "@/components/select";
 import supaBase from "@/utils/supabase";
-import { useSignUpForm, SignUpType } from "@/utils/form";
-
-const professions = [
-    "Chef",
-    "Database Administrator",
-    "IT Support Specialist",
-    "Software Engineer",
-    "UX/UI Designer",
-    "Web Developer",
-    "Nurse",
-    "Teacher",
-    "Marketing Manager",
-    "Cybersecurity Analyst",
-    "Network Administrator",
-    "Writer",
-    "Data Scientist",
-    "Systems Analyst",
-    "Product Manager",
-];
+import { useSignUpForm, SignUpType, professions } from "@/utils/form";
 
 const mapSignUpDataToColumns = (signUpData: SignUpType, id: string) => {
     const { first_name, last_name, username, join_as, email } = signUpData;

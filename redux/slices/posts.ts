@@ -109,15 +109,24 @@ const postsSlice = createSlice({
         reactionAdded(state, action: PayloadAction<{ post_id: string; reaction: string }>) {
             const { post_id, reaction } = action.payload;
             const existingPost = state.entities[post_id];
-            if (existingPost && existingPost.reactions && existingPost.reactions[reaction]) {
-                existingPost.reactions[reaction] += 1;
+            if (existingPost) {
+                if (existingPost.reactions && existingPost.reactions[reaction]) {
+                    existingPost.reactions[reaction]++;
+                } else {
+                    existingPost.reactions = {
+                        ...existingPost.reactions,
+                        [reaction]: 1,
+                    };
+                }
             }
         },
         reactionDeleted(state, action: PayloadAction<{ post_id: string; reaction: string }>) {
             const { post_id, reaction } = action.payload;
             const existingPost = state.entities[post_id];
-            if (existingPost && existingPost.reactions && existingPost.reactions[reaction]) {
-                existingPost.reactions[reaction] -= 1;
+            if (existingPost) {
+                if (existingPost.reactions && existingPost.reactions[reaction]) {
+                    existingPost.reactions[reaction]--;
+                }
             }
         },
     },

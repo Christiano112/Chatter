@@ -26,10 +26,6 @@ const ReactionButton: React.FC<ReactionButtonProps> = memo(({ post }) => {
     const dispatch = useAppDispatch();
     const [selectedReaction, setSelectedReaction] = useState<string | null>(null);
 
-    // if (!post?.reactions) {
-    //     post.reactions = { ...initialReactionValues };
-    // }
-
     const handleReactionClick = (reaction: string) => {
         if (selectedReaction === reaction) {
             dispatch(reactionDeleted({ post_id: post.post_id, reaction }));

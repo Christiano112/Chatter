@@ -30,12 +30,13 @@ const Feed = () => {
     const authUser = useUser();
     const dispatch = useAppDispatch();
     const user = useAppSelector(selectUser);
+    const author_id = user.user_id;
     const [showEditor, setShowEditor] = useState<boolean>(false);
     const [posts, setPosts] = useState<PostType[] | any[]>(useAppSelector(selectAllPosts));
     const [selectedPostComments, setSelectedPostComments] = useState<any[]>([]);
     const [newComment, setNewComment] = useState<string>("");
     const [selectedPost, setSelectedPost] = useState<PostType | null>(null);
-    const [author_id, setAuthorId] = useState(user.user_id);
+    // const [author_id, setAuthorId] = useState(user.user_id);
     const [isLoading, setIsLoading] = useState(true);
     const [page, setPage] = useState(1);
     const pageSize = 10;
@@ -112,6 +113,8 @@ const Feed = () => {
             ErrorToast("Comment cannot be empty");
             return;
         }
+
+        if (typeof author_id !== "string") return;
 
         const { data: comment, error } = await supaBase
             .from("comments")

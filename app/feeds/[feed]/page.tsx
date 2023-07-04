@@ -102,6 +102,8 @@ const SingleFeed = () => {
             return;
         }
 
+        if (typeof user?.user_id !== "string") return;
+
         const { data: comment, error } = await supaBase
             .from("comments")
             .insert([
