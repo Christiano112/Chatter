@@ -3,6 +3,7 @@
 import React, { useState, memo } from "react";
 import { useAppDispatch } from "@/redux/store";
 import { PostType, reactionCountAdded, reactionCountDeleted } from "@/redux/slices/posts";
+import supaBase from "@/utils/supabase";
 
 export const reactionEmojis = {
     like: "👍",

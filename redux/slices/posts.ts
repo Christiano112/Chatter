@@ -47,11 +47,15 @@ export const fetchPostsByAuthorId = createAsyncThunk(
     },
 );
 
-// export const addNewPost = createAsyncThunk("posts/addPost", async (initialPost: PostType) => {
-//     const { data: post, error } = await supaBase.from("posts").insert(initialPost).single();
-//     if (error) throw error;
-//     return post as PostType;
-// });
+// export const reactionCountAddedDB = createAsyncThunk(
+//     "posts/reactionCountAdded",
+
+// )
+
+// export const reactionCountDeletedDB = createAsyncThunk(
+//     "posts/reactionCountDeleted",
+
+// )
 
 const postsSlice = createSlice({
     name: "posts",
@@ -156,18 +160,6 @@ export const selectPostsByStatus = createSelector(
     (postsState: PostsSliceType, status: string) =>
         postsState.posts?.filter((post: PostType) => post.status === status),
 );
-
-// export const selectAllPosts = (state: RootState) => state.posts.posts;
-
-// export const selectPostById = createSelector(
-//     [selectAllPosts, (_state: RootState, post_id: string) => post_id],
-//     (posts, post_id) => posts?.find((post) => post?.post_id === post_id),
-// );
-
-// export const selectPostsByStatus = createSelector(
-//     [selectAllPosts, (_state: RootState, status: string) => status],
-//     (posts, status) => posts?.filter((post) => post?.status === status),
-// );
 
 export const { addPost, updatePost, deletePost, reactionCountAdded, reactionCountDeleted } =
     postsSlice.actions;

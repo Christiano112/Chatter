@@ -72,18 +72,21 @@ const Profile = () => {
     const currentVisitor = user?.id === pathId ? "owner" : "visitor";
     const dispatch = useAppDispatch();
     const { isLoading, posts } = useFetchPostsByAuthorId(page, pageSize, pathId);
-    const { selectedPostComments, fetchCommentsForPost } = useFetchCommentsForPost();
-    const { selectedPost, newComment, handleCommentClick, handleAddComment } = usePostInteraction({
-        pathId,
-        fetchCommentsForPost,
-    });
+    const { selectedPostComments, fetchCommentsForPost, setSelectedPostComments } =
+        useFetchCommentsForPost();
+    const { selectedPost, newComment, handleCommentClick, handleAddComment, setNewComment } =
+        usePostInteraction({
+            pathId,
+            fetchCommentsForPost,
+            setSelectedPostComments,
+        });
     const { filteredPosts, handleSearch } = useSearchPosts({ pathId });
 
     const handleTabChange = (index: number) => {
         setActiveTabIndex(index);
     };
 
-    const setNewComment = () => {};
+    // const setNewComment = () => {};
 
     useEffect(() => {
         const fetchSocials = async () => {

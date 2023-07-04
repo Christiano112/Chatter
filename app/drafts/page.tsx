@@ -1,28 +1,24 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import parse from "html-react-parser";
-import { useAppDispatch, useAppSelector } from "@/redux/store";
-import { deletePost, selectPostsByStatus, selectAllPosts } from "@/redux/slices/posts";
+import { useAppSelector } from "@/redux/store";
+import { selectPostsByStatus } from "@/redux/slices/posts";
 import { selectUser } from "@/redux/slices/user";
-import { ErrorToast } from "@/components/toast";
 import { formatDateTimeShort } from "@/utils/date";
-import Loading from "@/app/loading";
 import calculateReadingTime from "@/utils/reading_time";
 import BookIcon from "@/public/book-icon.png";
 import ProfilePic from "@/public/man.png";
 import NotFound from "@/components/not-found";
 import Header from "@/components/header";
 
+const excerptLimit = 500;
+
 const Drafts = () => {
-    const dispatch = useAppDispatch();
     const posts = useAppSelector((state) => selectPostsByStatus(state, "draft"));
-    // const posts = useAppSelector(selectAllPosts);
     const user = useAppSelector(selectUser);
-    const excerptLimit = 500;
-    const [isLoading, setIsLoading] = useState(false);
 
     return (
         <React.Fragment>
@@ -31,9 +27,7 @@ const Drafts = () => {
                 My Draft Posts
             </h1>
             <div className="rounded-lg shadow-inner px-2 sm:px-4 py-4 m-4">
-                {isLoading ? (
-                    <Loading />
-                ) : !posts || posts.length === 0 ? (
+                {!posts || posts.length === 0 ? (
                     <NotFound text="No more drafts" />
                 ) : (
                     posts.map((post) => {

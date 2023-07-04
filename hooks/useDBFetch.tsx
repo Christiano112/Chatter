@@ -64,10 +64,14 @@ export const useFetchCommentsForPost = () => {
         setSelectedPostComments(comments);
     };
 
-    return { selectedPostComments, fetchCommentsForPost };
+    return { selectedPostComments, fetchCommentsForPost, setSelectedPostComments };
 };
 
-export const usePostInteraction = ({ author_id, fetchCommentsForPost }: any) => {
+export const usePostInteraction = ({
+    author_id,
+    fetchCommentsForPost,
+    setSelectedPostComments,
+}: any) => {
     const [selectedPost, setSelectedPost] = useState<any>([]);
     const [newComment, setNewComment] = useState("");
 
@@ -75,7 +79,7 @@ export const usePostInteraction = ({ author_id, fetchCommentsForPost }: any) => 
 
     const handleCommentClick = async (post: any) => {
         setNewComment("");
-        // setSelectedPostComments([]);
+        setSelectedPostComments([]);
         setSelectedPost(post);
         await fetchCommentsForPost(post?.post_id);
     };
@@ -109,7 +113,7 @@ export const usePostInteraction = ({ author_id, fetchCommentsForPost }: any) => 
         setNewComment("");
     };
 
-    return { selectedPost, newComment, handleCommentClick, handleAddComment };
+    return { selectedPost, newComment, handleCommentClick, handleAddComment, setNewComment };
 };
 
 export const useSearchPosts = ({ pathId }: { pathId: string }) => {
