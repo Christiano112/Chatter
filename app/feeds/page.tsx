@@ -26,29 +26,26 @@ import { formatDateTimeShort } from "@/utils/date";
 import calculateReadingTime from "@/utils/reading_time";
 import { formatName } from "@/utils/format";
 
+const pageSize = 20;
+const excerptLimit = 500;
+
 const Feed = () => {
     const authUser = useUser();
     const dispatch = useAppDispatch();
     const user = useAppSelector(selectUser);
-    const author_id = user.user_id;
-    const [showEditor, setShowEditor] = useState<boolean>(false);
     const [posts, setPosts] = useState<PostType[] | any[]>(useAppSelector(selectAllPosts));
     const [selectedPostComments, setSelectedPostComments] = useState<any[]>([]);
     const [newComment, setNewComment] = useState<string>("");
     const [selectedPost, setSelectedPost] = useState<PostType | null>(null);
-    // const [author_id, setAuthorId] = useState(user.user_id);
+    const [author_id, setAuthorId] = useState(user.user_id);
     const [isLoading, setIsLoading] = useState(true);
     const [page, setPage] = useState(1);
-    const pageSize = 10;
-    const excerptLimit = 500;
 
-    // useEffect(() => {
-    //     if (authUser?.id || user.user_id) {
-    //         setAuthorId(authUser?.id ?? user.user_id);
-    //     } else {
-    //         ErrorToast("No user found, can't make post");
-    //     }
-    // }, [authUser, user]);
+    useEffect(() => {
+        if (authUser?.id || user.user_id) {
+            setAuthorId(authUser?.id ?? user.user_id);
+        }
+    }, [authUser, user]);
 
     useEffect(() => {
         const fetchPosts = async () => {
@@ -182,12 +179,6 @@ const Feed = () => {
             </header>
 
             <main className="shadow-2xl rounded p-4 md:p-8 m-2 sm:m-4">
-                {showEditor && (
-                    <div className="absolute top-5 flex items-center justify-center z-50 mx-auto w-[90%] md:w-[80%]">
-                        <div className="bg-white rounded shadow-lg">{/* <TextEditor /> */}</div>
-                    </div>
-                )}
-
                 <div className="flex items-start sm:items-center justify-between gap-2 md:gap-4 sm:gap-8 flex-col sm:flex-row">
                     <div className="flex flex-col gap-4">
                         <h1 className="font-semibold text-2xl md:text-4xl">Feed</h1>
@@ -195,17 +186,16 @@ const Feed = () => {
                     </div>
                     <Button
                         text={
-                            <div className="flex gap-2 items-center">
+                            <Link href="/editor" className="flex gap-2 items-center">
                                 <span>
                                     <Image src={PostIcon} alt="post icon" />
                                 </span>{" "}
                                 Post a content
-                            </div>
+                            </Link>
                         }
                         type="button"
                         variant="primary"
                         size="medium"
-                        handleClick={() => setShowEditor(true)}
                     />
                 </div>
 
@@ -278,7 +268,6 @@ const Feed = () => {
                                                     <Link
                                                         href={`/feeds/${post?.post_id}`}
                                                         className="underline text-primary cursor-pointer"
-                                                        target="_blank"
                                                     >
                                                         Read more...
                                                     </Link>
@@ -313,17 +302,23 @@ const Feed = () => {
                                                                     key={comment.id}
                                                                     className="flex items-center gap-2 mb-4 border-b"
                                                                 >
-                                                                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white">
+                                                                    <Link
+                                                                        href={`/profile/${comment.author_id}`}
+                                                                        className="flex items-center justify-center w-8 h-8 p-2 rounded-full bg-primary text-white"
+                                                                    >
                                                                         {initials}
-                                                                    </div>
+                                                                    </Link>
                                                                     <div className="flex flex-col">
-                                                                        <h4 className="font-medium text-tertiary">
+                                                                        <Link
+                                                                            href={`/profile/${comment.author_id}`}
+                                                                            className="font-medium text-tertiary"
+                                                                        >
                                                                             {
                                                                                 comment.author
                                                                                     ?.username
                                                                             }{" "}
                                                                             {`:`}
-                                                                        </h4>
+                                                                        </Link>
                                                                         <p className="text-tertiary-50">
                                                                             {comment.content}
                                                                         </p>
@@ -370,6 +365,7 @@ const Feed = () => {
                         </button>
                         <button
                             onClick={() => setPage((page) => page + 1)}
+                            disabled={posts?.length <= pageSize}
                             className="px-4 py-2 text-white bg-primary rounded outline-0 select-none"
                         >
                             Next

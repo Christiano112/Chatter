@@ -112,7 +112,7 @@ export const usePostInteraction = ({ author_id, fetchCommentsForPost }: any) => 
     return { selectedPost, newComment, handleCommentClick, handleAddComment };
 };
 
-export const useSearchPosts = ({ author_id }: { author_id: string }) => {
+export const useSearchPosts = ({ pathId }: { pathId: string }) => {
     const [filteredPosts, setFilteredPosts] = useState<any>([]);
 
     const handleSearch = async (query: string) => {
@@ -128,7 +128,7 @@ export const useSearchPosts = ({ author_id }: { author_id: string }) => {
         author:users(first_name, last_name, username, join_as, user_id)
       `,
             )
-            .eq("author_id", author_id)
+            .eq("author_id", pathId)
             .or(`content.ilike.*${query}*, title.ilike.*${query}*`)
             .order("created_at", { ascending: false });
 

@@ -1,13 +1,6 @@
 "use client";
 
-import {
-    PayloadAction,
-    createSlice,
-    createAsyncThunk,
-    createSelector,
-    createEntityAdapter,
-    EntityState,
-} from "@reduxjs/toolkit";
+import { PayloadAction, createSlice, createAsyncThunk, createSelector } from "@reduxjs/toolkit";
 import { RootState } from "../store";
 import { formatDateTimeShort } from "@/utils/date";
 import supaBase from "@/utils/supabase";
@@ -24,20 +17,13 @@ export interface PostType {
     status?: "draft" | "published" | "deleted" | "archived" | "edited";
 }
 
-export interface PostsSliceType extends EntityState<PostType> {
-    fetchStatus: "idle" | "loading" | "success" | "failed";
-    fetchError: string | undefined | null;
+interface PostsSliceType {
+    posts: PostType[];
 }
 
-const postsAdapter = createEntityAdapter<PostType>({
-    selectId: (post) => post.post_id,
-    // sortComparer: (a, b) => b.created_at?.localeCompare(a.created_at),
-});
-
-const initialState: PostsSliceType = postsAdapter.getInitialState({
-    fetchStatus: "idle",
-    fetchError: null,
-});
+const initialState: PostsSliceType = {
+    posts: [],
+};
 
 export const fetchPosts = createAsyncThunk("posts/fetchPosts", async () => {
     let { data: posts, error } = await supaBase
@@ -73,7 +59,7 @@ const postsSlice = createSlice({
     reducers: {
         addPost: {
             reducer(state, action: PayloadAction<PostType>) {
-                postsAdapter.addOne(state, action.payload);
+                state.posts?.push(action.payload);
             },
             prepare(
                 author_id: string,
@@ -104,11 +90,31 @@ const postsSlice = createSlice({
                 };
             },
         },
-        updatePost: postsAdapter.updateOne,
-        deletePost: postsAdapter.removeOne,
-        reactionAdded(state, action: PayloadAction<{ post_id: string; reaction: string }>) {
+        updatePost: (state, action: PayloadAction<PostType>) => {
+            const { post_id, title, content } = action.payload;
+            const existingPost = state.posts?.find((post) => post?.post_id === post_id);
+            if (existingPost) {
+                existingPost.title = title;
+                existingPost.content = content;
+            }
+        },
+        // deletePost: (state, action: PayloadAction<string>) => {
+        //     const post_id = action.payload;
+        //     const existingPost = state.posts?.find((post) => post?.post_id === post_id);
+        //     if (existingPost) {
+        //         state.posts.splice(state.posts.indexOf(existingPost), 1);
+        //     }
+        // },
+        deletePost: (state, action: PayloadAction<string>) => {
+            const post_id = action.payload;
+            const index = state.posts.findIndex((post) => post.post_id === post_id);
+            if (index !== -1) {
+                state.posts.splice(index, 1);
+            }
+        },
+        reactionCountAdded(state, action: PayloadAction<{ post_id: string; reaction: string }>) {
             const { post_id, reaction } = action.payload;
-            const existingPost = state.entities[post_id];
+            const existingPost = state.posts?.find((post) => post?.post_id === post_id);
             if (existingPost) {
                 if (existingPost.reactions && existingPost.reactions[reaction]) {
                     existingPost.reactions[reaction]++;
@@ -120,9 +126,9 @@ const postsSlice = createSlice({
                 }
             }
         },
-        reactionDeleted(state, action: PayloadAction<{ post_id: string; reaction: string }>) {
+        reactionCountDeleted(state, action: PayloadAction<{ post_id: string; reaction: string }>) {
             const { post_id, reaction } = action.payload;
-            const existingPost = state.entities[post_id];
+            const existingPost = state.posts?.find((post) => post?.post_id === post_id);
             if (existingPost) {
                 if (existingPost.reactions && existingPost.reactions[reaction]) {
                     existingPost.reactions[reaction]--;
@@ -130,69 +136,40 @@ const postsSlice = createSlice({
             }
         },
     },
-    extraReducers: (builder) => {
-        builder
-            .addCase(fetchPosts.pending, (state) => {
-                state.fetchStatus = "loading";
-            })
-            .addCase(fetchPosts.fulfilled, (state, action) => {
-                state.fetchStatus = "success";
-                postsAdapter.setAll(state, action.payload);
-            })
-            .addCase(fetchPosts.rejected, (state, action) => {
-                state.fetchStatus = "failed";
-                state.fetchError = action.error.message;
-            })
-            .addCase(fetchPostsByAuthorId.pending, (state) => {
-                state.fetchStatus = "loading";
-            })
-            .addCase(fetchPostsByAuthorId.fulfilled, (state, action) => {
-                state.fetchStatus = "success";
-                postsAdapter.setAll(state, action.payload);
-            })
-            .addCase(fetchPostsByAuthorId.rejected, (state, action) => {
-                state.fetchStatus = "failed";
-                state.fetchError = action.error.message;
-            });
-        // .addCase(addNewPost.pending, (state) => {
-        //     state.fetchStatus = "loading";
-        // })
-        // .addCase(addNewPost.fulfilled, (state, action) => {
-        //     state.fetchStatus = "success";
-        //     postsAdapter.addOne(state, action.payload);
-        // })
-        // .addCase(addNewPost.rejected, (state, action) => {
-        //     state.fetchStatus = "failed";
-        //     state.fetchError = action.error.message;
-        // });
-    },
 });
 
 const selectPostsState = (state: RootState) => state.posts;
 
-export const { selectAll: selectAllPosts } = postsAdapter.getSelectors<RootState>(selectPostsState);
+export const selectAllPosts = createSelector(
+    selectPostsState,
+    (postsState: PostsSliceType) => postsState.posts,
+);
 
 export const selectPostById = createSelector(
-    [selectAllPosts, (_state: RootState, post_id: string) => post_id],
-    (posts, post_id) => posts?.find((post) => post?.post_id === post_id),
-);
-
-export const selectPostsByAuthor = createSelector(
-    [selectAllPosts, (_state: RootState, user_id: string) => user_id],
-    (posts, user_id) => posts?.filter((post) => post?.author_id === user_id),
-);
-
-export const selectPostFetchStatus = createSelector(
-    selectPostsState,
-    (postsState: PostsSliceType) => postsState.fetchStatus,
+    [selectPostsState, (_state: RootState, post_id: string) => post_id],
+    (postsState: PostsSliceType, post_id: string) =>
+        postsState.posts?.find((post: PostType) => post.post_id === post_id),
 );
 
 export const selectPostsByStatus = createSelector(
-    [selectAllPosts, (_state: RootState, status: string) => status],
-    (posts, status) => posts?.filter((post) => post?.status === status),
+    [selectPostsState, (_state: RootState, status: string) => status],
+    (postsState: PostsSliceType, status: string) =>
+        postsState.posts?.filter((post: PostType) => post.status === status),
 );
 
-export const { addPost, updatePost, deletePost, reactionAdded, reactionDeleted } =
+// export const selectAllPosts = (state: RootState) => state.posts.posts;
+
+// export const selectPostById = createSelector(
+//     [selectAllPosts, (_state: RootState, post_id: string) => post_id],
+//     (posts, post_id) => posts?.find((post) => post?.post_id === post_id),
+// );
+
+// export const selectPostsByStatus = createSelector(
+//     [selectAllPosts, (_state: RootState, status: string) => status],
+//     (posts, status) => posts?.filter((post) => post?.status === status),
+// );
+
+export const { addPost, updatePost, deletePost, reactionCountAdded, reactionCountDeleted } =
     postsSlice.actions;
 
 export default postsSlice.reducer;

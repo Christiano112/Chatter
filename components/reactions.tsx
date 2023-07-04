@@ -2,7 +2,7 @@
 
 import React, { useState, memo } from "react";
 import { useAppDispatch } from "@/redux/store";
-import { PostType, reactionAdded, reactionDeleted } from "@/redux/slices/posts";
+import { PostType, reactionCountAdded, reactionCountDeleted } from "@/redux/slices/posts";
 
 export const reactionEmojis = {
     like: "👍",
@@ -28,13 +28,15 @@ const ReactionButton: React.FC<ReactionButtonProps> = memo(({ post }) => {
 
     const handleReactionClick = (reaction: string) => {
         if (selectedReaction === reaction) {
-            dispatch(reactionDeleted({ post_id: post.post_id, reaction }));
+            dispatch(reactionCountDeleted({ post_id: post.post_id, reaction }));
             setSelectedReaction(null);
         } else {
             if (selectedReaction) {
-                dispatch(reactionDeleted({ post_id: post.post_id, reaction: selectedReaction }));
+                dispatch(
+                    reactionCountDeleted({ post_id: post.post_id, reaction: selectedReaction }),
+                );
             }
-            dispatch(reactionAdded({ post_id: post.post_id, reaction }));
+            dispatch(reactionCountAdded({ post_id: post.post_id, reaction }));
             setSelectedReaction(reaction);
         }
     };

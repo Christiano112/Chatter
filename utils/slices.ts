@@ -21,14 +21,10 @@
 
 // interface PostsSliceType {
 //     posts: PostType[];
-//     status: "idle" | "loading" | "success" | "failed";
-//     error: string | undefined | null;
 // }
 
 // const initialState: PostsSliceType = {
 //     posts: [],
-//     status: "idle",
-//     error: null,
 // };
 
 // const fetchPosts = createAsyncThunk("posts/fetchPosts", async () => {
@@ -106,7 +102,7 @@
 //                 state.posts.splice(state.posts.indexOf(existingPost), 1);
 //             }
 //         },
-//         reactionAdded: (state, action: PayloadAction<{ postId: string; reaction: string }>) => {
+//         reactionCountAdded: (state, action: PayloadAction<{ postId: string; reaction: string }>) => {
 //             const { postId, reaction } = action.payload;
 //             const existingPost = state.posts.find((post) => post.id === postId);
 //             if (existingPost) {
@@ -120,7 +116,7 @@
 //                 }
 //             }
 //         },
-//         reactionDeleted: (state, action: PayloadAction<{ postId: string; reaction: string }>) => {
+//         reactionCountDeleted: (state, action: PayloadAction<{ postId: string; reaction: string }>) => {
 //             const { postId, reaction } = action.payload;
 //             const existingPost = state.posts.find((post) => post.id === postId);
 //             if (existingPost) {
@@ -130,67 +126,21 @@
 //             }
 //         },
 //     },
-//     extraReducers: (builder) => {
-//         builder
-//             .addCase(fetchPosts.pending, (state) => {
-//                 state.status = "loading";
-//             })
-//             .addCase(fetchPosts.fulfilled, (state, action) => {
-//                 state.status = "success";
-//                 state.posts = action.payload;
-//             })
-//             .addCase(fetchPosts.rejected, (state, action) => {
-//                 state.status = "failed";
-//                 state.error = action.error.message;
-//             })
-//             .addCase(fetchPostsByAuthorId.pending, (state) => {
-//                 state.status = "loading";
-//             })
-//             .addCase(fetchPostsByAuthorId.fulfilled, (state, action) => {
-//                 state.status = "success";
-//                 state.posts = action.payload;
-//             })
-//             .addCase(fetchPostsByAuthorId.rejected, (state, action) => {
-//                 state.status = "failed";
-//                 state.error = action.error.message;
-//             })
-//             .addCase(addNewPost.pending, (state) => {
-//                 state.status = "loading";
-//             })
-//             .addCase(addNewPost.fulfilled, (state, action) => {
-//                 state.status = "success";
-//                 state.posts.push(action.payload);
-//             })
-//             .addCase(addNewPost.rejected, (state, action) => {
-//                 state.status = "failed";
-//                 state.error = action.error.message;
-//             });
-//     },
 // });
 
 // const selectPostsState = (state: RootState) => state.posts;
 
-// // export const selectAllPosts = createSelector(
-// //     selectPostsState,
-// //     (postsState: PostsSliceType) => postsState.posts
-// // );
+// export const selectAllPosts = createSelector(
+//     selectPostsState,
+//     (postsState: PostsSliceType) => postsState.posts
+// );
 
-// // export const selectPostById = createSelector(
-// //     [selectPostsState, (state: RootState, postId: string) => postId],
-// //     (postsState: PostsSliceType, postId: string) =>
-// //         postsState.posts.find((post: PostType) => post.id === postId)
-// // );
+// export const selectPostById = createSelector(
+//     [selectPostsState, (state: RootState, postId: string) => postId],
+//     (postsState: PostsSliceType, postId: string) =>
+//         postsState.posts.find((post: PostType) => post.id === postId)
+// );
 
-// // export const selectPostStatus = createSelector(
-// //     selectPostsState,
-// //     (postsState: PostsSliceType) => postsState.status
-// // );
+// const { addPost, updatePost, deletePost, reactionCountAdded, reactionCountDeleted } = postsSlice.actions;
 
-// // export const selectPostError = createSelector(
-// //     selectPostsState,
-// //     (postsState: PostsSliceType) => postsState.error
-// // );
-
-// const { addPost, updatePost, deletePost, reactionAdded, reactionDeleted } = postsSlice.actions;
-
-// // export default postsSlice.reducer;
+// export default postsSlice.reducer;

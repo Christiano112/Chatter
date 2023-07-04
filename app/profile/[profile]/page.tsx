@@ -58,6 +58,8 @@ const isEmptyObject = (obj: any) => {
     return Object.keys(obj).length === 0;
 };
 
+const pageSize = 10;
+
 const Profile = () => {
     const pathId = usePathId();
     const { user } = useCheckAuth();
@@ -69,14 +71,13 @@ const Profile = () => {
     const [socials, setSocials] = useState<SocialLinkType>({});
     const currentVisitor = user?.id === pathId ? "owner" : "visitor";
     const dispatch = useAppDispatch();
-    const author_id = pathUser?.user_id ?? user?.id ?? pathId;
-    const { isLoading, posts } = useFetchPostsByAuthorId(page, 3, author_id);
+    const { isLoading, posts } = useFetchPostsByAuthorId(page, pageSize, pathId);
     const { selectedPostComments, fetchCommentsForPost } = useFetchCommentsForPost();
     const { selectedPost, newComment, handleCommentClick, handleAddComment } = usePostInteraction({
-        author_id,
+        pathId,
         fetchCommentsForPost,
     });
-    const { filteredPosts, handleSearch } = useSearchPosts({ author_id });
+    const { filteredPosts, handleSearch } = useSearchPosts({ pathId });
 
     const handleTabChange = (index: number) => {
         setActiveTabIndex(index);
@@ -86,10 +87,20 @@ const Profile = () => {
 
     useEffect(() => {
         const fetchSocials = async () => {
+            const { data: currentEmail, error: emailError } = await supaBase
+                .from("users")
+                .select("email")
+                .eq("user_id", pathId);
+
+            if (emailError) {
+                ErrorToast(emailError.message);
+                return;
+            }
+
             const { data, error } = await supaBase
                 .from("profile")
                 .select("socials")
-                .eq("email", user?.email);
+                .eq("email", currentEmail[0].email);
 
             if (error) {
                 ErrorToast(error.message);
@@ -102,7 +113,7 @@ const Profile = () => {
         };
 
         fetchSocials();
-    }, [user?.email]);
+    }, [pathId]);
 
     const onEditSubmit = async (data: UpdateUserType) => {
         const mappedData: {
@@ -180,7 +191,6 @@ const Profile = () => {
 
             SuccessToast("Social links updated successfully");
         } catch (error) {
-            console.log("error=e", error);
             ErrorToast("An error occurred. Please try again later.");
         } finally {
             setShowPopup(false);
@@ -197,7 +207,7 @@ const Profile = () => {
     return (
         <React.Fragment>
             <header
-                className="py-[5rem] px-4 sm:px-8 flex flex-col gap-6 bg-slate-950 text-center min-h-[20rem] relative mx-4"
+                className="py-[5rem] px-4 sm:px-8 flex flex-col gap-6 bg-slate-950 text-center min-h-[20rem] relative mt-2 mx-2 xs:mx-4 rounded-t-lg"
                 style={{
                     background: "url('/cover-photo.png') center no-repeat",
                     backgroundSize: "cover",
@@ -211,14 +221,17 @@ const Profile = () => {
                     className="rounded-full pt-3 bg-primary absolute bottom-[-10%]"
                 />
             </header>
-            <div className="bg-primary-50 flex justify-between items-center p-8 shadow-inner pl-[15rem] mx-4 rounded-b-lg">
+            <div className="bg-primary-50 flex flex-col 2xs:flex-row justify-between items-center px-4 pb-4 pt-10 shadow-inner md:pl-[15rem] mx-2 xs:mx-4 rounded-b-lg">
                 <div>
                     <h2 className="text-primary text-2xl font-bold">
-                        {posts[0]?.author?.first_name} {posts[0]?.author?.last_name}
+                        {posts[0]?.author?.first_name ?? pathUser?.first_name}{" "}
+                        {posts[0]?.author?.last_name ?? pathUser?.last_name}
                     </h2>
-                    <p className="text-primary text-base capitalize">{posts[0]?.author?.join_as}</p>
+                    <p className="text-primary text-base capitalize">
+                        {posts[0]?.author?.join_as ?? pathUser?.join_as}
+                    </p>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-0 xs:gap-4 flex-col xs:flex-row">
                     {currentVisitor === "owner" ? (
                         <>
                             <Button
@@ -260,9 +273,9 @@ const Profile = () => {
                     )}
                 </div>
             </div>
-            <div className="flex justify-between gap-4 m-4">
-                <div className="flex flex-col gap-8 px-4 py-8 rounded-lg bg-primary-50 flex-grow max-h-[40rem]">
-                    <h3 className="text-primary text-xl font-bold">Socials</h3>
+            <div className="flex flex-col sm:flex-row justify-between gap-2 xs:gap-4 m-2 xs:m-4">
+                <div className="flex flex-row flex-wrap sm:flex-col gap-4 sm:gap-8 px-4 py-8 rounded-lg bg-primary-50 flex-grow max-h-[40rem]">
+                    <h3 className="text-primary text-xl font-bold">Socials:</h3>
                     {socials?.facebook_link && (
                         <Link
                             href={socials.facebook_link}
@@ -352,7 +365,7 @@ const Profile = () => {
                         </Link>
                     )}
                 </div>
-                <div className="bg-primary-50 px-4 pt-8 pb-2 w-[65%] rounded-lg">
+                <div className="bg-primary-50 px-4 pt-8 pb-2 w-[100%] sm:w-[85%] min-h-[20rem] rounded-lg">
                     <Tabs className="" selectedIndex={activeTabIndex} onSelect={handleTabChange}>
                         <TabList className="border-b-4 border-primary flex items-center gap-8 justify-start">
                             <Tab
@@ -395,45 +408,11 @@ const Profile = () => {
                                 handleAddComment={handleAddComment}
                                 setPage={setPage}
                                 page={page}
+                                pageSize={pageSize}
                                 setNewComment={setNewComment}
                             />
                         </TabPanel>
                     </Tabs>
-                </div>
-                <div className="flex flex-col gap-8 px-4 py-8 rounded-lg bg-primary-50 flex-grow max-h-[40rem]">
-                    <h3 className="text-primary text-xl font-medium">You might know</h3>
-                    <Link
-                        href={"/profile"}
-                        rel="noreferrer"
-                        className="text-primary cursor-pointer flex items-center gap-2"
-                    >
-                        <AiFillFacebook className="text-3xl" />
-                        <span>Lobanovskiy</span>
-                    </Link>
-                    <Link
-                        href={"/profile"}
-                        rel="noreferrer"
-                        className="text-primary cursor-pointer flex items-center gap-2"
-                    >
-                        <AiFillInstagram className="text-3xl" />
-                        <span>Eddie</span>
-                    </Link>
-                    <Link
-                        href={"/profile"}
-                        rel="noreferrer"
-                        className="text-primary cursor-pointer flex items-center gap-2"
-                    >
-                        <AiFillTwitterSquare className="text-3xl" />
-                        <span>Tkacheve</span>
-                    </Link>
-                    <Link
-                        href={"/profile"}
-                        rel="noreferrer"
-                        className="text-primary cursor-pointer flex items-center gap-2"
-                    >
-                        <AiFillLinkedin className="text-3xl" />
-                        <span>Anton</span>
-                    </Link>
                 </div>
             </div>
             {showPopup && (

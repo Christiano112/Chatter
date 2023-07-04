@@ -24,6 +24,7 @@ interface PostComponentProps {
     setNewComment: React.Dispatch<React.SetStateAction<string>>;
     setPage: React.Dispatch<React.SetStateAction<number>>;
     page: number;
+    pageSize: number;
 }
 
 const PostComponent = ({
@@ -36,6 +37,7 @@ const PostComponent = ({
     newComment,
     setPage,
     page,
+    pageSize,
     setNewComment,
     excerptLimit = 500,
 }: PostComponentProps) => {
@@ -95,7 +97,6 @@ const PostComponent = ({
                                         <Link
                                             href={`/feeds/${post?.post_id}`}
                                             className="underline text-primary cursor-pointer"
-                                            target="_blank"
                                         >
                                             Read more...
                                         </Link>
@@ -180,6 +181,7 @@ const PostComponent = ({
                 </button>
                 <button
                     onClick={() => setPage((page) => page + 1)}
+                    disabled={posts?.length <= pageSize}
                     className="px-4 py-2 text-white bg-primary rounded outline-0 select-none"
                 >
                     Next

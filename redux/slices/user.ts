@@ -37,7 +37,7 @@ export const userSlice = createSlice({
             state.user = initialState;
         },
         updateUser: (state, action) => {
-            state.user = action.payload;
+            state.user = { ...state.user, ...action.payload };
         },
     },
 });

@@ -47,8 +47,6 @@ const TextEditor = () => {
     useEffect(() => {
         if (authUser?.id || user.user_id) {
             setAuthorId(authUser?.id ?? user.user_id);
-        } else {
-            ErrorToast("No user found, can't make post");
         }
     }, [authUser, user]);
 
@@ -63,7 +61,7 @@ const TextEditor = () => {
         if (savedContent) {
             setContent(savedContent);
         }
-    }, [author_id]);
+    }, [author_id, title, content]);
 
     // Save content to localStorage every 2 minutes
     useEffect(() => {
@@ -126,7 +124,6 @@ const TextEditor = () => {
         // Clear localStorage and reset the title and content
         localStorage.removeItem(`${author_id}-editorTitle`);
         localStorage.removeItem(`${author_id}-editorContent`);
-        console.log(author_id, title, content, post_id, status, initialReactionValues);
     };
 
     const handlePublish = async () => {
