@@ -4,127 +4,57 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import parse from "html-react-parser";
 import ReactionButton from "@/components/reactions";
-import { useAppDispatch, useAppSelector } from "@/redux/store";
+import { useAppSelector } from "@/redux/store";
 import { shallowEqual } from "react-redux";
 import BookIcon from "@/public/book-icon.png";
 import CommentIcon from "@/public/comment-icon.png";
 import ProfilePic from "@/public/man.png";
-import supaBase from "@/utils/supabase";
 import calculateReadingTime from "@/utils/reading_time";
 import { formatDateTimeShort } from "@/utils/date";
 import { formatName } from "@/utils/format";
 import { usePathId } from "@/utils/custom";
-import { ErrorToast } from "@/components/toast";
 import Header from "@/components/header";
 import NotFound from "@/components/not-found";
 import Loading from "@/app/loading";
-import { PostType, selectPostById } from "@/redux/slices/posts";
-import { addComment } from "@/redux/slices/comments";
+import { selectPostById } from "@/redux/slices/posts";
 import { selectUser } from "@/redux/slices/user";
+import {
+    useFecthPostById,
+    useFetchCommentsForPost,
+    usePostInteraction,
+    downloadAndSetImage,
+    uploadImageToStore,
+} from "@/hooks/useDBFetch";
 
 const SingleFeed = () => {
     const pathId = usePathId();
     const user = useAppSelector(selectUser);
-    const dispatch = useAppDispatch();
-    const [isLoading, setIsLoading] = useState(false);
-    const [selectedPostComments, setSelectedPostComments] = useState<any[]>([]);
-    const [selectedPost, setSelectedPost] = useState<PostType | null>(null);
+    const author_id = user.user_id;
     const [post, setPost] = useState<any>(
         useAppSelector((state) => selectPostById(state, pathId), shallowEqual),
     );
-    const [newComment, setNewComment] = useState("");
+    const { isLoading, post: fetchedPost } = useFecthPostById(pathId);
+    const { selectedPostComments, fetchCommentsForPost, setSelectedPostComments } =
+        useFetchCommentsForPost();
+    const { selectedPost, newComment, handleCommentClick, handleAddComment, setNewComment } =
+        usePostInteraction({
+            author_id,
+            fetchCommentsForPost,
+            setSelectedPostComments,
+        });
+
     const readingTime = calculateReadingTime(post?.content) + " mins";
     const commentsCount = Object.keys(post?.comments ?? {}).length;
 
     useEffect(() => {
-        const fetchPost = async () => {
-            try {
-                setIsLoading(true);
-                let { data: post, error } = await supaBase
-                    .from("posts")
-                    .select(
-                        `*,
-                    author:users(first_name, last_name, username, join_as),
-                    comments:comments(id)`,
-                    )
-                    .eq("post_id", pathId)
-                    .order("created_at", { ascending: false });
+        if (fetchedPost.length === 0) return;
 
-                if (error || !post) {
-                    ErrorToast(error?.message ?? "Error fetching updated post");
-                    return;
-                }
-
-                setPost(post[0]);
-            } catch (error: any) {
-                ErrorToast(error?.message ?? "Error fetching updated post");
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchPost();
-    }, [pathId]);
+        setPost(fetchedPost);
+    }, [fetchedPost]);
 
     if (isLoading) {
         return <Loading />;
     }
-
-    const fetchCommentsForPost = async (post_id: string) => {
-        let { data: comments, error: commentsError } = await supaBase
-            .from("comments")
-            .select(
-                `
-                    *,
-                    author:users(first_name, last_name, username)
-                `,
-            )
-            .eq("comment_id", post_id);
-
-        if (commentsError || !comments) {
-            ErrorToast(commentsError?.message ?? "Error fetching comments");
-            return;
-        }
-
-        setSelectedPostComments(comments);
-    };
-
-    const handleCommentClick = async (post: any) => {
-        setNewComment("");
-        setSelectedPost(post);
-        await fetchCommentsForPost(post.post_id);
-    };
-
-    const handleAddComment = async (e: React.FormEvent<HTMLButtonElement>) => {
-        e.preventDefault();
-
-        if (!newComment.trim()) {
-            ErrorToast("Comment cannot be empty");
-            return;
-        }
-
-        if (typeof user?.user_id !== "string") return;
-
-        const { data: comment, error } = await supaBase
-            .from("comments")
-            .insert([
-                {
-                    author_id: user?.user_id,
-                    comment_id: post.post_id,
-                    content: newComment,
-                },
-            ])
-            .select();
-
-        if (error || !comment) {
-            ErrorToast(error?.message ?? "Error adding comment");
-            return;
-        }
-
-        dispatch(addComment(comment[0]));
-
-        setNewComment("");
-    };
 
     return (
         <React.Fragment>
@@ -178,7 +108,7 @@ const SingleFeed = () => {
                                     </h3>
                                     {/* Render comments for selected post */}
                                     {selectedPostComments &&
-                                        selectedPostComments?.map((comment) => {
+                                        selectedPostComments?.map((comment: any) => {
                                             const initials = formatName(
                                                 comment.author.first_name,
                                                 comment.author.last_name,

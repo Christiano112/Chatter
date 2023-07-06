@@ -5,10 +5,9 @@ import Image from "next/image";
 import Link from "next/link";
 import parse from "html-react-parser";
 import { useUser } from "@supabase/auth-helpers-react";
-import { useAppDispatch, useAppSelector } from "@/redux/store";
+import { useAppSelector } from "@/redux/store";
 import { selectUser } from "@/redux/slices/user";
 import { PostType, selectAllPosts } from "@/redux/slices/posts";
-import { addComment } from "@/redux/slices/comments";
 import SearchInput from "@/components/search";
 import Button from "@/components/button";
 import ReactionButton from "@/components/reactions";
@@ -20,26 +19,37 @@ import PostIcon from "@/public/post-icon.png";
 import BookIcon from "@/public/book-icon.png";
 import CommentIcon from "@/public/comment-icon.png";
 import ProfilePic from "@/public/man.png";
-import supaBase from "@/utils/supabase";
-import { ErrorToast } from "@/components/toast";
 import { formatDateTimeShort } from "@/utils/date";
 import calculateReadingTime from "@/utils/reading_time";
 import { formatName } from "@/utils/format";
+import {
+    useFetchAllPosts,
+    useFetchCommentsForPost,
+    usePostInteraction,
+    useSearchPosts,
+    downloadAndSetImage,
+    uploadImageToStore,
+} from "@/hooks/useDBFetch";
 
 const pageSize = 20;
 const excerptLimit = 500;
 
 const Feed = () => {
     const authUser = useUser();
-    const dispatch = useAppDispatch();
     const user = useAppSelector(selectUser);
     const [posts, setPosts] = useState<PostType[] | any[]>(useAppSelector(selectAllPosts));
-    const [selectedPostComments, setSelectedPostComments] = useState<any[]>([]);
-    const [newComment, setNewComment] = useState<string>("");
-    const [selectedPost, setSelectedPost] = useState<PostType | null>(null);
     const [author_id, setAuthorId] = useState(user.user_id);
-    const [isLoading, setIsLoading] = useState(true);
     const [page, setPage] = useState(1);
+    const { isLoading, posts: fetchedPosts } = useFetchAllPosts(page, pageSize);
+    const { selectedPostComments, fetchCommentsForPost, setSelectedPostComments } =
+        useFetchCommentsForPost();
+    const { selectedPost, newComment, handleCommentClick, handleAddComment, setNewComment } =
+        usePostInteraction({
+            author_id,
+            fetchCommentsForPost,
+            setSelectedPostComments,
+        });
+    const { filteredPosts, handleSearch } = useSearchPosts();
 
     useEffect(() => {
         if (authUser?.id || user.user_id) {
@@ -48,114 +58,16 @@ const Feed = () => {
     }, [authUser, user]);
 
     useEffect(() => {
-        const fetchPosts = async () => {
-            try {
-                setIsLoading(true);
-                let { data: posts, error } = await supaBase
-                    .from("posts")
-                    .select(
-                        `*,
-                    author:users(first_name, last_name, username, join_as, user_id),
-                    comments:comments(id)`,
-                    )
-                    .range((page - 1) * pageSize, page * pageSize - 1)
-                    .order("created_at", { ascending: false });
-
-                if (error || !posts) {
-                    ErrorToast(error?.message ?? "Error fetching updated posts");
-                    return;
-                }
-
-                setPosts(posts);
-            } catch (error: any) {
-                ErrorToast(error?.message ?? "Error fetching updated post");
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchPosts();
-    }, [page]);
-
-    const fetchCommentsForPost = async (post_id: string) => {
-        let { data: comments, error: commentsError } = await supaBase
-            .from("comments")
-            .select(
-                `
-                    *,
-                    author:users(first_name, last_name, username)
-                `,
-            )
-            .eq("comment_id", post_id);
-
-        if (commentsError || !comments) {
-            ErrorToast(commentsError?.message ?? "Error fetching comments");
-            return;
-        }
-
-        setSelectedPostComments(comments);
-    };
-
-    const handleCommentClick = async (post: PostType) => {
-        setNewComment("");
-        setSelectedPostComments([]);
-        setSelectedPost(post);
-        await fetchCommentsForPost(post.post_id);
-    };
-
-    const handleAddComment = async (e: React.FormEvent<HTMLButtonElement>) => {
-        e.preventDefault();
-
-        if (!newComment.trim() || !selectedPost) {
-            ErrorToast("Comment cannot be empty");
-            return;
-        }
-
-        if (typeof author_id !== "string") return;
-
-        const { data: comment, error } = await supaBase
-            .from("comments")
-            .insert([
-                {
-                    author_id: author_id,
-                    comment_id: selectedPost.post_id,
-                    content: newComment,
-                },
-            ])
-            .select();
-
-        if (error || !comment) {
-            ErrorToast(error?.message ?? "Error adding comment");
-            return;
-        }
-
-        dispatch(addComment(comment[0]));
-
-        setNewComment("");
-    };
-
-    const handleSearch = async (query: string) => {
-        if (!query.trim()) {
-            return;
-        }
-
-        let { data: filteredPosts, error } = await supaBase
-            .from("posts")
-            .select(
-                `*,
-                        author:users(first_name, last_name, username, join_as, user_id)
-                    `,
-            )
-            .or(`content.ilike.*${query}*, title.ilike.*${query}*`)
-            .order("created_at", { ascending: false });
-
-        if (error || !filteredPosts || filteredPosts.length === 0) {
-            ErrorToast(error?.message ?? "No posts found");
-            return;
-        } else {
+        if (filteredPosts.length > 0) {
             setPosts(filteredPosts);
+            return;
         }
-    };
+
+        if (fetchedPosts.length > 0) {
+            setPosts(fetchedPosts);
+            return;
+        }
+    }, [filteredPosts, fetchedPosts]);
 
     return (
         <div className="flex-grow shadow-inner rounded">
@@ -217,7 +129,7 @@ const Feed = () => {
                         ) : !posts || posts.length === 0 ? (
                             <NotFound text="No more posts" />
                         ) : (
-                            posts.map((post) => {
+                            posts.map((post: any) => {
                                 const readingTime = calculateReadingTime(post?.content) + " mins";
                                 const commentsCount = Object.keys(post?.comments ?? {}).length;
                                 const contentLength = post?.content.length || 0;
@@ -292,40 +204,42 @@ const Feed = () => {
                                                     </h3>
                                                     {/* Render comments for selected post */}
                                                     {selectedPostComments &&
-                                                        selectedPostComments?.map((comment) => {
-                                                            const initials = formatName(
-                                                                comment.author.first_name,
-                                                                comment.author.last_name,
-                                                            );
-                                                            return (
-                                                                <div
-                                                                    key={comment.id}
-                                                                    className="flex items-center gap-2 mb-4 border-b"
-                                                                >
-                                                                    <Link
-                                                                        href={`/profile/${comment.author_id}`}
-                                                                        className="flex items-center justify-center w-8 h-8 p-2 rounded-full bg-primary text-white"
+                                                        selectedPostComments?.map(
+                                                            (comment: any) => {
+                                                                const initials = formatName(
+                                                                    comment.author.first_name,
+                                                                    comment.author.last_name,
+                                                                );
+                                                                return (
+                                                                    <div
+                                                                        key={comment.id}
+                                                                        className="flex items-center gap-2 mb-4 border-b"
                                                                     >
-                                                                        {initials}
-                                                                    </Link>
-                                                                    <div className="flex flex-col">
                                                                         <Link
                                                                             href={`/profile/${comment.author_id}`}
-                                                                            className="font-medium text-tertiary"
+                                                                            className="flex items-center justify-center w-8 h-8 p-2 rounded-full bg-primary text-white"
                                                                         >
-                                                                            {
-                                                                                comment.author
-                                                                                    ?.username
-                                                                            }{" "}
-                                                                            {`:`}
+                                                                            {initials}
                                                                         </Link>
-                                                                        <p className="text-tertiary-50">
-                                                                            {comment.content}
-                                                                        </p>
+                                                                        <div className="flex flex-col">
+                                                                            <Link
+                                                                                href={`/profile/${comment.author_id}`}
+                                                                                className="font-medium text-tertiary"
+                                                                            >
+                                                                                {
+                                                                                    comment.author
+                                                                                        ?.username
+                                                                                }{" "}
+                                                                                {`:`}
+                                                                            </Link>
+                                                                            <p className="text-tertiary-50">
+                                                                                {comment.content}
+                                                                            </p>
+                                                                        </div>
                                                                     </div>
-                                                                </div>
-                                                            );
-                                                        })}
+                                                                );
+                                                            },
+                                                        )}
                                                     {/* Comment input */}
                                                     <form className="flex items-center mt-4">
                                                         <input

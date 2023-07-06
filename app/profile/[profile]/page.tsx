@@ -18,14 +18,12 @@ import {
 } from "react-icons/ai";
 import Button from "@/components/button";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
-// import "react-tabs/style/react-tabs.css";
 import { useAppDispatch, useAppSelector } from "@/redux/store";
 import { selectUser, updateUser } from "@/redux/slices/user";
 import {
     useFetchPostsByAuthorId,
     useFetchCommentsForPost,
     usePostInteraction,
-    useSearchPosts,
     downloadAndSetImage,
     uploadImageToStore,
 } from "@/hooks/useDBFetch";
@@ -78,7 +76,6 @@ const Profile = () => {
             fetchCommentsForPost,
             setSelectedPostComments,
         });
-    const { filteredPosts, handleSearch } = useSearchPosts({ pathId });
 
     const handleTabChange = (index: number) => {
         setActiveTabIndex(index);
@@ -102,6 +99,8 @@ const Profile = () => {
                     .select("*")
                     .eq("email", currentEmail[0].email);
 
+                if (data?.length === 0) return;
+
                 if (error) {
                     throw new Error(error.message);
                 }
@@ -117,9 +116,10 @@ const Profile = () => {
                     downloadAndSetImage(data, "cover_pic", setCoverPicEdit),
                 ]);
             } catch (error: any) {
+                // if (error.message.includes("pic")) return;
                 ErrorToast(error.message);
             } finally {
-                setPageLoading(true);
+                setPageLoading(false);
             }
         };
 
@@ -275,9 +275,9 @@ const Profile = () => {
 
     return (
         <React.Fragment>
-            {pageLoading && (
+            {!pageLoading && (
                 <header
-                    className="py-[5rem] px-4 sm:px-8 flex flex-col gap-6 bg-slate-950 text-center min-h-[20rem] relative mt-2 mx-2 xs:mx-4 rounded-t-lg"
+                    className="py-[5rem] px-4 sm:px-8 flex flex-col gap-6 bg-slate-950 text-center min-h-[20rem] relative mt-2 mx-2 rounded-t-lg"
                     style={{
                         backgroundImage: `url('${coverPicEdit ?? "/cover-photo.png"}')`,
                         backgroundPosition: "center",
@@ -311,7 +311,7 @@ const Profile = () => {
                     )}
                 </header>
             )}
-            <div className="bg-primary-50 flex flex-col 2xs:flex-row justify-between items-center px-4 pb-4 pt-10 shadow-inner md:pl-[15rem] mx-2 xs:mx-4 rounded-b-lg">
+            <div className="bg-primary-50 flex flex-col 2xs:flex-row justify-between items-center px-4 pb-4 pt-10 shadow-inner md:pl-[15rem] mx-2 rounded-b-lg">
                 <div>
                     <h2 className="text-primary text-2xl font-bold">
                         {posts[0]?.author?.first_name ?? pathUser?.first_name}{" "}
@@ -363,7 +363,7 @@ const Profile = () => {
                     )}
                 </div>
             </div>
-            <div className="flex flex-col sm:flex-row justify-between gap-2 xs:gap-4 m-2 xs:m-4">
+            <div className="flex flex-col sm:flex-row justify-between gap-2 m-2">
                 <div className="flex flex-row flex-wrap sm:flex-col gap-4 sm:gap-8 px-4 py-8 rounded-lg bg-primary-50 flex-grow max-h-[40rem]">
                     <h3 className="text-primary text-xl font-bold">Socials:</h3>
                     {socials?.facebook_link && (

@@ -4,6 +4,43 @@ import { ErrorToast } from "@/components/toast";
 import { useAppDispatch } from "@/redux/store";
 import { addComment } from "@/redux/slices/comments";
 
+export const useFetchAllPosts = (page: number, pageSize: number) => {
+    const [isLoading, setIsLoading] = useState(false);
+    const [posts, setPosts] = useState<any>([]);
+
+    useEffect(() => {
+        const fetchPosts = async () => {
+            try {
+                setIsLoading(true);
+                let { data: posts, error } = await supaBase
+                    .from("posts")
+                    .select(
+                        `*,
+            author:users(first_name, last_name, username, join_as, user_id),
+            comments:comments(id)`,
+                    )
+                    .range((page - 1) * pageSize, page * pageSize - 1)
+                    .order("created_at", { ascending: false });
+
+                if (error || !posts) {
+                    ErrorToast(error?.message ?? "Error fetching updated posts");
+                    return;
+                }
+
+                setPosts(posts);
+            } catch (error: any) {
+                ErrorToast(error?.message ?? "Error fetching updated post");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchPosts();
+    }, [page, pageSize]);
+
+    return { isLoading, posts };
+};
+
 export const useFetchPostsByAuthorId = (page: number, pageSize: number, author_id: string) => {
     const [isLoading, setIsLoading] = useState(false);
     const [posts, setPosts] = useState<any>([]);
@@ -42,7 +79,44 @@ export const useFetchPostsByAuthorId = (page: number, pageSize: number, author_i
     return { isLoading, posts };
 };
 
-export const useFetchCommentsForPost = () => {
+export const useFecthPostById = (post_id: string) => {
+    const [isLoading, setIsLoading] = useState(false);
+    const [post, setPost] = useState<any>([]);
+
+    useEffect(() => {
+        const fetchPost = async () => {
+            try {
+                setIsLoading(true);
+                let { data: post, error } = await supaBase
+                    .from("posts")
+                    .select(
+                        `*,
+                    author:users(first_name, last_name, username, join_as),
+                    comments:comments(id)`,
+                    )
+                    .eq("post_id", post_id)
+                    .order("created_at", { ascending: false });
+
+                if (error || !post) {
+                    ErrorToast(error?.message ?? "Error fetching updated post");
+                    return;
+                }
+
+                setPost(post[0]);
+            } catch (error: any) {
+                ErrorToast(error?.message ?? "Error fetching updated post");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchPost();
+    }, [post_id]);
+
+    return { isLoading, post };
+};
+
+export const useFetchCommentsForPost = (): any => {
     const [selectedPostComments, setSelectedPostComments] = useState<any>([]);
 
     const fetchCommentsForPost = async (post_id: string) => {
@@ -92,6 +166,8 @@ export const usePostInteraction = ({
             return;
         }
 
+        if (typeof author_id !== "string") return;
+
         const { data: comment, error } = await supaBase
             .from("comments")
             .insert([
@@ -116,7 +192,7 @@ export const usePostInteraction = ({
     return { selectedPost, newComment, handleCommentClick, handleAddComment, setNewComment };
 };
 
-export const useSearchPosts = ({ pathId }: { pathId: string }) => {
+export const useSearchPosts = () => {
     const [filteredPosts, setFilteredPosts] = useState<any>([]);
 
     const handleSearch = async (query: string) => {
@@ -132,11 +208,10 @@ export const useSearchPosts = ({ pathId }: { pathId: string }) => {
         author:users(first_name, last_name, username, join_as, user_id)
       `,
             )
-            .eq("author_id", pathId)
             .or(`content.ilike.*${query}*, title.ilike.*${query}*`)
             .order("created_at", { ascending: false });
 
-        if (error || !filteredPosts || filteredPosts.length === 0) {
+        if (error || filteredPosts?.length === 0) {
             ErrorToast(error?.message ?? "No posts found");
             return;
         } else {
