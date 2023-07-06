@@ -63,7 +63,7 @@ const SignUp = () => {
     const { register, handleFormSubmit, errors } = useSignUpForm(onSignUp);
 
     return (
-        <div className="flex">
+        <div className="flex h-[100vh] min-h-full">
             <div
                 className="hidden md:flex flex-col items-center justify-center px-4"
                 style={{ background: "url('/side.jpg') center no-repeat", backgroundSize: "cover" }}
