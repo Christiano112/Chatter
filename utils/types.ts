@@ -1,4 +1,4 @@
-export type Json = string | number | boolean | null | { [key: string]: Json } | Json[];
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export interface DatabaseType {
     public: {
@@ -47,6 +47,7 @@ export interface DatabaseType {
                     created_at: string | null;
                     id: number;
                     post_id: string;
+                    reactions: Json | null;
                     title: string;
                 };
                 Insert: {
@@ -55,6 +56,7 @@ export interface DatabaseType {
                     created_at?: string | null;
                     id?: number;
                     post_id: string;
+                    reactions?: Json | null;
                     title: string;
                 };
                 Update: {
@@ -63,6 +65,7 @@ export interface DatabaseType {
                     created_at?: string | null;
                     id?: number;
                     post_id?: string;
+                    reactions?: Json | null;
                     title?: string;
                 };
                 Relationships: [
@@ -71,6 +74,46 @@ export interface DatabaseType {
                         columns: ["author_id"];
                         referencedRelation: "users";
                         referencedColumns: ["user_id"];
+                    },
+                ];
+            };
+            profile: {
+                Row: {
+                    cover_pic: string | null;
+                    created_at: string | null;
+                    email: string;
+                    followers: number | null;
+                    following: number | null;
+                    id: number;
+                    profile_pic: string | null;
+                    socials: Json | null;
+                };
+                Insert: {
+                    cover_pic?: string | null;
+                    created_at?: string | null;
+                    email: string;
+                    followers?: number | null;
+                    following?: number | null;
+                    id?: number;
+                    profile_pic?: string | null;
+                    socials?: Json | null;
+                };
+                Update: {
+                    cover_pic?: string | null;
+                    created_at?: string | null;
+                    email?: string;
+                    followers?: number | null;
+                    following?: number | null;
+                    id?: number;
+                    profile_pic?: string | null;
+                    socials?: Json | null;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "profile_email_fkey";
+                        columns: ["email"];
+                        referencedRelation: "users";
+                        referencedColumns: ["email"];
                     },
                 ];
             };

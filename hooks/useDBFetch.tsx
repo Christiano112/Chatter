@@ -146,3 +146,33 @@ export const useSearchPosts = ({ pathId }: { pathId: string }) => {
 
     return { filteredPosts, handleSearch };
 };
+
+export const downloadAndSetImage = async (data: any, imageField: string, setImage: any) => {
+    if (data[0][imageField]) {
+        const { data: imageData, error: imageError } = await supaBase.storage
+            .from("avatars")
+            .download(data[0][imageField]);
+
+        if (imageError) {
+            throw new Error(imageError.message);
+        }
+
+        const url = URL.createObjectURL(imageData);
+        setImage(url);
+    }
+};
+
+export const uploadImageToStore = async (file: File, fileName: string): Promise<string> => {
+    try {
+        const { data, error } = await supaBase.storage.from("avatars").upload(fileName, file);
+
+        if (error) {
+            throw error;
+        }
+
+        return data?.path ?? "";
+    } catch (error: any) {
+        ErrorToast(error.message);
+        throw error;
+    }
+};

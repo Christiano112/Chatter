@@ -15,8 +15,6 @@ import {
     AiFillYoutube,
     AiOutlineLink,
     AiOutlineForm,
-    AiFillCaretLeft,
-    AiFillCaretRight,
 } from "react-icons/ai";
 import Button from "@/components/button";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
@@ -28,19 +26,15 @@ import {
     useFetchCommentsForPost,
     usePostInteraction,
     useSearchPosts,
+    downloadAndSetImage,
+    uploadImageToStore,
 } from "@/hooks/useDBFetch";
 import PostComponent from "@/components/post";
-import Input from "@/components/input";
-import Select from "@/components/select";
 import { ErrorToast, SuccessToast } from "@/components/toast";
-import {
-    useUpdateUserForm,
-    useSocialLinkForm,
-    UpdateUserType,
-    SocialLinkType,
-    professions,
-} from "@/utils/form";
+import { useUpdateUserForm, useSocialLinkForm, UpdateUserType, SocialLinkType } from "@/utils/form";
 import supaBase from "@/utils/supabase";
+import EditImagesPopup from "../editImage";
+import EditProfilePopup from "../editProfile";
 
 const mapUpdateDataToColumns = (updateData: UpdateUserType) => {
     const { first_name, last_name, username, join_as, email } = updateData;
@@ -65,10 +59,14 @@ const Profile = () => {
     const { user } = useCheckAuth();
     const { user: pathUser } = useAppSelector<any>(selectUser);
     const [showPopup, setShowPopup] = useState(false);
+    const [pageLoading, setPageLoading] = useState(false);
+    const [showEditImagePopup, setShowEditImagePopup] = useState(false);
+    const [profilePicEdit, setProfilePicEdit] = useState<File | null>(null);
+    const [coverPicEdit, setCoverPicEdit] = useState<File | null>(null);
     const [page, setPage] = useState(1);
     const [activeTabIndex, setActiveTabIndex] = useState(2);
     const [activeEditTab, setActiveEditTab] = useState(1);
-    const [socials, setSocials] = useState<SocialLinkType>({});
+    const [socials, setSocials] = useState<any>({});
     const currentVisitor = user?.id === pathId ? "owner" : "visitor";
     const dispatch = useAppDispatch();
     const { isLoading, posts } = useFetchPostsByAuthorId(page, pageSize, pathId);
@@ -86,36 +84,46 @@ const Profile = () => {
         setActiveTabIndex(index);
     };
 
-    // const setNewComment = () => {};
-
     useEffect(() => {
-        const fetchSocials = async () => {
-            const { data: currentEmail, error: emailError } = await supaBase
-                .from("users")
-                .select("email")
-                .eq("user_id", pathId);
+        const fetchProfile = async () => {
+            try {
+                setPageLoading(true);
+                const { data: currentEmail, error: emailError } = await supaBase
+                    .from("users")
+                    .select("email")
+                    .eq("user_id", pathId);
 
-            if (emailError) {
-                ErrorToast(emailError.message);
-                return;
-            }
+                if (emailError) {
+                    throw new Error(emailError.message);
+                }
 
-            const { data, error } = await supaBase
-                .from("profile")
-                .select("socials")
-                .eq("email", currentEmail[0].email);
+                const { data, error } = await supaBase
+                    .from("profile")
+                    .select("*")
+                    .eq("email", currentEmail[0].email);
 
-            if (error) {
+                if (error) {
+                    throw new Error(error.message);
+                }
+
+                // If socials exist, set the socials state
+                if (!isEmptyObject(data)) {
+                    setSocials(data[0].socials);
+                }
+
+                // Download profile and cover pics
+                await Promise.all([
+                    downloadAndSetImage(data, "profile_pic", setProfilePicEdit),
+                    downloadAndSetImage(data, "cover_pic", setCoverPicEdit),
+                ]);
+            } catch (error: any) {
                 ErrorToast(error.message);
-                return;
-            }
-
-            if (!isEmptyObject(data)) {
-                setSocials(data[0].socials);
+            } finally {
+                setPageLoading(true);
             }
         };
 
-        fetchSocials();
+        fetchProfile();
     }, [pathId]);
 
     const onEditSubmit = async (data: UpdateUserType) => {
@@ -180,9 +188,13 @@ const Profile = () => {
                 }
             } else {
                 // If socials do not exist, insert a new record
+                if (!user?.email) {
+                    ErrorToast("An error occurred. Please try again later.");
+                    return;
+                }
                 const { data, error } = await supaBase
                     .from("profile")
-                    .insert([{ socials: filteredSocialData }])
+                    .insert([{ socials: filteredSocialData, email: user?.email }])
                     .eq("email", user?.email)
                     .select();
 
@@ -207,23 +219,98 @@ const Profile = () => {
         errors: socialFormErrors,
     } = useSocialLinkForm(handleSocialFormSubmit);
 
+    // For images upload
+    const handleProfilePicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            setProfilePicEdit(e.target.files[0]);
+        }
+    };
+
+    const handleCoverPicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            setCoverPicEdit(e.target.files[0]);
+        }
+    };
+
+    const handlePictureUpload = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+
+        if (profilePicEdit) {
+            const profilePicName = `profile_${Date.now()}_${profilePicEdit.name}`;
+            const profilePicUrl = await uploadImageToStore(profilePicEdit, profilePicName);
+
+            // Save the profilePicUrl to the Supabase database
+            const { data, error } = await supaBase
+                .from("profile")
+                .update({ profile_pic: profilePicUrl })
+                .eq("email", user?.email);
+
+            if (error) {
+                ErrorToast(error.message);
+                return;
+            }
+        }
+
+        if (coverPicEdit) {
+            const coverPicName = `cover_${Date.now()}_${coverPicEdit.name}`;
+            const coverPicUrl = await uploadImageToStore(coverPicEdit, coverPicName);
+
+            // Save the coverPicUrl to the Supabase database
+            const { data, error } = await supaBase
+                .from("profile")
+                .update({ cover_pic: coverPicUrl })
+                .eq("email", user?.email);
+
+            if (error) {
+                ErrorToast(error.message);
+                return;
+            }
+        }
+
+        // Reset the form fields
+        setProfilePicEdit(null);
+        setCoverPicEdit(null);
+        setShowEditImagePopup(false);
+    };
+
     return (
         <React.Fragment>
-            <header
-                className="py-[5rem] px-4 sm:px-8 flex flex-col gap-6 bg-slate-950 text-center min-h-[20rem] relative mt-2 mx-2 xs:mx-4 rounded-t-lg"
-                style={{
-                    background: "url('/cover-photo.png') center no-repeat",
-                    backgroundSize: "cover",
-                }}
-            >
-                <Image
-                    src="/profile-dp.png"
-                    alt="Profile Picture"
-                    width={200}
-                    height={200}
-                    className="rounded-full pt-3 bg-primary absolute bottom-[-10%]"
-                />
-            </header>
+            {pageLoading && (
+                <header
+                    className="py-[5rem] px-4 sm:px-8 flex flex-col gap-6 bg-slate-950 text-center min-h-[20rem] relative mt-2 mx-2 xs:mx-4 rounded-t-lg"
+                    style={{
+                        backgroundImage: `url('${coverPicEdit ?? "/cover-photo.png"}')`,
+                        backgroundPosition: "center",
+                        backgroundRepeat: "no-repeat",
+                        backgroundSize: "cover",
+                    }}
+                >
+                    <Image
+                        src={
+                            typeof profilePicEdit === "string" ? profilePicEdit : "/profile-dp.png"
+                        }
+                        alt="Profile Picture"
+                        width={200}
+                        height={200}
+                        className="rounded-full bg-primary absolute bottom-[-10%]"
+                    />
+                    {currentVisitor === "owner" && (
+                        <Button
+                            text="Edit Pictures"
+                            type="button"
+                            size="small"
+                            style={{
+                                backgroundColor: "white",
+                                color: "#543EE0",
+                                position: "absolute",
+                                bottom: "0",
+                                right: "5%",
+                            }}
+                            handleClick={() => setShowEditImagePopup(true)}
+                        />
+                    )}
+                </header>
+            )}
             <div className="bg-primary-50 flex flex-col 2xs:flex-row justify-between items-center px-4 pb-4 pt-10 shadow-inner md:pl-[15rem] mx-2 xs:mx-4 rounded-b-lg">
                 <div>
                     <h2 className="text-primary text-2xl font-bold">
@@ -419,8 +506,8 @@ const Profile = () => {
                 </div>
             </div>
             {showPopup && (
-                <div className="z-50 inset-0 flex items-center justify-center bg-gray-700 bg-opacity-75">
-                    <div className="bg-white rounded-lg shadow-lg px-4 sm:px-8 pt-4 sm:pt-8 pb-0 m-4 w-full max-w-[80%]">
+                <div className="fixed z-50 inset-0 flex items-center justify-center bg-gray-700 bg-opacity-75">
+                    <div className="bg-white rounded-lg shadow-lg px-4 sm:px-8 pt-4 sm:pt-8 pb-0 m-4 w-full 2xs:max-w-[80%]">
                         <Button
                             text="Cancel Editing"
                             type="button"
@@ -428,153 +515,36 @@ const Profile = () => {
                             style={{ fontWeight: "800", backgroundColor: "red" }}
                             handleClick={() => setShowPopup(false)}
                         />
-                        <div className="py-8 pr-8 overflow-y-scroll">
-                            {activeEditTab === 1 ? (
-                                <form onSubmit={handleFormSubmit}>
-                                    <h3 className="text-2xl px-4 text-primary font-medium">
-                                        Edit Profile
-                                    </h3>
-                                    <Input
-                                        label="First Name"
-                                        name="first_name"
-                                        placeholder="Enter your first name"
-                                        type="text"
-                                        autoComplete="name"
-                                        register={register}
-                                        errors={errors}
-                                    />
-                                    <Input
-                                        label="Last Name"
-                                        name="last_name"
-                                        placeholder="Enter your last name"
-                                        type="text"
-                                        autoComplete="name"
-                                        register={register}
-                                        errors={errors}
-                                    />
-                                    <Input
-                                        label="Username"
-                                        name="username"
-                                        placeholder="Enter your username"
-                                        type="text"
-                                        autoComplete="username"
-                                        register={register}
-                                        errors={errors}
-                                    />
-                                    <Select
-                                        label="Profession"
-                                        name="join_as"
-                                        register={register}
-                                        options={professions}
-                                        errors={errors}
-                                    />
-                                    <Button
-                                        text="Edit Profile"
-                                        type="submit"
-                                        size="medium"
-                                        variant="primary"
-                                        handleClick={handleFormSubmit}
-                                    />
-                                </form>
-                            ) : (
-                                <form onSubmit={socialFormSubmit}>
-                                    <h3 className="text-2xl px-4 text-primary font-medium">
-                                        Social Links
-                                    </h3>
-                                    <Input
-                                        label="Facebook"
-                                        name="facebook_link"
-                                        placeholder="Enter your facebook profile link"
-                                        type="url"
-                                        register={socialFormRegister}
-                                        errors={socialFormErrors}
-                                    />
-                                    <Input
-                                        label="Twitter"
-                                        name="twitter_link"
-                                        placeholder="Enter your twitter profile link"
-                                        type="url"
-                                        register={socialFormRegister}
-                                        errors={socialFormErrors}
-                                    />
-                                    <Input
-                                        label="Instagram"
-                                        name="instagram_link"
-                                        placeholder="Enter your instagram profile link"
-                                        type="url"
-                                        register={socialFormRegister}
-                                        errors={socialFormErrors}
-                                    />
-                                    <Input
-                                        label="LinkedIn"
-                                        name="linkedin_link"
-                                        placeholder="Enter your linkedIn profile link"
-                                        type="url"
-                                        register={socialFormRegister}
-                                        errors={socialFormErrors}
-                                    />
-                                    <Input
-                                        label="Github"
-                                        name="github_link"
-                                        placeholder="Enter your github profile link"
-                                        type="url"
-                                        register={socialFormRegister}
-                                        errors={socialFormErrors}
-                                    />
-                                    <Input
-                                        label="Medium"
-                                        name="medium_link"
-                                        placeholder="Enter your medium profile link"
-                                        type="url"
-                                        register={socialFormRegister}
-                                        errors={socialFormErrors}
-                                    />
-                                    <Input
-                                        label="Youtube"
-                                        name="youtube_link"
-                                        placeholder="Enter your youtube link"
-                                        type="url"
-                                        register={socialFormRegister}
-                                        errors={socialFormErrors}
-                                    />
-                                    <Input
-                                        label="Website"
-                                        name="website_link"
-                                        placeholder="Enter your website/portfolio link"
-                                        type="url"
-                                        register={socialFormRegister}
-                                        errors={socialFormErrors}
-                                    />
-                                    <Button
-                                        text="Update Social Links"
-                                        type="submit"
-                                        size="medium"
-                                        variant="primary"
-                                        handleClick={socialFormSubmit}
-                                    />
-                                </form>
-                            )}
-                            <div className="flex items-center justify-end my-4">
-                                <button
-                                    onClick={() =>
-                                        setActiveEditTab((activeEditTab) => activeEditTab - 1)
-                                    }
-                                    className="px-4 py-2 mr-2 text-white bg-primary rounded outline-0 select-none"
-                                    disabled={activeEditTab === 1}
-                                >
-                                    <AiFillCaretLeft />
-                                </button>
-                                <button
-                                    onClick={() =>
-                                        setActiveEditTab((activeEditTab) => activeEditTab + 1)
-                                    }
-                                    className="px-4 py-2 text-white bg-primary rounded outline-0 select-none"
-                                    disabled={activeEditTab === 2}
-                                >
-                                    <AiFillCaretRight />
-                                </button>
-                            </div>
+                        <div className="py-4">
+                            <EditProfilePopup
+                                activeEditTab={activeEditTab}
+                                handleFormSubmit={handleFormSubmit}
+                                socialFormSubmit={socialFormSubmit}
+                                setActiveEditTab={setActiveEditTab}
+                                register={register}
+                                errors={errors}
+                                socialFormRegister={socialFormRegister}
+                                socialFormErrors={socialFormErrors}
+                            />
                         </div>
+                    </div>
+                </div>
+            )}
+            {showEditImagePopup && (
+                <div className="fixed z-50 inset-0 flex items-center justify-center bg-gray-700 bg-opacity-75">
+                    <div className="bg-white rounded-lg shadow-lg px-4 sm:px-8 pt-4 sm:pt-8 pb-0 m-4 w-full 2xs:max-w-[80%]">
+                        <Button
+                            text="Cancel Editing"
+                            type="button"
+                            size="medium"
+                            style={{ fontWeight: "800", backgroundColor: "red" }}
+                            handleClick={() => setShowEditImagePopup(false)}
+                        />
+                        <EditImagesPopup
+                            handlePictureUpload={handlePictureUpload}
+                            handleProfilePicChange={handleProfilePicChange}
+                            handleCoverPicChange={handleCoverPicChange}
+                        />
                     </div>
                 </div>
             )}

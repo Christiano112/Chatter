@@ -25,37 +25,33 @@ const initialState: PostsSliceType = {
     posts: [],
 };
 
-export const fetchPosts = createAsyncThunk("posts/fetchPosts", async () => {
-    let { data: posts, error } = await supaBase
-        .from("posts")
-        .select("*")
-        .order("created_at", { ascending: false });
-    if (error) throw error;
-    return posts as PostType[];
-});
-
-export const fetchPostsByAuthorId = createAsyncThunk(
-    "posts/fetchPostsByAuthorId",
-    async (author_id: string) => {
-        let { data: posts, error } = await supaBase
-            .from("posts")
-            .select("*")
-            .eq("author_id", author_id)
-            .order("created_at", { ascending: false });
-        if (error) throw error;
-        return posts as PostType[];
-    },
-);
-
+// increase reaction count
 // export const reactionCountAddedDB = createAsyncThunk(
 //     "posts/reactionCountAdded",
+//     async ({ post_id, reaction }: any) => {
+//         const { data: posts, error } = await supaBase
+//             .from("posts")
+//             .update({ reactions: { [reaction]: +1 } })
+//             .eq("post_id", post_id)
+//             .select();
+//         if (error) throw error;
+//         return posts as unknown as PostType[];
+//     },
+// );
 
-// )
-
+// decrease reaction count
 // export const reactionCountDeletedDB = createAsyncThunk(
 //     "posts/reactionCountDeleted",
-
-// )
+//     async ({ post_id, reaction }: any) => {
+//         const { data: posts, error } = await supaBase
+//             .from("posts")
+//             .update({ reactions: { [reaction]: -1 } })
+//             .eq("post_id", post_id)
+//             .select();
+//         if (error) throw error;
+//         return posts as unknown as PostType[];
+//     },
+// );
 
 const postsSlice = createSlice({
     name: "posts",
