@@ -1,30 +1,24 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import Image from "next/image";
-import parse from "html-react-parser";
+import Loading from "@/app/loading";
+import Header from "@/components/header";
+import NotFound from "@/components/not-found";
 import ReactionButton from "@/components/reactions";
-import { useAppSelector } from "@/redux/store";
-import { shallowEqual } from "react-redux";
+import { useFecthPostById, useFetchCommentsForPost, usePostInteraction } from "@/hooks/useDBFetch";
 import BookIcon from "@/public/book-icon.png";
 import CommentIcon from "@/public/comment-icon.png";
 import ProfilePic from "@/public/man.png";
-import calculateReadingTime from "@/utils/reading_time";
-import { formatDateTimeShort } from "@/utils/date";
-import { formatName } from "@/utils/format";
-import { usePathId } from "@/utils/custom";
-import Header from "@/components/header";
-import NotFound from "@/components/not-found";
-import Loading from "@/app/loading";
 import { selectPostById } from "@/redux/slices/posts";
 import { selectUser } from "@/redux/slices/user";
-import {
-    useFecthPostById,
-    useFetchCommentsForPost,
-    usePostInteraction,
-    downloadAndSetImage,
-    uploadImageToStore,
-} from "@/hooks/useDBFetch";
+import { useAppSelector } from "@/redux/store";
+import { usePathId } from "@/utils/custom";
+import { formatDateTimeShort } from "@/utils/date";
+import { formatName } from "@/utils/format";
+import calculateReadingTime from "@/utils/reading_time";
+import parse from "html-react-parser";
+import Image from "next/image";
+import React, { useEffect, useState } from "react";
+import { shallowEqual } from "react-redux";
 
 const SingleFeed = () => {
     const pathId = usePathId();
@@ -56,13 +50,15 @@ const SingleFeed = () => {
         return <Loading />;
     }
 
+    if (!post || Object.keys(post).length === 0) {
+        return <NotFound text="Post not found" />;
+    }
+
     return (
         <React.Fragment>
             <Header />
             <div className="rounded-lg shadow-inner px-2 sm:px-4 md:px-8 py-4">
-                {!post || Object.keys(post).length === 0 ? (
-                    <NotFound text="Post not found" />
-                ) : (
+                {
                     <div key={post?.post_id} className="border-b-2 border-b-slate-700 p-2 sm:p-4">
                         <div className="flex items-start sm:items-center gap-4 flex-col sm:flex-row">
                             <Image src={ProfilePic} alt="profile pic" className="rounded-full" />
@@ -155,7 +151,7 @@ const SingleFeed = () => {
                             </div>
                         )}
                     </div>
-                )}
+                }
             </div>
         </React.Fragment>
     );
