@@ -15,6 +15,7 @@ import ReactionButton from "./reactions";
 interface PostComponentProps {
     isLoading: boolean;
     posts: any[];
+    handleReactionUpdate: React.Dispatch<React.SetStateAction<any>>;
     excerptLimit?: number;
     handleCommentClick: (post: any) => void;
     selectedPost: any;
@@ -30,6 +31,7 @@ interface PostComponentProps {
 const PostComponent = ({
     isLoading,
     posts,
+    handleReactionUpdate,
     handleCommentClick,
     selectedPost,
     selectedPostComments,
@@ -48,13 +50,14 @@ const PostComponent = ({
     if (!posts || posts.length === 0) {
         return <NotFound text="No more posts" />;
     }
+
     return (
         <div className="rounded-lg shadow-inner px-2 sm:px-4 py-4">
             {posts.map((post) => {
                 const readingTime = calculateReadingTime(post?.content) + " mins";
                 const commentsCount = Object.keys(post?.comments ?? {}).length;
-                const contentLength = post?.content.length || 0;
-                const excerpt = post?.content.slice(0, excerptLimit);
+                const contentLength = post?.content?.length || 0;
+                const excerpt = post?.content?.slice(0, excerptLimit);
                 return (
                     <div key={post?.post_id} className="border-b-2 border-b-slate-700 p-2 sm:p-4">
                         <div className="flex items-start sm:items-center gap-4 flex-col sm:flex-row">
@@ -91,7 +94,7 @@ const PostComponent = ({
                                 {readingTime}
                             </h6>
                             <div className="text-tertiary-50">
-                                {parse(excerpt)}
+                                {parse(excerpt) ?? ""}
                                 {contentLength > excerptLimit && (
                                     <Link
                                         href={`/feeds/${post?.post_id}`}
@@ -110,7 +113,7 @@ const PostComponent = ({
                                 <Image src={CommentIcon} alt="comment icon" />
                                 <p className="text-tertiary-50">{commentsCount}</p>
                             </button>
-                            {<ReactionButton post={post} />}
+                            {<ReactionButton post={post} setUpdatedPost={handleReactionUpdate} />}
                         </div>
                         {selectedPost && selectedPost.post_id === post.post_id && (
                             <div className="flex z-50 items-center justify-center gap-4">

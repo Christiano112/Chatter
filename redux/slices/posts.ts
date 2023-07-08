@@ -17,6 +17,14 @@ export interface PostType {
     status?: "draft" | "published" | "deleted" | "archived" | "edited";
 }
 
+export const fetchPostsToStore = createAsyncThunk("posts/fetchPosts", async () => {
+    const { data, error } = await supaBase.from("posts").select("*");
+    if (error) {
+        throw error;
+    }
+    return data as PostType[];
+});
+
 interface PostsSliceType {
     posts: PostType[];
 }
@@ -24,34 +32,6 @@ interface PostsSliceType {
 const initialState: PostsSliceType = {
     posts: [],
 };
-
-// increase reaction count
-// export const reactionCountAddedDB = createAsyncThunk(
-//     "posts/reactionCountAdded",
-//     async ({ post_id, reaction }: any) => {
-//         const { data: posts, error } = await supaBase
-//             .from("posts")
-//             .update({ reactions: { [reaction]: +1 } })
-//             .eq("post_id", post_id)
-//             .select();
-//         if (error) throw error;
-//         return posts as unknown as PostType[];
-//     },
-// );
-
-// decrease reaction count
-// export const reactionCountDeletedDB = createAsyncThunk(
-//     "posts/reactionCountDeleted",
-//     async ({ post_id, reaction }: any) => {
-//         const { data: posts, error } = await supaBase
-//             .from("posts")
-//             .update({ reactions: { [reaction]: -1 } })
-//             .eq("post_id", post_id)
-//             .select();
-//         if (error) throw error;
-//         return posts as unknown as PostType[];
-//     },
-// );
 
 const postsSlice = createSlice({
     name: "posts",
@@ -98,18 +78,11 @@ const postsSlice = createSlice({
                 existingPost.content = content;
             }
         },
-        // deletePost: (state, action: PayloadAction<string>) => {
-        //     const post_id = action.payload;
-        //     const existingPost = state.posts?.find((post) => post?.post_id === post_id);
-        //     if (existingPost) {
-        //         state.posts.splice(state.posts.indexOf(existingPost), 1);
-        //     }
-        // },
         deletePost: (state, action: PayloadAction<string>) => {
             const post_id = action.payload;
-            const index = state.posts.findIndex((post) => post.post_id === post_id);
-            if (index !== -1) {
-                state.posts.splice(index, 1);
+            const existingPost = state.posts?.find((post) => post?.post_id === post_id);
+            if (existingPost) {
+                state.posts.splice(state.posts.indexOf(existingPost), 1);
             }
         },
         reactionCountAdded(state, action: PayloadAction<{ post_id: string; reaction: string }>) {
@@ -136,6 +109,11 @@ const postsSlice = createSlice({
             }
         },
     },
+    extraReducers: (builder) => {
+        builder.addCase(fetchPostsToStore.fulfilled, (state, action: PayloadAction<any>) => {
+            state.posts?.push(...action.payload);
+        });
+    },
 });
 
 const selectPostsState = (state: RootState) => state.posts;
@@ -149,6 +127,12 @@ export const selectPostById = createSelector(
     [selectPostsState, (_state: RootState, post_id: string) => post_id],
     (postsState: PostsSliceType, post_id: string) =>
         postsState.posts?.find((post: PostType) => post.post_id === post_id),
+);
+
+export const selectPostsByAuthorId = createSelector(
+    [selectPostsState, (_state: RootState, author_id: string) => author_id],
+    (postsState: PostsSliceType, author_id: string) =>
+        postsState.posts?.filter((post: PostType) => post.author_id === author_id),
 );
 
 export const selectPostsByStatus = createSelector(

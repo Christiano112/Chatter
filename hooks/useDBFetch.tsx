@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import supaBase from "@/utils/supabase";
 import { ErrorToast } from "@/components/toast";
 import { useAppDispatch } from "@/redux/store";
@@ -184,6 +184,11 @@ export const usePostInteraction = ({
             return;
         }
 
+        // fetch the comments again so it shows instantly
+        setTimeout(() => {
+            fetchCommentsForPost(selectedPost?.post_id);
+        }, 100);
+
         dispatch(addComment(comment[0]));
 
         setNewComment("");
@@ -250,4 +255,18 @@ export const uploadImageToStore = async (file: File, fileName: string): Promise<
         ErrorToast(error.message);
         throw error;
     }
+};
+
+export const useReactionUpdate = (posts: any, setPosts: any) => {
+    const handleReactionUpdate = useCallback(
+        (updatedPost: any) => {
+            const updatedPostsArray = posts.map((p: { post_id: string }) =>
+                p.post_id === updatedPost.post_id ? { ...p, reactions: updatedPost.reactions } : p,
+            );
+            setPosts(updatedPostsArray);
+        },
+        [posts, setPosts],
+    );
+
+    return { handleReactionUpdate };
 };

@@ -1,36 +1,38 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { usePathId, useCheckAuth } from "@/utils/custom";
-import Image from "next/image";
-import Link from "next/link";
-import {
-    AiFillMessage,
-    AiFillFacebook,
-    AiFillTwitterSquare,
-    AiFillLinkedin,
-    AiFillInstagram,
-    AiFillGithub,
-    AiFillMediumSquare,
-    AiFillYoutube,
-    AiOutlineLink,
-    AiOutlineForm,
-} from "react-icons/ai";
 import Button from "@/components/button";
-import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
-import { useAppDispatch, useAppSelector } from "@/redux/store";
-import { selectUser, updateUser } from "@/redux/slices/user";
-import {
-    useFetchPostsByAuthorId,
-    useFetchCommentsForPost,
-    usePostInteraction,
-    downloadAndSetImage,
-    uploadImageToStore,
-} from "@/hooks/useDBFetch";
 import PostComponent from "@/components/post";
 import { ErrorToast, SuccessToast } from "@/components/toast";
-import { useUpdateUserForm, useSocialLinkForm, UpdateUserType, SocialLinkType } from "@/utils/form";
+import {
+    downloadAndSetImage,
+    uploadImageToStore,
+    useFetchCommentsForPost,
+    useFetchPostsByAuthorId,
+    usePostInteraction,
+    useReactionUpdate,
+} from "@/hooks/useDBFetch";
+import { selectUser, updateUser } from "@/redux/slices/user";
+import { useAppDispatch, useAppSelector } from "@/redux/store";
+import { selectPostsByAuthorId } from "@/redux/slices/posts";
+import { useCheckAuth, usePathId } from "@/utils/custom";
+import { SocialLinkType, UpdateUserType, useSocialLinkForm, useUpdateUserForm } from "@/utils/form";
 import supaBase from "@/utils/supabase";
+import Image from "next/image";
+import Link from "next/link";
+import React, { useEffect, useState } from "react";
+import {
+    AiFillFacebook,
+    AiFillGithub,
+    AiFillInstagram,
+    AiFillLinkedin,
+    AiFillMediumSquare,
+    AiFillMessage,
+    AiFillTwitterSquare,
+    AiFillYoutube,
+    AiOutlineForm,
+    AiOutlineLink,
+} from "react-icons/ai";
+import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
 import EditImagesPopup from "../editImage";
 import EditProfilePopup from "../editProfile";
 
@@ -55,7 +57,9 @@ const pageSize = 10;
 const Profile = () => {
     const pathId = usePathId();
     const { user } = useCheckAuth();
+    const currentVisitor = user?.id === pathId ? "owner" : "visitor";
     const { user: pathUser } = useAppSelector<any>(selectUser);
+    const dispatch = useAppDispatch();
     const [showPopup, setShowPopup] = useState(false);
     const [pageLoading, setPageLoading] = useState(false);
     const [showEditImagePopup, setShowEditImagePopup] = useState(false);
@@ -65,9 +69,10 @@ const Profile = () => {
     const [activeTabIndex, setActiveTabIndex] = useState(2);
     const [activeEditTab, setActiveEditTab] = useState(1);
     const [socials, setSocials] = useState<any>({});
-    const currentVisitor = user?.id === pathId ? "owner" : "visitor";
-    const dispatch = useAppDispatch();
-    const { isLoading, posts } = useFetchPostsByAuthorId(page, pageSize, pathId);
+    const [posts, setPosts] = useState<any>(
+        useAppSelector((state) => selectPostsByAuthorId(state, pathId)),
+    );
+    const { isLoading, posts: fetchedPosts } = useFetchPostsByAuthorId(page, pageSize, pathId);
     const { selectedPostComments, fetchCommentsForPost, setSelectedPostComments } =
         useFetchCommentsForPost();
     const { selectedPost, newComment, handleCommentClick, handleAddComment, setNewComment } =
@@ -76,10 +81,14 @@ const Profile = () => {
             fetchCommentsForPost,
             setSelectedPostComments,
         });
+    const { handleReactionUpdate } = useReactionUpdate(posts, setPosts);
 
-    const handleTabChange = (index: number) => {
-        setActiveTabIndex(index);
-    };
+    useEffect(() => {
+        if (fetchedPosts.length > 0) {
+            setPosts(fetchedPosts);
+            return;
+        }
+    }, [fetchedPosts]);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -210,6 +219,10 @@ const Profile = () => {
         } finally {
             setShowPopup(false);
         }
+    };
+
+    const handleTabChange = (index: number) => {
+        setActiveTabIndex(index);
     };
 
     const { register, handleFormSubmit, errors } = useUpdateUserForm(onEditSubmit);
@@ -491,6 +504,7 @@ const Profile = () => {
                             <PostComponent
                                 isLoading={isLoading}
                                 posts={posts}
+                                handleReactionUpdate={handleReactionUpdate}
                                 handleCommentClick={handleCommentClick}
                                 selectedPost={selectedPost}
                                 selectedPostComments={selectedPostComments}

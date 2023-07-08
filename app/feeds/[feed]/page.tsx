@@ -40,6 +40,10 @@ const SingleFeed = () => {
     const readingTime = calculateReadingTime(post?.content) + " mins";
     const commentsCount = Object.keys(post?.comments ?? {}).length;
 
+    const handleReactionUpdate = (updatedPost: any) => {
+        setPost({ ...post, reactions: updatedPost.reactions });
+    };
+
     useEffect(() => {
         if (fetchedPost.length === 0) return;
 
@@ -94,7 +98,7 @@ const SingleFeed = () => {
                                 <Image src={CommentIcon} alt="comment icon" />
                                 <p className="text-tertiary-50">{commentsCount}</p>
                             </button>
-                            {<ReactionButton post={post} />}
+                            {<ReactionButton post={post} setUpdatedPost={handleReactionUpdate} />}
                         </div>
                         {selectedPost && selectedPost.post_id === post.post_id && (
                             <div className="flex z-50 items-center justify-center gap-4">

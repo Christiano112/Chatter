@@ -208,9 +208,8 @@ const TextEditor = () => {
                             height="100%"
                             placeholder="Start writing..."
                             setOptions={{
-                                // maxCharCount: 1000000000,
-                                // charCounter: true,
-                                // charCounterLabel: "Characters",
+                                defaultStyle: "font-size: 1.4rem",
+                                resizeEnable: true,
                                 buttonList: [
                                     ["font", "fontSize", "formatBlock"],
                                     [

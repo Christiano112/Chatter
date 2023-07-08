@@ -4,9 +4,9 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useUser } from "@supabase/auth-helpers-react";
-import { useAppSelector } from "@/redux/store";
+import { useAppSelector, useAppDispatch } from "@/redux/store";
 import { selectUser } from "@/redux/slices/user";
-import { PostType, selectAllPosts } from "@/redux/slices/posts";
+import { PostType, fetchPostsToStore, selectAllPosts } from "@/redux/slices/posts";
 import SearchInput from "@/components/search";
 import Button from "@/components/button";
 import NotificationIcon from "@/public/notification-icon.png";
@@ -17,8 +17,9 @@ import {
     useFetchCommentsForPost,
     usePostInteraction,
     useSearchPosts,
-    downloadAndSetImage,
-    uploadImageToStore,
+    // downloadAndSetImage,
+    // uploadImageToStore,
+    useReactionUpdate,
 } from "@/hooks/useDBFetch";
 import PostComponent from "@/components/post";
 
@@ -27,6 +28,7 @@ const pageSize = 20;
 const Feeds = () => {
     const authUser = useUser();
     const user = useAppSelector(selectUser);
+    const dispatch = useAppDispatch();
     const [posts, setPosts] = useState<PostType[] | any[]>(useAppSelector(selectAllPosts));
     const [author_id, setAuthorId] = useState(user.user_id);
     const [page, setPage] = useState(1);
@@ -40,12 +42,15 @@ const Feeds = () => {
             setSelectedPostComments,
         });
     const { filteredPosts, handleSearch } = useSearchPosts();
+    const { handleReactionUpdate } = useReactionUpdate(posts, setPosts);
 
     useEffect(() => {
         if (authUser?.id || user.user_id) {
             setAuthorId(authUser?.id ?? user.user_id);
         }
-    }, [authUser, user]);
+
+        dispatch(fetchPostsToStore());
+    }, [authUser, dispatch, user]);
 
     useEffect(() => {
         if (filteredPosts.length > 0) {
@@ -116,6 +121,7 @@ const Feeds = () => {
                     <PostComponent
                         isLoading={isLoading}
                         posts={posts}
+                        handleReactionUpdate={handleReactionUpdate}
                         handleCommentClick={handleCommentClick}
                         selectedPost={selectedPost}
                         selectedPostComments={selectedPostComments}

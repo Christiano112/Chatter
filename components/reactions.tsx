@@ -2,14 +2,9 @@
 
 import React, { useState, memo } from "react";
 import { useAppDispatch } from "@/redux/store";
-import {
-    PostType,
-    reactionCountAdded,
-    reactionCountDeleted,
-    // reactionCountDeletedDB,
-    // reactionCountAddedDB,
-} from "@/redux/slices/posts";
+import { PostType, reactionCountAdded, reactionCountDeleted } from "@/redux/slices/posts";
 import supaBase from "@/utils/supabase";
+import { ErrorToast } from "@/components/toast";
 
 export const reactionEmojis = {
     like: "👍",
@@ -27,44 +22,56 @@ export const initialReactionValues = {
 
 interface ReactionButtonProps {
     post: PostType;
+    setUpdatedPost: any;
 }
 
-const ReactionButton: React.FC<ReactionButtonProps> = memo(({ post }) => {
+const ReactionButton: React.FC<ReactionButtonProps> = memo(({ post, setUpdatedPost }) => {
     const dispatch = useAppDispatch();
     const [selectedReaction, setSelectedReaction] = useState<string | null>(null);
 
     const handleReactionCountAdded = async ({ post_id, reaction }: any) => {
-        const { data: posts, error } = await supaBase
+        if (!post.reactions) return;
+        const updatedReaction = {
+            ...post.reactions,
+            [reaction]: (post.reactions[reaction] || 0) + 1,
+        };
+        const { data: updatedPost, error } = await supaBase
             .from("posts")
-            .update({ reactions: { [reaction]: +1 } })
+            .update({ reactions: updatedReaction })
             .eq("post_id", post_id)
             .select();
 
-        // if (error) {
-        //     console.log("err-add", error);
-        // } else {
-        //     console.log("posts-add", posts);
-        // }
+        if (error) {
+            ErrorToast(error.message);
+            return;
+        } else {
+            setUpdatedPost(updatedPost[0]);
+        }
     };
 
     const handleReactionCountDeleted = async ({ post_id, reaction }: any) => {
-        const { data: posts, error } = await supaBase
+        if (!post.reactions) return;
+        const updatedReaction = {
+            ...post.reactions,
+            [reaction]: (post.reactions[reaction] || 0) - 1,
+        };
+        const { data: updatedPost, error } = await supaBase
             .from("posts")
-            .update({ reactions: { [reaction]: -1 } })
+            .update({ reactions: updatedReaction })
             .eq("post_id", post_id)
             .select();
 
-        // if (error) {
-        //     console.log("err-del", error);
-        // } else {
-        //     console.log("posts-del", posts);
-        // }
+        if (error) {
+            ErrorToast(error.message);
+            return;
+        } else {
+            setUpdatedPost(updatedPost[0]);
+        }
     };
 
     const handleReactionClick = (reaction: string) => {
         if (selectedReaction === reaction) {
             dispatch(reactionCountDeleted({ post_id: post.post_id, reaction }));
-            // dispatch(reactionCountDeletedDB({ post_id: post.post_id, reaction }));
             handleReactionCountDeleted({ post_id: post.post_id, reaction });
             setSelectedReaction(null);
         } else {
@@ -72,13 +79,9 @@ const ReactionButton: React.FC<ReactionButtonProps> = memo(({ post }) => {
                 dispatch(
                     reactionCountDeleted({ post_id: post.post_id, reaction: selectedReaction }),
                 );
-                // dispatch(
-                //     reactionCountDeletedDB({ post_id: post.post_id, reaction: selectedReaction }),
-                // );
                 handleReactionCountDeleted({ post_id: post.post_id, reaction: selectedReaction });
             }
             dispatch(reactionCountAdded({ post_id: post.post_id, reaction }));
-            // dispatch(reactionCountAddedDB({ post_id: post.post_id, reaction }));
             handleReactionCountAdded({ post_id: post.post_id, reaction });
             setSelectedReaction(reaction);
         }
@@ -87,7 +90,9 @@ const ReactionButton: React.FC<ReactionButtonProps> = memo(({ post }) => {
     const reactionButtons = Object.entries(reactionEmojis).map(([name, emoji]) => (
         <button
             key={name}
-            className={`mr-2 text-tertiary-50 ${selectedReaction === name ? " font-bold" : ""}`}
+            className={`mr-2 outline-none text-tertiary-50 ${
+                selectedReaction === name ? " font-bold" : ""
+            }`}
             onClick={() => handleReactionClick(name)}
             disabled={selectedReaction !== null && selectedReaction !== name}
         >

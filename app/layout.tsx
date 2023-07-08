@@ -1,13 +1,11 @@
 import { Session } from "@supabase/auth-helpers-react";
-import { Poppins } from "next/font/google";
+import { Inter } from "next/font/google";
 import { ReactNode } from "react";
 import CustomLayout from "./custom_layout";
 import "./globals.css";
 
-const poppins = Poppins({
+const inter = Inter({
     subsets: ["latin"],
-    display: "swap",
-    weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
 });
 
 export const metadata = {
@@ -43,7 +41,7 @@ interface LayoutProps {
 export default function RootLayout({ children, initialSession }: LayoutProps) {
     return (
         <html lang="en">
-            <body className={`${poppins.className} m-0 p-0 box-border`}>
+            <body className={`${inter.className} m-0 p-0 box-border`}>
                 <CustomLayout initialSession={initialSession}>{children}</CustomLayout>
             </body>
         </html>
