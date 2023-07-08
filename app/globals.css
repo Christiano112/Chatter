@@ -17,3 +17,7 @@
 .footer-link {
     @apply hover:underline underline-offset-4;
 }
+
+.tab {
+    @apply text-xl text-primary p-2 border-none outline-0 cursor-pointer rounded-lg;
+}

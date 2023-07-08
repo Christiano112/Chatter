@@ -314,8 +314,8 @@ const Profile = () => {
                                 backgroundColor: "white",
                                 color: "#543EE0",
                                 position: "absolute",
-                                bottom: "0",
-                                right: "5%",
+                                top: "0",
+                                right: "2%",
                             }}
                             handleClick={() => setShowEditImagePopup(true)}
                         />
@@ -325,11 +325,11 @@ const Profile = () => {
             <div className="bg-primary-50 flex flex-col 2xs:flex-row justify-between items-center px-4 pb-4 pt-10 shadow-inner md:pl-[15rem] mx-2 rounded-b-lg">
                 <div>
                     <h2 className="text-primary text-2xl font-bold">
-                        {posts[0]?.author?.first_name ?? pathUser?.first_name}{" "}
-                        {posts[0]?.author?.last_name ?? pathUser?.last_name}
+                        {posts[0]?.author?.first_name ?? (pathUser?.first_name || "")}{" "}
+                        {posts[0]?.author?.last_name ?? (pathUser?.last_name || "")}
                     </h2>
                     <p className="text-primary text-base capitalize">
-                        {posts[0]?.author?.join_as ?? pathUser?.join_as}
+                        {posts[0]?.author?.join_as ?? (pathUser?.join_as || "")}
                     </p>
                 </div>
                 <div className="flex items-center gap-0 xs:gap-4 flex-col xs:flex-row">
@@ -375,128 +375,119 @@ const Profile = () => {
                 </div>
             </div>
             <div className="flex flex-col sm:flex-row justify-between gap-2 m-2">
-                <div className="flex flex-row flex-wrap sm:flex-col gap-4 sm:gap-8 px-4 py-8 rounded-lg bg-primary-50 flex-grow max-h-[40rem]">
-                    <h3 className="text-primary text-xl font-bold">Socials:</h3>
-                    {socials?.facebook_link && (
-                        <Link
-                            href={socials.facebook_link}
-                            rel="noreferrer"
-                            target="_blank"
-                            className="text-primary cursor-pointer flex items-center gap-2"
-                        >
-                            <AiFillFacebook className="text-3xl" />
-                            <span>Facebook</span>
-                        </Link>
-                    )}
-                    {socials?.twitter_link && (
-                        <Link
-                            href={socials.twitter_link}
-                            rel="noreferrer"
-                            target="_blank"
-                            className="text-primary cursor-pointer flex items-center gap-2"
-                        >
-                            <AiFillTwitterSquare className="text-3xl" />
-                            <span>Twitter</span>
-                        </Link>
-                    )}
-                    {socials?.instagram_link && (
-                        <Link
-                            href={socials.instagram_link}
-                            rel="noreferrer"
-                            target="_blank"
-                            className="text-primary cursor-pointer flex items-center gap-2"
-                        >
-                            <AiFillInstagram className="text-3xl" />
-                            <span>Instagram</span>
-                        </Link>
-                    )}
-                    {socials?.linkedin_link && (
-                        <Link
-                            href={socials.linkedin_link}
-                            rel="noreferrer"
-                            target="_blank"
-                            className="text-primary cursor-pointer flex items-center gap-2"
-                        >
-                            <AiFillLinkedin className="text-3xl" />
-                            <span>LinkedIn</span>
-                        </Link>
-                    )}
-                    {socials?.github_link && (
-                        <Link
-                            href={socials.github_link}
-                            rel="noreferrer"
-                            target="_blank"
-                            className="text-primary cursor-pointer flex items-center gap-2"
-                        >
-                            <AiFillGithub className="text-3xl" />
-                            <span>Github</span>
-                        </Link>
-                    )}
-                    {socials?.medium_link && (
-                        <Link
-                            href={socials.medium_link}
-                            rel="noreferrer"
-                            target="_blank"
-                            className="text-primary cursor-pointer flex items-center gap-2"
-                        >
-                            <AiFillMediumSquare className="text-3xl" />
-                            <span>Medium</span>
-                        </Link>
-                    )}
-                    {socials?.youtube_link && (
-                        <Link
-                            href={socials.youtube_link}
-                            rel="noreferrer"
-                            target="_blank"
-                            className="text-primary cursor-pointer flex items-center gap-2"
-                        >
-                            <AiFillYoutube className="text-3xl" />
-                            <span>Youtube</span>
-                        </Link>
-                    )}
-                    {socials?.website_link && (
-                        <Link
-                            href={socials.website_link}
-                            rel="noreferrer"
-                            target="_blank"
-                            className="text-primary cursor-pointer flex items-center gap-2"
-                        >
-                            <AiOutlineLink className="text-3xl" />
-                            <span>Website</span>
-                        </Link>
-                    )}
-                </div>
-                <div className="bg-primary-50 px-4 pt-8 pb-2 w-[100%] sm:w-[85%] min-h-[20rem] rounded-lg">
+                {!isEmptyObject(socials) && (
+                    <div className="flex flex-row flex-wrap sm:flex-col gap-4 sm:gap-8 px-4 py-8 rounded-lg bg-primary-50 flex-grow max-h-[40rem]">
+                        <h3 className="text-primary text-xl font-bold">Socials:</h3>
+                        {socials?.facebook_link && (
+                            <Link
+                                href={socials.facebook_link}
+                                rel="noreferrer"
+                                target="_blank"
+                                className="text-primary cursor-pointer flex items-center gap-2"
+                            >
+                                <AiFillFacebook className="text-3xl" />
+                                <span>Facebook</span>
+                            </Link>
+                        )}
+                        {socials?.twitter_link && (
+                            <Link
+                                href={socials.twitter_link}
+                                rel="noreferrer"
+                                target="_blank"
+                                className="text-primary cursor-pointer flex items-center gap-2"
+                            >
+                                <AiFillTwitterSquare className="text-3xl" />
+                                <span>Twitter</span>
+                            </Link>
+                        )}
+                        {socials?.instagram_link && (
+                            <Link
+                                href={socials.instagram_link}
+                                rel="noreferrer"
+                                target="_blank"
+                                className="text-primary cursor-pointer flex items-center gap-2"
+                            >
+                                <AiFillInstagram className="text-3xl" />
+                                <span>Instagram</span>
+                            </Link>
+                        )}
+                        {socials?.linkedin_link && (
+                            <Link
+                                href={socials.linkedin_link}
+                                rel="noreferrer"
+                                target="_blank"
+                                className="text-primary cursor-pointer flex items-center gap-2"
+                            >
+                                <AiFillLinkedin className="text-3xl" />
+                                <span>LinkedIn</span>
+                            </Link>
+                        )}
+                        {socials?.github_link && (
+                            <Link
+                                href={socials.github_link}
+                                rel="noreferrer"
+                                target="_blank"
+                                className="text-primary cursor-pointer flex items-center gap-2"
+                            >
+                                <AiFillGithub className="text-3xl" />
+                                <span>Github</span>
+                            </Link>
+                        )}
+                        {socials?.medium_link && (
+                            <Link
+                                href={socials.medium_link}
+                                rel="noreferrer"
+                                target="_blank"
+                                className="text-primary cursor-pointer flex items-center gap-2"
+                            >
+                                <AiFillMediumSquare className="text-3xl" />
+                                <span>Medium</span>
+                            </Link>
+                        )}
+                        {socials?.youtube_link && (
+                            <Link
+                                href={socials.youtube_link}
+                                rel="noreferrer"
+                                target="_blank"
+                                className="text-primary cursor-pointer flex items-center gap-2"
+                            >
+                                <AiFillYoutube className="text-3xl" />
+                                <span>Youtube</span>
+                            </Link>
+                        )}
+                        {socials?.website_link && (
+                            <Link
+                                href={socials.website_link}
+                                rel="noreferrer"
+                                target="_blank"
+                                className="text-primary cursor-pointer flex items-center gap-2"
+                            >
+                                <AiOutlineLink className="text-3xl" />
+                                <span>Website</span>
+                            </Link>
+                        )}
+                    </div>
+                )}
+                <div className="bg-primary-50 px-4 pt-8 pb-2 flex-grow w-[100%] sm:w-[85%] min-h-[20rem] rounded-lg">
                     <Tabs className="" selectedIndex={activeTabIndex} onSelect={handleTabChange}>
                         <TabList className="border-b-4 border-primary flex items-center gap-8 justify-start">
                             <Tab
-                                className={`text-xl text-primary p-2 border-none outline-0 cursor-pointer rounded-lg ${
+                                className={`tab ${
                                     activeTabIndex === 0 ? "font-bold bg-white" : ""
                                 }`}
                             >
-                                Followers
+                                Friends
                             </Tab>
                             <Tab
-                                className={`text-xl text-primary p-2 border-none outline-0 cursor-pointer rounded-lg ${
+                                className={`tab ${
                                     activeTabIndex === 1 ? "font-bold bg-white" : ""
-                                }`}
-                            >
-                                Following
-                            </Tab>
-                            <Tab
-                                className={`text-xl text-primary p-2 border-none outline-0 cursor-pointer rounded-lg ${
-                                    activeTabIndex === 2 ? "font-bold bg-white" : ""
                                 }`}
                             >
                                 Posts
                             </Tab>
                         </TabList>
-
                         <TabPanel>
-                            <h2>Followers Posts</h2>
-                        </TabPanel>
-                        <TabPanel>
-                            <h2>Following Posts</h2>
+                            <h2>Friend Posts</h2>
                         </TabPanel>
                         <TabPanel>
                             <PostComponent

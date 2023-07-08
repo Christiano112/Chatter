@@ -12,9 +12,10 @@ import { selectPostById } from "@/redux/slices/posts";
 import { selectUser } from "@/redux/slices/user";
 import { useAppSelector } from "@/redux/store";
 import { usePathId } from "@/utils/custom";
-import { formatDateTimeShort } from "@/utils/date";
+import { formatDateTimeShort, timeAgo } from "@/utils/date";
 import { formatName } from "@/utils/format";
 import calculateReadingTime from "@/utils/reading_time";
+import Link from "next/link";
 import parse from "html-react-parser";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
@@ -45,7 +46,6 @@ const SingleFeed = () => {
     };
 
     useEffect(() => {
-        // if (!fetchedPost || fetchedPost === 0) return;
         if (!fetchedPost || fetchedPost == null) return;
 
         setPost(fetchedPost);
@@ -114,18 +114,30 @@ const SingleFeed = () => {
                                                 comment.author.first_name,
                                                 comment.author.last_name,
                                             );
+                                            const commentTime = timeAgo(comment?.created_at);
                                             return (
                                                 <div
                                                     key={comment.id}
                                                     className="flex items-center gap-2 mb-4 border-b"
                                                 >
-                                                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white">
+                                                    <Link
+                                                        href={`/profile/${comment.author_id}`}
+                                                        className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white"
+                                                    >
                                                         {initials}
-                                                    </div>
+                                                    </Link>
                                                     <div className="flex flex-col">
-                                                        <h4 className="font-medium text-tertiary">
-                                                            {comment.author?.username} {`:`}
-                                                        </h4>
+                                                        <div className="flex gap-2 items-center">
+                                                            <Link
+                                                                href={`/profile/${comment.author_id}`}
+                                                                className="font-medium text-tertiary"
+                                                            >
+                                                                {comment.author?.username} {`:`}
+                                                            </Link>
+                                                            <span className="text-tertiary-50 text-sm">
+                                                                {commentTime} {`:`}
+                                                            </span>
+                                                        </div>
                                                         <p className="text-tertiary-50">
                                                             {comment.content}
                                                         </p>

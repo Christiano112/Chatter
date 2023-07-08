@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useUser } from "@supabase/auth-helpers-react";
 import { v4 as uuidv4 } from "uuid";
 import { SuccessToast, InfoToast, ErrorToast } from "@/components/toast";
@@ -8,7 +8,6 @@ import dynamic from "next/dynamic";
 import "suneditor/dist/css/suneditor.min.css";
 import SunEditorCore from "suneditor/src/lib/core";
 import supaBase from "@/utils/supabase";
-// import parse from "html-react-parser";
 import Button, { SavingSpinner } from "@/components/button";
 import Header from "@/components/header";
 import { initialReactionValues } from "@/components/reactions";
@@ -32,6 +31,8 @@ const mapPostDataToColumns = (postData: PostType) => {
     };
 };
 
+const invalidContent = "&nbsp;";
+
 const TextEditor = () => {
     const authUser = useUser();
     const editor = useRef<SunEditorCore>();
@@ -45,6 +46,21 @@ const TextEditor = () => {
     const [author_id, setAuthorId] = useState(user.user_id);
 
     useEffect(() => {
+        const handleWindowBeforeUnload = (event: BeforeUnloadEvent) => {
+            if (title.trim() !== "" || content.trim() !== "") {
+                event.preventDefault();
+                event.returnValue = "";
+            }
+        };
+
+        window.addEventListener("beforeunload", handleWindowBeforeUnload);
+
+        return () => {
+            window.removeEventListener("beforeunload", handleWindowBeforeUnload);
+        };
+    }, [title, content]);
+
+    useEffect(() => {
         if (authUser?.id || user.user_id) {
             setAuthorId(authUser?.id ?? user.user_id);
         }
@@ -54,14 +70,13 @@ const TextEditor = () => {
     useEffect(() => {
         const savedTitle = localStorage.getItem(`${author_id}-editorTitle`);
         const savedContent = localStorage.getItem(`${author_id}-editorContent`);
-        if (title.trim() === "" && content.trim() === "") return;
         if (savedTitle) {
             setTitle(savedTitle);
         }
         if (savedContent) {
             setContent(savedContent);
         }
-    }, [author_id, title, content]);
+    }, [author_id]);
 
     // Save content to localStorage every 2 minutes
     useEffect(() => {
@@ -99,44 +114,45 @@ const TextEditor = () => {
         setShowPopup(false);
     };
 
-    const getSunEditorInstance = (sunEditor: SunEditorCore) => {
+    const getSunEditorInstance = useCallback((sunEditor: SunEditorCore) => {
         editor.current = sunEditor;
-    };
+    }, []);
 
-    const handleChange = (content: string) => {
+    const handleChange = useCallback((content: string) => {
         setContent(content);
-    };
+    }, []);
 
-    const handleSave = (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        const post_id = uuidv4();
-        const status = "draft";
+    const handleSave = useCallback(
+        (event: React.FormEvent<HTMLFormElement>) => {
+            event.preventDefault();
+            const post_id = uuidv4();
+            const status = "draft";
 
-        if (!post_id || !author_id || status !== "draft") {
-            ErrorToast("Error Saving Post as Draft");
-            return;
-        }
+            if (!post_id || !author_id || status !== "draft") {
+                ErrorToast("Error Saving Post as Draft");
+                return;
+            }
 
-        dispatch(addPost(author_id, title, content, post_id, status, initialReactionValues));
-        setTitle("");
-        setContent("");
-        InfoToast("Post Saved As Draft");
-        // Clear localStorage and reset the title and content
-        localStorage.removeItem(`${author_id}-editorTitle`);
-        localStorage.removeItem(`${author_id}-editorContent`);
-    };
+            dispatch(addPost(author_id, title, content, post_id, status, initialReactionValues));
+            InfoToast("Post Saved As Draft");
+            setTitle("");
+            setContent("");
+            localStorage.removeItem(`${author_id}-editorTitle`);
+            localStorage.removeItem(`${author_id}-editorContent`);
+        },
+        [author_id, title, content, dispatch],
+    );
 
-    const handlePublish = async () => {
+    const handlePublish = useCallback(async () => {
         const post_id = uuidv4();
         const status = "published";
+        const sanitizedContent = content.replaceAll(invalidContent, "");
+        const cleanedContent = sanitizedContent.replace(/<[^>]*>?/gm, "");
 
-        if (!title || !content) {
-            ErrorToast("Please add title and content");
-            return;
-        } else if (!title) {
+        if (!title.trim()) {
             ErrorToast("Please add title");
             return;
-        } else if (!content) {
+        } else if (!cleanedContent.trim()) {
             ErrorToast("Please add content");
             return;
         }
@@ -161,13 +177,12 @@ const TextEditor = () => {
         }
 
         dispatch(addPost(author_id, title, content, post_id, status, initialReactionValues));
-        setTitle("");
-        setContent("");
         SuccessToast("Post published successfully");
-        // Clear localStorage and reset the title and content
+        setContent("");
+        setTitle("");
         localStorage.removeItem(`${author_id}-editorTitle`);
         localStorage.removeItem(`${author_id}-editorContent`);
-    };
+    }, [author_id, title, content, dispatch]);
 
     return (
         <React.Fragment>

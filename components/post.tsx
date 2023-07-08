@@ -2,7 +2,7 @@ import Loading from "@/app/loading";
 import BookIcon from "@/public/book-icon.png";
 import CommentIcon from "@/public/comment-icon.png";
 import ProfilePic from "@/public/man.png";
-import { formatDateTimeShort } from "@/utils/date";
+import { formatDateTimeShort, timeAgo } from "@/utils/date";
 import { formatName } from "@/utils/format";
 import calculateReadingTime from "@/utils/reading_time";
 import parse from "html-react-parser";
@@ -54,6 +54,8 @@ const PostComponent = ({
     return (
         <div className="rounded-lg shadow-inner px-2 sm:px-4 py-4">
             {posts.map((post) => {
+                if (!post.author) return null;
+                const { user_id, first_name, last_name, join_as } = post?.author;
                 const readingTime = calculateReadingTime(post?.content ?? "") + " mins";
                 const commentsCount = Object.keys(post?.comments ?? {}).length;
                 const contentLength = post?.content?.length || 0;
@@ -61,7 +63,7 @@ const PostComponent = ({
                 return (
                     <div key={post?.post_id} className="border-b-2 border-b-slate-700 p-2 sm:p-4">
                         <div className="flex items-start sm:items-center gap-4 flex-col sm:flex-row">
-                            <Link href={`/profile/${post?.author?.user_id}`}>
+                            <Link href={`/profile/${user_id}`}>
                                 <Image
                                     src={ProfilePic}
                                     alt="profile pic"
@@ -70,13 +72,13 @@ const PostComponent = ({
                             </Link>
                             <div className="flex flex-col gap-3">
                                 <Link
-                                    href={`/profile/${post?.author?.user_id}`}
+                                    href={`/profile/${user_id}`}
                                     className="font-medium text-2xl text-tertiary cursor-pointer"
                                 >
-                                    {post?.author?.first_name} {post?.author?.last_name}
+                                    {first_name} {last_name}
                                 </Link>
                                 <p className="text-tertiary-50 capitalize">
-                                    {post?.author?.join_as},{" "}
+                                    {join_as && join_as + ","}{" "}
                                     <span className="font-medium">
                                         {formatDateTimeShort(post?.created_at)}
                                     </span>
@@ -124,31 +126,44 @@ const PostComponent = ({
                                     {/* Render comments for selected post */}
                                     {selectedPostComments &&
                                         selectedPostComments?.map((comment) => {
-                                            const initials = formatName(
-                                                comment.author.first_name,
-                                                comment.author.last_name,
-                                            );
+                                            if (!comment) return null;
+                                            const { author_id, content, created_at } = comment;
+                                            const { first_name, last_name, username } =
+                                                comment?.author;
+                                            const initials = formatName(first_name, last_name);
+                                            const commentTime = timeAgo(created_at);
                                             return (
                                                 <div
                                                     key={comment.id}
                                                     className="flex items-center gap-2 mb-4 border-b"
                                                 >
-                                                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white">
+                                                    <Link
+                                                        href={`/profile/${author_id}`}
+                                                        className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white"
+                                                    >
                                                         {initials}
-                                                    </div>
+                                                    </Link>
                                                     <div className="flex flex-col">
-                                                        <h4 className="font-medium text-tertiary">
-                                                            {comment.author?.username} {`:`}
-                                                        </h4>
+                                                        <div className="flex gap-2 items-center">
+                                                            <Link
+                                                                href={`/profile/${author_id}`}
+                                                                className="font-medium text-tertiary"
+                                                            >
+                                                                {username}
+                                                            </Link>
+                                                            <span className="text-tertiary-50 text-sm">
+                                                                {commentTime} {`:`}
+                                                            </span>
+                                                        </div>
                                                         <p className="text-tertiary-50">
-                                                            {comment.content}
+                                                            {content}
                                                         </p>
                                                     </div>
                                                 </div>
                                             );
                                         })}
                                     {/* Comment input */}
-                                    <form className="flex items-center mt-4">
+                                    <form className="flex flex-wrap gap-4 items-center mt-4">
                                         <input
                                             type="text"
                                             placeholder="Add a comment..."
@@ -160,7 +175,7 @@ const PostComponent = ({
                                         />
                                         <button
                                             type="submit"
-                                            className="px-4 py-2 ml-4 text-white bg-primary rounded outline-0 select-none"
+                                            className="px-4 py-2 text-white bg-primary rounded outline-0 select-none"
                                             onClick={handleAddComment}
                                         >
                                             Comment
