@@ -110,8 +110,14 @@ const postsSlice = createSlice({
         },
     },
     extraReducers: (builder) => {
-        builder.addCase(fetchPostsToStore.fulfilled, (state, action: PayloadAction<any>) => {
-            state.posts?.push(...action.payload);
+        builder.addCase(fetchPostsToStore.fulfilled, (state, action: PayloadAction<PostType[]>) => {
+            const newPosts = action.payload.filter((newPost) => {
+                // Check if the post already exists in the state
+                return !state.posts.some(
+                    (existingPost) => existingPost.post_id === newPost.post_id,
+                );
+            });
+            state.posts.push(...newPosts);
         });
     },
 });

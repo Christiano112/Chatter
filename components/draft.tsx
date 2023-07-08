@@ -9,20 +9,23 @@ import { formatDateTimeShort } from "@/utils/date";
 import calculateReadingTime from "@/utils/reading_time";
 import parse from "html-react-parser";
 import Image from "next/image";
-import React from "react";
 import NotFound from "./not-found";
 
 const DraftPost = () => {
     const dispatch = useAppDispatch();
-    const posts = useAppSelector((state) => selectPostsByStatus(state, "draft"));
-    const user = useAppSelector(selectUser);
+    // const posts = useAppSelector((state) => selectPostsByStatus(state, "draft"));
+    // const user = useAppSelector(selectUser);
+    const { user, posts } = useAppSelector((state) => ({
+        user: selectUser(state),
+        posts: selectPostsByStatus(state, "draft"),
+    }));
 
     if (!posts || posts.length === 0) {
         return <NotFound text="Post not found" />;
     }
 
     return (
-        <React.Fragment>
+        <>
             {posts.map((post) => {
                 const readingTime = calculateReadingTime(post?.content) + " mins";
 
@@ -63,7 +66,7 @@ const DraftPost = () => {
                     </div>
                 );
             })}
-        </React.Fragment>
+        </>
     );
 };
 

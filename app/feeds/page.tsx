@@ -53,12 +53,12 @@ const Feeds = () => {
     }, [authUser, dispatch, user]);
 
     useEffect(() => {
-        if (filteredPosts.length > 0) {
+        if (filteredPosts && filteredPosts?.length > 0) {
             setPosts(filteredPosts);
             return;
         }
 
-        if (fetchedPosts.length > 0) {
+        if (fetchedPosts && fetchedPosts?.length > 0) {
             setPosts(fetchedPosts);
             return;
         }
@@ -108,15 +108,15 @@ const Feeds = () => {
 
                 <section>
                     <ul className="flex items-center justify-between gap-8 mt-8 px-2 sm:px-4 md:px-8 py-4 rounded-lg mb-2 shadow-inner">
-                        <li className="text-tertiary font-medium text-xl border-b-8 border-primary hover:cursor-pointer">
+                        <li className="text-tertiary font-medium text-xl border-b-4 border-primary hover:cursor-pointer">
                             For you
                         </li>
-                        <li className="text-tertiary font-medium text-xl hover:cursor-pointer">
+                        {/* <li className="text-tertiary font-medium text-xl hover:cursor-pointer">
                             Featured
                         </li>
                         <li className="text-tertiary font-medium text-xl hover:cursor-pointer">
                             Recent
-                        </li>
+                        </li> */}
                     </ul>
                     <PostComponent
                         isLoading={isLoading}

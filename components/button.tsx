@@ -18,31 +18,23 @@ export interface NavigateButtonProps {
     size?: "small" | "medium" | "large";
 }
 
-const getVariantClass = (variant: ButtonType["variant"]) => {
-    switch (variant) {
-        case "primary":
-            return "bg-primary";
-        case "secondary":
-            return "bg-secondary";
-        case "tertiary":
-            return "bg-tertiary";
-        default:
-            return "bg-white";
-    }
+const variantClassMap = {
+    primary: "bg-primary",
+    secondary: "bg-secondary",
+    tertiary: "bg-tertiary",
+    default: "bg-white",
 };
 
-const getSizeClass = (size: ButtonType["size"]) => {
-    switch (size) {
-        case "small":
-            return "w-[8rem]";
-        case "medium":
-            return "w-[12rem]";
-        case "large":
-            return "w-1/2";
-        default:
-            return "w-full";
-    }
+const sizeClassMap = {
+    small: "w-[8rem]",
+    medium: "w-[12rem]",
+    large: "w-1/2",
+    default: "w-full",
 };
+
+const getVariantClass = (variant: ButtonType["variant"]) => variantClassMap[variant ?? "default"];
+
+const getSizeClass = (size: ButtonType["size"]) => sizeClassMap[size ?? "default"];
 
 const Button = ({ text, type, variant, handleClick, size, ...props }: ButtonType) => {
     const [isHovered, setIsHovered] = useState(false);
@@ -52,18 +44,16 @@ const Button = ({ text, type, variant, handleClick, size, ...props }: ButtonType
     }`;
 
     return (
-        <div>
-            <button
-                onClick={handleClick}
-                type={type}
-                className={className}
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
-                {...props}
-            >
-                {text}
-            </button>
-        </div>
+        <button
+            onClick={handleClick}
+            type={type}
+            className={className}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            {...props}
+        >
+            {text}
+        </button>
     );
 };
 
@@ -77,7 +67,10 @@ export const NavigateButton = ({ direction, text, size, ...props }: NavigateButt
             type="button"
             variant="primary"
             size={size}
-            handleClick={() => router.push(`/${direction}`)}
+            handleClick={() => {
+                if (!direction) return;
+                router.push(`/${direction}`);
+            }}
             {...props}
         />
     );

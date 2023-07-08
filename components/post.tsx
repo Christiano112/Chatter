@@ -54,10 +54,10 @@ const PostComponent = ({
     return (
         <div className="rounded-lg shadow-inner px-2 sm:px-4 py-4">
             {posts.map((post) => {
-                const readingTime = calculateReadingTime(post?.content) + " mins";
+                const readingTime = calculateReadingTime(post?.content ?? "") + " mins";
                 const commentsCount = Object.keys(post?.comments ?? {}).length;
                 const contentLength = post?.content?.length || 0;
-                const excerpt = post?.content?.slice(0, excerptLimit);
+                const excerpt = post?.content?.slice(0, excerptLimit) ?? "";
                 return (
                     <div key={post?.post_id} className="border-b-2 border-b-slate-700 p-2 sm:p-4">
                         <div className="flex items-start sm:items-center gap-4 flex-col sm:flex-row">
@@ -182,7 +182,7 @@ const PostComponent = ({
                 </button>
                 <button
                     onClick={() => setPage((page) => page + 1)}
-                    disabled={posts?.length <= pageSize}
+                    disabled={posts?.length < pageSize}
                     className="px-4 py-2 text-white bg-primary rounded outline-0 select-none"
                 >
                     Next

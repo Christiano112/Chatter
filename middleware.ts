@@ -2,6 +2,9 @@ import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+const allowedPaths = ["/", "/login", "/signup"];
+const protectedPaths = ["/profile", "/editor", "/drafts", "/feeds"];
+
 export async function middleware(req: NextRequest) {
     const res = NextResponse.next();
 
@@ -19,8 +22,14 @@ export async function middleware(req: NextRequest) {
 
     // Auth condition not met, redirect to login page.
     const redirectUrl = req.nextUrl.clone();
-    redirectUrl.pathname = "/login";
-    redirectUrl.searchParams.set(`redirectedFrom`, req.nextUrl.pathname);
+    if (!allowedPaths.includes(redirectUrl.pathname)) {
+        redirectUrl.pathname = "/login";
+    }
+
+    if (protectedPaths.some((path) => req.nextUrl.pathname.startsWith(path))) {
+        redirectUrl.searchParams.set(`redirectedFrom`, req.nextUrl.pathname);
+    }
+
     return NextResponse.redirect(redirectUrl);
 }
 

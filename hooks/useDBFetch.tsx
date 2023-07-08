@@ -3,123 +3,176 @@ import supaBase from "@/utils/supabase";
 import { ErrorToast } from "@/components/toast";
 import { useAppDispatch } from "@/redux/store";
 import { addComment } from "@/redux/slices/comments";
+import { Json } from "@/utils/types";
+
+export interface DBPostType {
+    author_id: string;
+    content: string;
+    created_at: string | null;
+    id: number;
+    post_id: string;
+    reactions: Json;
+    title: string;
+    author: {
+        first_name: string | null;
+        last_name: string | null;
+        username: string;
+        join_as: string;
+        user_id?: string;
+    } | null;
+    comments: {
+        id: number;
+    }[];
+}
+
+export interface FilteredDBPostType {
+    author_id: string;
+    content: string;
+    created_at: string | null;
+    id: number;
+    post_id: string;
+    reactions: Json;
+    title: string;
+    author: {
+        first_name: string | null;
+        last_name: string | null;
+        username: string;
+        join_as: string;
+        user_id: string;
+    } | null;
+}
+[];
+
+export interface CommentType {
+    author_id: string;
+    comment_id: string;
+    content: string | null;
+    created_at: string | null;
+    id: number;
+    author: {
+        first_name: string | null;
+        last_name: string | null;
+        username: string;
+    } | null;
+}
+[];
 
 export const useFetchAllPosts = (page: number, pageSize: number) => {
     const [isLoading, setIsLoading] = useState(false);
-    const [posts, setPosts] = useState<any>([]);
+    const [posts, setPosts] = useState<DBPostType[]>([]);
 
-    useEffect(() => {
-        const fetchPosts = async () => {
-            try {
-                setIsLoading(true);
-                let { data: posts, error } = await supaBase
-                    .from("posts")
-                    .select(
-                        `*,
+    const fetchAllPosts = useCallback(async () => {
+        try {
+            setIsLoading(true);
+            let { data: posts, error } = await supaBase
+                .from("posts")
+                .select(
+                    `*,
             author:users(first_name, last_name, username, join_as, user_id),
             comments:comments(id)`,
-                    )
-                    .range((page - 1) * pageSize, page * pageSize - 1)
-                    .order("created_at", { ascending: false });
+                )
+                .range((page - 1) * pageSize, page * pageSize - 1)
+                .order("created_at", { ascending: false });
 
-                if (error || !posts) {
-                    ErrorToast(error?.message ?? "Error fetching updated posts");
-                    return;
-                }
-
-                setPosts(posts);
-            } catch (error: any) {
-                ErrorToast(error?.message ?? "Error fetching updated post");
-            } finally {
-                setIsLoading(false);
+            if (error || !posts) {
+                ErrorToast(error?.message ?? "Error fetching updated posts");
+                return;
             }
-        };
 
-        fetchPosts();
+            setPosts(posts);
+        } catch (error: any) {
+            ErrorToast(error?.message ?? "Error fetching updated post");
+        } finally {
+            setIsLoading(false);
+        }
     }, [page, pageSize]);
+
+    useEffect(() => {
+        fetchAllPosts();
+    }, [fetchAllPosts]);
 
     return { isLoading, posts };
 };
 
 export const useFetchPostsByAuthorId = (page: number, pageSize: number, author_id: string) => {
     const [isLoading, setIsLoading] = useState(false);
-    const [posts, setPosts] = useState<any>([]);
+    const [posts, setPosts] = useState<DBPostType[]>([]);
 
-    useEffect(() => {
-        const fetchPosts = async () => {
-            try {
-                setIsLoading(true);
-                let { data: posts, error } = await supaBase
-                    .from("posts")
-                    .select(
-                        `*,
+    const fetchPostsByAuthorId = useCallback(async () => {
+        try {
+            setIsLoading(true);
+            let { data: posts, error } = await supaBase
+                .from("posts")
+                .select(
+                    `*,
             author:users(first_name, last_name, username, join_as, user_id),
             comments:comments(id)`,
-                    )
-                    .eq("author_id", author_id)
-                    .range((page - 1) * pageSize, page * pageSize - 1)
-                    .order("created_at", { ascending: false });
+                )
+                .eq("author_id", author_id)
+                .range((page - 1) * pageSize, page * pageSize - 1)
+                .order("created_at", { ascending: false });
 
-                if (error || !posts) {
-                    ErrorToast(error?.message ?? "Error fetching updated posts");
-                    return;
-                }
-
-                setPosts(posts);
-            } catch (error: any) {
-                ErrorToast(error?.message ?? "Error fetching updated post");
-            } finally {
-                setIsLoading(false);
+            if (error || !posts) {
+                ErrorToast(error?.message ?? "Error fetching updated posts");
+                return;
             }
-        };
 
-        fetchPosts();
+            setPosts(posts);
+        } catch (error: any) {
+            ErrorToast(error?.message ?? "Error fetching updated post");
+        } finally {
+            setIsLoading(false);
+        }
     }, [author_id, page, pageSize]);
+
+    useEffect(() => {
+        fetchPostsByAuthorId();
+    }, [fetchPostsByAuthorId]);
 
     return { isLoading, posts };
 };
 
-export const useFecthPostById = (post_id: string) => {
+export const useFetchPostById = (post_id: string) => {
     const [isLoading, setIsLoading] = useState(false);
-    const [post, setPost] = useState<any>([]);
+    const [post, setPost] = useState<DBPostType>();
 
-    useEffect(() => {
-        const fetchPost = async () => {
-            try {
-                setIsLoading(true);
-                let { data: post, error } = await supaBase
-                    .from("posts")
-                    .select(
-                        `*,
+    const fetchPostById = useCallback(async () => {
+        try {
+            setIsLoading(true);
+            let { data: post, error } = await supaBase
+                .from("posts")
+                .select(
+                    `*,
                     author:users(first_name, last_name, username, join_as),
                     comments:comments(id)`,
-                    )
-                    .eq("post_id", post_id)
-                    .order("created_at", { ascending: false });
+                )
+                .eq("post_id", post_id)
+                .order("created_at", { ascending: false });
 
-                if (error || !post) {
-                    ErrorToast(error?.message ?? "Error fetching updated post");
-                    return;
-                }
-
-                setPost(post[0]);
-            } catch (error: any) {
+            if (error || !post) {
                 ErrorToast(error?.message ?? "Error fetching updated post");
-            } finally {
-                setIsLoading(false);
+                return;
             }
-        };
 
-        fetchPost();
+            setPost(post[0]);
+        } catch (error: any) {
+            ErrorToast(error?.message ?? "Error fetching updated post");
+        } finally {
+            setIsLoading(false);
+        }
     }, [post_id]);
+
+    useEffect(() => {
+        fetchPostById();
+    }, [fetchPostById]);
 
     return { isLoading, post };
 };
 
-export const useFetchCommentsForPost = (): any => {
-    const [selectedPostComments, setSelectedPostComments] = useState<any>([]);
+export const useFetchCommentsForPost = () => {
+    const [selectedPostComments, setSelectedPostComments] = useState<CommentType[]>([]);
 
-    const fetchCommentsForPost = async (post_id: string) => {
+    const fetchCommentsForPost = useCallback(async (post_id: string) => {
         let { data: comments, error: commentsError } = await supaBase
             .from("comments")
             .select(
@@ -136,7 +189,7 @@ export const useFetchCommentsForPost = (): any => {
         }
 
         setSelectedPostComments(comments);
-    };
+    }, []);
 
     return { selectedPostComments, fetchCommentsForPost, setSelectedPostComments };
 };
@@ -146,61 +199,67 @@ export const usePostInteraction = ({
     fetchCommentsForPost,
     setSelectedPostComments,
 }: any) => {
-    const [selectedPost, setSelectedPost] = useState<any>([]);
+    const [selectedPost, setSelectedPost] = useState<DBPostType>();
     const [newComment, setNewComment] = useState("");
 
     const dispatch = useAppDispatch();
 
-    const handleCommentClick = async (post: any) => {
-        setNewComment("");
-        setSelectedPostComments([]);
-        setSelectedPost(post);
-        await fetchCommentsForPost(post?.post_id);
-    };
+    const handleCommentClick = useCallback(
+        async (post: DBPostType) => {
+            setNewComment("");
+            setSelectedPostComments([]);
+            setSelectedPost(post);
+            await fetchCommentsForPost(post?.post_id);
+        },
+        [fetchCommentsForPost, setSelectedPostComments],
+    );
 
-    const handleAddComment = async (e: React.FormEvent<HTMLButtonElement>) => {
-        e.preventDefault();
+    const handleAddComment = useCallback(
+        async (e: React.FormEvent<HTMLButtonElement>) => {
+            e.preventDefault();
 
-        if (!newComment.trim() || !selectedPost) {
-            ErrorToast("Comment cannot be empty");
-            return;
-        }
+            if (!newComment.trim() || !selectedPost) {
+                ErrorToast("Comment cannot be empty");
+                return;
+            }
 
-        if (typeof author_id !== "string") return;
+            if (typeof author_id !== "string") return;
 
-        const { data: comment, error } = await supaBase
-            .from("comments")
-            .insert([
-                {
-                    author_id: author_id,
-                    comment_id: selectedPost?.post_id,
-                    content: newComment,
-                },
-            ])
-            .select();
+            const { data: comment, error } = await supaBase
+                .from("comments")
+                .insert([
+                    {
+                        author_id: author_id,
+                        comment_id: selectedPost?.post_id,
+                        content: newComment,
+                    },
+                ])
+                .select();
 
-        if (error || !comment) {
-            ErrorToast(error?.message ?? "Error adding comment");
-            return;
-        }
+            if (error || !comment) {
+                ErrorToast(error?.message ?? "Error adding comment");
+                return;
+            }
 
-        // fetch the comments again so it shows instantly
-        setTimeout(() => {
-            fetchCommentsForPost(selectedPost?.post_id);
-        }, 100);
+            // fetch the comments again so it shows instantly
+            setTimeout(() => {
+                fetchCommentsForPost(selectedPost?.post_id);
+            }, 100);
 
-        dispatch(addComment(comment[0]));
+            dispatch(addComment(comment[0]));
 
-        setNewComment("");
-    };
+            setNewComment("");
+        },
+        [author_id, dispatch, fetchCommentsForPost, newComment, selectedPost],
+    );
 
     return { selectedPost, newComment, handleCommentClick, handleAddComment, setNewComment };
 };
 
 export const useSearchPosts = () => {
-    const [filteredPosts, setFilteredPosts] = useState<any>([]);
+    const [filteredPosts, setFilteredPosts] = useState<FilteredDBPostType[] | null>([]);
 
-    const handleSearch = async (query: string) => {
+    const handleSearch = useCallback(async (query: string) => {
         if (!query.trim()) {
             return;
         }
@@ -222,7 +281,7 @@ export const useSearchPosts = () => {
         } else {
             setFilteredPosts(filteredPosts);
         }
-    };
+    }, []);
 
     return { filteredPosts, handleSearch };
 };
@@ -257,9 +316,12 @@ export const uploadImageToStore = async (file: File, fileName: string): Promise<
     }
 };
 
-export const useReactionUpdate = (posts: any, setPosts: any) => {
+export const useReactionUpdate = (
+    posts: any[],
+    setPosts: React.Dispatch<React.SetStateAction<any[] | DBPostType[]>>,
+) => {
     const handleReactionUpdate = useCallback(
-        (updatedPost: any) => {
+        (updatedPost: { post_id: string; reactions: any }) => {
             const updatedPostsArray = posts.map((p: { post_id: string }) =>
                 p.post_id === updatedPost.post_id ? { ...p, reactions: updatedPost.reactions } : p,
             );

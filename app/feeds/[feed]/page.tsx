@@ -4,7 +4,7 @@ import Loading from "@/app/loading";
 import Header from "@/components/header";
 import NotFound from "@/components/not-found";
 import ReactionButton from "@/components/reactions";
-import { useFecthPostById, useFetchCommentsForPost, usePostInteraction } from "@/hooks/useDBFetch";
+import { useFetchPostById, useFetchCommentsForPost, usePostInteraction } from "@/hooks/useDBFetch";
 import BookIcon from "@/public/book-icon.png";
 import CommentIcon from "@/public/comment-icon.png";
 import ProfilePic from "@/public/man.png";
@@ -27,7 +27,7 @@ const SingleFeed = () => {
     const [post, setPost] = useState<any>(
         useAppSelector((state) => selectPostById(state, pathId), shallowEqual),
     );
-    const { isLoading, post: fetchedPost } = useFecthPostById(pathId);
+    const { isLoading, post: fetchedPost } = useFetchPostById(pathId);
     const { selectedPostComments, fetchCommentsForPost, setSelectedPostComments } =
         useFetchCommentsForPost();
     const { selectedPost, newComment, handleCommentClick, handleAddComment, setNewComment } =
@@ -45,7 +45,8 @@ const SingleFeed = () => {
     };
 
     useEffect(() => {
-        if (fetchedPost.length === 0) return;
+        // if (!fetchedPost || fetchedPost === 0) return;
+        if (!fetchedPost || fetchedPost == null) return;
 
         setPost(fetchedPost);
     }, [fetchedPost]);

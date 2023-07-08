@@ -22,14 +22,20 @@ export const initialReactionValues = {
 
 interface ReactionButtonProps {
     post: PostType;
-    setUpdatedPost: any;
+    setUpdatedPost: React.Dispatch<React.SetStateAction<any>>;
 }
 
 const ReactionButton: React.FC<ReactionButtonProps> = memo(({ post, setUpdatedPost }) => {
     const dispatch = useAppDispatch();
     const [selectedReaction, setSelectedReaction] = useState<string | null>(null);
 
-    const handleReactionCountAdded = async ({ post_id, reaction }: any) => {
+    const handleReactionCountAdded = async ({
+        post_id,
+        reaction,
+    }: {
+        post_id: string;
+        reaction: any;
+    }) => {
         if (!post.reactions) return;
         const updatedReaction = {
             ...post.reactions,
@@ -49,7 +55,13 @@ const ReactionButton: React.FC<ReactionButtonProps> = memo(({ post, setUpdatedPo
         }
     };
 
-    const handleReactionCountDeleted = async ({ post_id, reaction }: any) => {
+    const handleReactionCountDeleted = async ({
+        post_id,
+        reaction,
+    }: {
+        post_id: string;
+        reaction: any;
+    }) => {
         if (!post.reactions) return;
         const updatedReaction = {
             ...post.reactions,
@@ -100,7 +112,7 @@ const ReactionButton: React.FC<ReactionButtonProps> = memo(({ post, setUpdatedPo
         </button>
     ));
 
-    return <div className="border">{reactionButtons}</div>;
+    return <div>{reactionButtons}</div>;
 });
 
 ReactionButton.displayName = "ReactionButton";

@@ -13,7 +13,7 @@ import {
 } from "@/hooks/useDBFetch";
 import { selectUser, updateUser } from "@/redux/slices/user";
 import { useAppDispatch, useAppSelector } from "@/redux/store";
-import { selectPostsByAuthorId } from "@/redux/slices/posts";
+import { PostType, selectPostsByAuthorId } from "@/redux/slices/posts";
 import { useCheckAuth, usePathId } from "@/utils/custom";
 import { SocialLinkType, UpdateUserType, useSocialLinkForm, useUpdateUserForm } from "@/utils/form";
 import supaBase from "@/utils/supabase";
@@ -69,7 +69,7 @@ const Profile = () => {
     const [activeTabIndex, setActiveTabIndex] = useState(2);
     const [activeEditTab, setActiveEditTab] = useState(1);
     const [socials, setSocials] = useState<any>({});
-    const [posts, setPosts] = useState<any>(
+    const [posts, setPosts] = useState<PostType[] | any[]>(
         useAppSelector((state) => selectPostsByAuthorId(state, pathId)),
     );
     const { isLoading, posts: fetchedPosts } = useFetchPostsByAuthorId(page, pageSize, pathId);
@@ -252,7 +252,6 @@ const Profile = () => {
             const profilePicName = `profile_${Date.now()}_${profilePicEdit.name}`;
             const profilePicUrl = await uploadImageToStore(profilePicEdit, profilePicName);
 
-            // Save the profilePicUrl to the Supabase database
             const { data, error } = await supaBase
                 .from("profile")
                 .update({ profile_pic: profilePicUrl })
@@ -268,7 +267,6 @@ const Profile = () => {
             const coverPicName = `cover_${Date.now()}_${coverPicEdit.name}`;
             const coverPicUrl = await uploadImageToStore(coverPicEdit, coverPicName);
 
-            // Save the coverPicUrl to the Supabase database
             const { data, error } = await supaBase
                 .from("profile")
                 .update({ cover_pic: coverPicUrl })
