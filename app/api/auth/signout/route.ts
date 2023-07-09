@@ -13,7 +13,11 @@ export async function POST(req: NextRequest) {
         await supabase.auth.signOut();
     }
 
-    return NextResponse.redirect(new URL("/", req.url), {
+    const redirectUrl = req.nextUrl.clone();
+    redirectUrl.pathname = "/login";
+    redirectUrl.searchParams.set(`redirectedFrom`, req.nextUrl.pathname);
+
+    return NextResponse.redirect(redirectUrl, {
         status: 302,
     });
 }
