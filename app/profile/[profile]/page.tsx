@@ -2,21 +2,19 @@
 
 import Button from "@/components/button";
 import PostComponent from "@/components/post";
-import { ErrorToast, SuccessToast } from "@/components/toast";
 import {
-    downloadAndSetImage,
-    uploadImageToStore,
+    isEmptyObject,
     useFetchCommentsForPost,
     useFetchPostsByAuthorId,
     usePostInteraction,
     useReactionUpdate,
+    useProfile,
 } from "@/hooks/useDBFetch";
-import { selectUser, updateUser } from "@/redux/slices/user";
-import { useAppDispatch, useAppSelector } from "@/redux/store";
+import { selectUser } from "@/redux/slices/user";
+import { useAppSelector } from "@/redux/store";
 import { PostType, selectPostsByAuthorId } from "@/redux/slices/posts";
 import { useCheckAuth, usePathId } from "@/utils/custom";
-import { SocialLinkType, UpdateUserType, useSocialLinkForm, useUpdateUserForm } from "@/utils/form";
-import supaBase from "@/utils/supabase";
+import { useSocialLinkForm, useUpdateUserForm } from "@/utils/form";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
@@ -36,22 +34,6 @@ import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
 import EditImagesPopup from "../editImage";
 import EditProfilePopup from "../editProfile";
 
-const mapUpdateDataToColumns = (updateData: UpdateUserType) => {
-    const { first_name, last_name, username, join_as, email } = updateData;
-
-    return {
-        first_name,
-        last_name,
-        username,
-        join_as,
-        email,
-    };
-};
-
-const isEmptyObject = (obj: any) => {
-    return Object.keys(obj).length === 0;
-};
-
 const pageSize = 10;
 
 const Profile = () => {
@@ -59,16 +41,9 @@ const Profile = () => {
     const { user } = useCheckAuth();
     const currentVisitor = user?.id === pathId ? "owner" : "visitor";
     const { user: pathUser } = useAppSelector<any>(selectUser);
-    const dispatch = useAppDispatch();
-    const [showPopup, setShowPopup] = useState(false);
-    const [pageLoading, setPageLoading] = useState(false);
-    const [showEditImagePopup, setShowEditImagePopup] = useState(false);
-    const [profilePicEdit, setProfilePicEdit] = useState<File | null>(null);
-    const [coverPicEdit, setCoverPicEdit] = useState<File | null>(null);
     const [page, setPage] = useState(1);
-    const [activeTabIndex, setActiveTabIndex] = useState(2);
+    const [activeTabIndex, setActiveTabIndex] = useState(1);
     const [activeEditTab, setActiveEditTab] = useState(1);
-    const [socials, setSocials] = useState<any>({});
     const [posts, setPosts] = useState<PostType[] | any[]>(
         useAppSelector((state) => selectPostsByAuthorId(state, pathId)),
     );
@@ -82,6 +57,21 @@ const Profile = () => {
             setSelectedPostComments,
         });
     const { handleReactionUpdate } = useReactionUpdate(posts, setPosts);
+    const {
+        pageLoading,
+        socials,
+        showPopup,
+        onEditSubmit,
+        setShowPopup,
+        handleSocialFormSubmit,
+        profilePicEdit,
+        coverPicEdit,
+        showEditImagePopup,
+        setShowEditImagePopup,
+        handleProfilePicChange,
+        handleCoverPicChange,
+        handlePictureUpload,
+    } = useProfile(pathId, user);
 
     useEffect(() => {
         if (fetchedPosts.length > 0) {
@@ -89,137 +79,6 @@ const Profile = () => {
             return;
         }
     }, [fetchedPosts]);
-
-    useEffect(() => {
-        const fetchProfile = async () => {
-            try {
-                setPageLoading(true);
-                const { data: currentEmail, error: emailError } = await supaBase
-                    .from("users")
-                    .select("email")
-                    .eq("user_id", pathId);
-
-                if (emailError) {
-                    throw new Error(emailError.message);
-                }
-
-                const { data, error } = await supaBase
-                    .from("profile")
-                    .select("*")
-                    .eq("email", currentEmail[0].email);
-
-                if (data?.length === 0) return;
-
-                if (error) {
-                    throw new Error(error.message);
-                }
-
-                // If socials exist, set the socials state
-                if (!isEmptyObject(data)) {
-                    setSocials(data[0].socials);
-                }
-
-                // Download profile and cover pics
-                await Promise.all([
-                    downloadAndSetImage(data, "profile_pic", setProfilePicEdit),
-                    downloadAndSetImage(data, "cover_pic", setCoverPicEdit),
-                ]);
-            } catch (error: any) {
-                // if (error.message.includes("pic")) return;
-                ErrorToast(error.message);
-            } finally {
-                setPageLoading(false);
-            }
-        };
-
-        fetchProfile();
-    }, [pathId]);
-
-    const onEditSubmit = async (data: UpdateUserType) => {
-        const mappedData: {
-            email?: string;
-            first_name?: string;
-            join_as?: string;
-            last_name?: string;
-            username?: string;
-            [key: string]: string | undefined;
-        } = mapUpdateDataToColumns(data);
-
-        // Remove empty fields from mappedData
-        for (const key in mappedData) {
-            if (mappedData.hasOwnProperty(key) && !mappedData[key]) {
-                delete mappedData[key];
-            }
-        }
-
-        const { data: dbData, error } = await supaBase
-            .from("users")
-            .update(mappedData)
-            .eq("email", mappedData.email)
-            .select();
-
-        if (error) {
-            ErrorToast(error.message);
-            return;
-        }
-
-        dispatch(updateUser(mappedData));
-        SuccessToast("Profile updated successfully");
-        setShowPopup(false);
-    };
-
-    const handleSocialFormSubmit = async (socialData: SocialLinkType) => {
-        try {
-            // Remove empty fields from socialData
-            const filteredSocialData = Object.entries(socialData).reduce(
-                (acc: SocialLinkType, [key, value]) => {
-                    if (value !== "") {
-                        acc[key] = value;
-                    }
-                    return acc;
-                },
-                {},
-            );
-
-            if (!isEmptyObject(socials)) {
-                // If socials exist, update the specific fields
-                const updatedSocials = { ...socials, ...filteredSocialData };
-
-                const { data, error } = await supaBase
-                    .from("profile")
-                    .update({ socials: updatedSocials })
-                    .eq("email", user?.email)
-                    .select();
-
-                if (error) {
-                    ErrorToast(error.message);
-                    return;
-                }
-            } else {
-                // If socials do not exist, insert a new record
-                if (!user?.email) {
-                    ErrorToast("An error occurred. Please try again later.");
-                    return;
-                }
-                const { data, error } = await supaBase
-                    .from("profile")
-                    .insert([{ socials: filteredSocialData, email: user?.email }])
-                    .eq("email", user?.email)
-                    .select();
-
-                if (error) {
-                    ErrorToast(error.message);
-                    return;
-                }
-            }
-
-            SuccessToast("Social links updated successfully");
-        } catch (error) {
-            ErrorToast("An error occurred. Please try again later.");
-        } finally {
-            setShowPopup(false);
-        }
-    };
 
     const handleTabChange = (index: number) => {
         setActiveTabIndex(index);
@@ -231,58 +90,6 @@ const Profile = () => {
         handleFormSubmit: socialFormSubmit,
         errors: socialFormErrors,
     } = useSocialLinkForm(handleSocialFormSubmit);
-
-    // For images upload
-    const handleProfilePicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files.length > 0) {
-            setProfilePicEdit(e.target.files[0]);
-        }
-    };
-
-    const handleCoverPicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files.length > 0) {
-            setCoverPicEdit(e.target.files[0]);
-        }
-    };
-
-    const handlePictureUpload = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-
-        if (profilePicEdit) {
-            const profilePicName = `profile_${Date.now()}_${profilePicEdit.name}`;
-            const profilePicUrl = await uploadImageToStore(profilePicEdit, profilePicName);
-
-            const { data, error } = await supaBase
-                .from("profile")
-                .update({ profile_pic: profilePicUrl })
-                .eq("email", user?.email);
-
-            if (error) {
-                ErrorToast(error.message);
-                return;
-            }
-        }
-
-        if (coverPicEdit) {
-            const coverPicName = `cover_${Date.now()}_${coverPicEdit.name}`;
-            const coverPicUrl = await uploadImageToStore(coverPicEdit, coverPicName);
-
-            const { data, error } = await supaBase
-                .from("profile")
-                .update({ cover_pic: coverPicUrl })
-                .eq("email", user?.email);
-
-            if (error) {
-                ErrorToast(error.message);
-                return;
-            }
-        }
-
-        // Reset the form fields
-        setProfilePicEdit(null);
-        setCoverPicEdit(null);
-        setShowEditImagePopup(false);
-    };
 
     return (
         <React.Fragment>
@@ -325,11 +132,17 @@ const Profile = () => {
             <div className="bg-primary-50 flex flex-col 2xs:flex-row justify-between items-center px-4 pb-4 pt-10 shadow-inner md:pl-[15rem] mx-2 rounded-b-lg">
                 <div>
                     <h2 className="text-primary text-2xl font-bold">
-                        {posts[0]?.author?.first_name ?? (pathUser?.first_name || "")}{" "}
-                        {posts[0]?.author?.last_name ?? (pathUser?.last_name || "")}
+                        {posts.length > 0 &&
+                            !isEmptyObject(posts[0]) &&
+                            (posts[0]?.author?.first_name ?? pathUser?.first_name)}{" "}
+                        {posts.length > 0 &&
+                            !isEmptyObject(posts[0]) &&
+                            (posts[0]?.author?.last_name ?? pathUser?.last_name)}
                     </h2>
                     <p className="text-primary text-base capitalize">
-                        {posts[0]?.author?.join_as ?? (pathUser?.join_as || "")}
+                        {posts.length > 0 &&
+                            !isEmptyObject(posts[0]) &&
+                            (posts[0]?.author?.join_as ?? pathUser?.join_as)}
                     </p>
                 </div>
                 <div className="flex items-center gap-0 xs:gap-4 flex-col xs:flex-row">
@@ -363,13 +176,7 @@ const Profile = () => {
                                 className="text-4xl text-primary cursor-pointer"
                                 title="Send a message"
                             />
-                            <Button
-                                text="Follow"
-                                type="button"
-                                size="small"
-                                variant="primary"
-                                // handleClick={}
-                            />
+                            <Button text="Follow" type="button" size="small" variant="primary" />
                         </>
                     )}
                 </div>

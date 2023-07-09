@@ -117,7 +117,7 @@ const postsSlice = createSlice({
                     (existingPost) => existingPost.post_id === newPost.post_id,
                 );
             });
-            state.posts.push(...newPosts);
+            state.posts?.push(...newPosts);
         });
     },
 });
