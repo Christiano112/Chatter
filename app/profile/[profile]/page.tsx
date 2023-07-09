@@ -132,15 +132,18 @@ const Profile = () => {
             <div className="bg-primary-50 flex flex-col 2xs:flex-row justify-between items-center px-4 pb-4 pt-10 shadow-inner md:pl-[15rem] mx-2 rounded-b-lg">
                 <div>
                     <h2 className="text-primary text-2xl font-bold">
-                        {posts.length > 0 &&
+                        {posts &&
+                            posts?.length > 0 &&
                             !isEmptyObject(posts[0]) &&
                             (posts[0]?.author?.first_name ?? pathUser?.first_name)}{" "}
-                        {posts.length > 0 &&
+                        {posts &&
+                            posts?.length > 0 &&
                             !isEmptyObject(posts[0]) &&
                             (posts[0]?.author?.last_name ?? pathUser?.last_name)}
                     </h2>
                     <p className="text-primary text-base capitalize">
-                        {posts.length > 0 &&
+                        {posts &&
+                            posts?.length > 0 &&
                             !isEmptyObject(posts[0]) &&
                             (posts[0]?.author?.join_as ?? pathUser?.join_as)}
                     </p>
