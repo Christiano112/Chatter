@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import supaBase from "@/utils/supabase";
 import Button from "./button";
 import { ErrorToast, SuccessToast } from "./toast";
@@ -8,6 +9,7 @@ import { logOut } from "@/redux/slices/user";
 
 const SignOutBtn = () => {
     const dispatch = useAppDispatch();
+    const router = useRouter();
     const signOut = async () => {
         const { error } = await supaBase.auth.signOut();
         if (error) {
@@ -16,6 +18,7 @@ const SignOutBtn = () => {
         }
         dispatch(logOut());
         SuccessToast("Bye for now, See you soon!");
+        router.push("/login");
     };
 
     return (
