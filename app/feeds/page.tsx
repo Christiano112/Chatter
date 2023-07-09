@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useUser } from "@supabase/auth-helpers-react";
 import { useAppSelector, useAppDispatch } from "@/redux/store";
-import { selectUser } from "@/redux/slices/user";
+import { fetchUserFromDB, selectUser } from "@/redux/slices/user";
 import { PostType, fetchPostsToStore, selectAllPosts } from "@/redux/slices/posts";
 import SearchInput from "@/components/search";
 import Button from "@/components/button";
@@ -46,9 +46,11 @@ const Feeds = () => {
         if (authUser?.id || user.user_id) {
             setAuthorId(authUser?.id ?? user.user_id);
         }
-
         dispatch(fetchPostsToStore());
-    }, [authUser, dispatch, user]);
+        if (!authUser?.email) return;
+        dispatch(fetchUserFromDB(authUser.email));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     useEffect(() => {
         if (filteredPosts && filteredPosts?.length > 0) {
@@ -84,7 +86,10 @@ const Feeds = () => {
                         height={30}
                         className="rounded-full mr-[-.5rem]"
                     />
-                    <Link href={`/profile/${user.user_id}`} className="cursor-pointer">
+                    <Link
+                        href={`/profile/${user.user_id || authUser?.id}`}
+                        className="cursor-pointer"
+                    >
                         {user && user?.username
                             ? user?.username
                             : authUser && authUser.user_metadata

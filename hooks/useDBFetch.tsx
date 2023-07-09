@@ -590,6 +590,7 @@ export const useProfile = (pathId: string, user: UserType | User | null) => {
                 }
             }
 
+            SuccessToast("picture updated successfully");
             setShowEditImagePopup(false);
         },
         [coverPicEdit, downloadAndSetImage, profilePicEdit, uploadImageToStore, user?.email],

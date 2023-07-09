@@ -81,7 +81,7 @@ const Profile = () => {
         handlePictureUpload,
     } = useProfile(pathId, user);
     const [profilePic, setProfile] = useState(
-        typeof profilePicEdit === "string" ? profilePicEdit : "/profile-dp.png",
+        typeof profilePicEdit === "string" ? profilePicEdit : authUser?.user_metadata?.avatar_url,
     );
     const [coverPic, setCover] = useState(
         typeof coverPicEdit === "string" ? coverPicEdit : "/cover-photo.png",

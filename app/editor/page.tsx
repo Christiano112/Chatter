@@ -61,10 +61,10 @@ const TextEditor = () => {
     }, [title, content]);
 
     useEffect(() => {
-        if (authUser?.id || user.user_id) {
-            setAuthorId(authUser?.id ?? user.user_id);
+        if (authUser?.id) {
+            setAuthorId(authUser?.id);
         }
-    }, [authUser, user]);
+    }, [authUser?.id]);
 
     // Get saved content from localStorage
     useEffect(() => {
@@ -116,6 +116,10 @@ const TextEditor = () => {
 
     const getSunEditorInstance = useCallback((sunEditor: SunEditorCore) => {
         editor.current = sunEditor;
+    }, []);
+
+    const handleTitleChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+        setTitle(event.target.value);
     }, []);
 
     const handleChange = useCallback((content: string) => {
@@ -184,7 +188,7 @@ const TextEditor = () => {
         localStorage.removeItem(`${author_id}-editorContent`);
     }, [author_id, title, content, dispatch]);
 
-    console.log("user", user, "authuser", authUser);
+    console.log("userE", user, "authuserE", authUser);
 
     return (
         <React.Fragment>
@@ -212,7 +216,7 @@ const TextEditor = () => {
                             value={title}
                             name="title"
                             placeholder="Enter a title"
-                            onChange={(e) => setTitle(e.target.value)}
+                            onChange={handleTitleChange}
                             className="border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:border-blue-500 text-2xl"
                             required
                         />
