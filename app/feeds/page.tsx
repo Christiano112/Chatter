@@ -17,8 +17,6 @@ import {
     useFetchCommentsForPost,
     usePostInteraction,
     useSearchPosts,
-    // downloadAndSetImage,
-    // uploadImageToStore,
     useReactionUpdate,
 } from "@/hooks/useDBFetch";
 import PostComponent from "@/components/post";
@@ -64,6 +62,8 @@ const Feeds = () => {
         }
     }, [filteredPosts, fetchedPosts]);
 
+    console.log("userf", user, "authuserf", authUser);
+
     return (
         <div className="flex-grow shadow-inner rounded">
             <header className="flex items-center justify-between px-2 md:px-4 py-4 md:py-8 m-4 gap-4 md:gap-8 border shadow">
@@ -73,14 +73,23 @@ const Feeds = () => {
                 <div className="flex items-center gap-2 md:gap-4 justify-end">
                     <Image src={NotificationIcon} alt="notification icon" />
                     <Image
-                        // src={user ? user?.image : AccountIcon}
-                        src={AccountIcon}
+                        src={
+                            authUser
+                                ? authUser?.user_metadata?.avatar_url ||
+                                  authUser?.user_metadata?.picture
+                                : AccountIcon
+                        }
                         alt="profile pic"
                         width={30}
                         height={30}
+                        className="rounded-full mr-[-.5rem]"
                     />
                     <Link href={`/profile/${user.user_id}`} className="cursor-pointer">
-                        {user && user.username}
+                        {user && user?.username
+                            ? user?.username
+                            : authUser && authUser.user_metadata
+                            ? authUser?.user_metadata?.full_name || authUser?.user_metadata?.name
+                            : ""}
                     </Link>
                 </div>
             </header>

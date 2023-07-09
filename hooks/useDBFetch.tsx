@@ -3,7 +3,7 @@ import supaBase from "@/utils/supabase";
 import { ErrorToast, SuccessToast } from "@/components/toast";
 import { useAppDispatch } from "@/redux/store";
 import { addComment } from "@/redux/slices/comments";
-import { updateUser } from "@/redux/slices/user";
+import { UserType, updateUser } from "@/redux/slices/user";
 import { SocialLinkType, UpdateUserType } from "@/utils/form";
 import { Json } from "@/utils/types";
 import { User } from "@supabase/supabase-js";
@@ -120,6 +120,11 @@ export const useFetchPostsByAuthorId = (page: number, pageSize: number, author_i
     const fetchPostsByAuthorId = useCallback(async () => {
         try {
             setIsLoading(true);
+            if (typeof author_id !== "string" || !author_id) {
+                ErrorToast("Invalid author id");
+                return;
+            }
+
             let { data: posts, error } = await supaBase
                 .from("posts")
                 .select(
@@ -158,6 +163,11 @@ export const useFetchPostById = (post_id: string) => {
     const fetchPostById = useCallback(async () => {
         try {
             setIsLoading(true);
+            if (typeof post_id !== "string" || !post_id) {
+                ErrorToast("Invalid post id");
+                return;
+            }
+
             let { data: post, error } = await supaBase
                 .from("posts")
                 .select(
@@ -242,7 +252,10 @@ export const usePostInteraction = ({
                 return;
             }
 
-            if (typeof author_id !== "string") return;
+            if (typeof author_id !== "string" || !author_id) {
+                ErrorToast("Invalid author id");
+                return;
+            }
 
             const { data: comment, error } = await supaBase
                 .from("comments")
@@ -305,36 +318,6 @@ export const useSearchPosts = () => {
     return { filteredPosts, handleSearch };
 };
 
-export const downloadAndSetImage = async (data: any, imageField: string, setImage: any) => {
-    if (data[0][imageField]) {
-        const { data: imageData, error: imageError } = await supaBase.storage
-            .from("avatars")
-            .download(data[0][imageField]);
-
-        if (imageError) {
-            throw new Error(imageError.message);
-        }
-
-        const url = URL.createObjectURL(imageData);
-        setImage(url);
-    }
-};
-
-export const uploadImageToStore = async (file: File, fileName: string): Promise<string> => {
-    try {
-        const { data, error } = await supaBase.storage.from("avatars").upload(fileName, file);
-
-        if (error) {
-            throw error;
-        }
-
-        return data?.path ?? "";
-    } catch (error: any) {
-        ErrorToast(error.message);
-        throw error;
-    }
-};
-
 export const useReactionUpdate = (
     posts: any[],
     setPosts: React.Dispatch<React.SetStateAction<any[] | DBPostType[]>>,
@@ -352,7 +335,7 @@ export const useReactionUpdate = (
     return { handleReactionUpdate };
 };
 
-export const useProfile = (pathId: string, user: User | null) => {
+export const useProfile = (pathId: string, user: UserType | User | null) => {
     const dispatch = useAppDispatch();
     const [pageLoading, setPageLoading] = useState(true);
     const [socials, setSocials] = useState<Json | SocialLinkType | any>({});
@@ -361,9 +344,56 @@ export const useProfile = (pathId: string, user: User | null) => {
     const [showPopup, setShowPopup] = useState(false);
     const [showEditImagePopup, setShowEditImagePopup] = useState(false);
 
+    const downloadAndSetImage = useCallback(
+        async (data: any, imageField: string, setImage: any) => {
+            // if (isEmptyObject(data)) return;
+
+            if (data?.[imageField]) {
+                const { data: imageData, error: imageError } = await supaBase.storage
+                    .from("avatars")
+                    .download(data?.[imageField]);
+
+                console.log("DDDimageField:::", imageField, "DDDimageData:::", imageData);
+
+                if (imageError) {
+                    throw new Error(imageError.message);
+                }
+
+                const url = URL.createObjectURL(imageData);
+                setImage(url);
+            }
+        },
+        [],
+    );
+
+    const uploadImageToStore = useCallback(
+        async (file: File, fileName: string): Promise<string> => {
+            try {
+                // if (!file || !fileName.includes("undefined")) {
+                //     throw new Error("Invalid file");
+                // }
+                const { data, error } = await supaBase.storage
+                    .from("avatars")
+                    .upload(fileName, file);
+
+                if (error) {
+                    throw error;
+                }
+
+                return data?.path ?? "";
+            } catch (error: any) {
+                ErrorToast(error.message);
+                throw error;
+            }
+        },
+        [],
+    );
+
     const fetchProfile = useCallback(async () => {
         try {
             setPageLoading(true);
+            if (!pathId) return;
+
             const { data: currentEmail, error: emailError } = await supaBase
                 .from("users")
                 .select("email")
@@ -372,6 +402,8 @@ export const useProfile = (pathId: string, user: User | null) => {
             if (emailError) {
                 throw new Error(emailError.message);
             }
+
+            if (!currentEmail[0].email) return;
 
             const { data, error } = await supaBase
                 .from("profile")
@@ -391,16 +423,15 @@ export const useProfile = (pathId: string, user: User | null) => {
 
             // Download profile and cover pics
             await Promise.all([
-                downloadAndSetImage(data, "profile_pic", setProfilePicEdit),
-                downloadAndSetImage(data, "cover_pic", setCoverPicEdit),
+                downloadAndSetImage(data[0], "profile_pic", setProfilePicEdit),
+                downloadAndSetImage(data[0], "cover_pic", setCoverPicEdit),
             ]);
         } catch (error: any) {
-            // if (error.message.includes("pic")) return;
             ErrorToast(error.message);
         } finally {
             setPageLoading(false);
         }
-    }, [pathId]);
+    }, [pathId, downloadAndSetImage]);
 
     useEffect(() => {
         fetchProfile();
@@ -424,10 +455,15 @@ export const useProfile = (pathId: string, user: User | null) => {
                 }
             }
 
+            if (!user?.email) {
+                ErrorToast("Invalid Request, Can't Edit Profile");
+                return;
+            }
+
             const { data: dbData, error } = await supaBase
                 .from("users")
                 .update(mappedData)
-                .eq("email", mappedData.email)
+                .eq("email", user?.email)
                 .select();
 
             if (error) {
@@ -439,7 +475,7 @@ export const useProfile = (pathId: string, user: User | null) => {
             SuccessToast("Profile updated successfully");
             setShowPopup(false);
         },
-        [dispatch],
+        [dispatch, user?.email],
     );
 
     const handleSocialFormSubmit = useCallback(
@@ -502,6 +538,8 @@ export const useProfile = (pathId: string, user: User | null) => {
         if (e.target.files && e.target.files.length > 0) {
             setProfilePicEdit(e.target.files[0]);
         }
+        // const url = URL.createObjectURL(imageData);
+        //         setImage(url);
     };
 
     const handleCoverPicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -516,40 +554,45 @@ export const useProfile = (pathId: string, user: User | null) => {
 
             if (profilePicEdit) {
                 const profilePicName = `profile_${Date.now()}_${profilePicEdit.name}`;
-                const profilePicUrl = await uploadImageToStore(profilePicEdit, profilePicName);
+                if (!profilePicName.includes("undefined")) {
+                    const profilePicUrl = await uploadImageToStore(profilePicEdit, profilePicName);
 
-                const { data, error } = await supaBase
-                    .from("profile")
-                    .update({ profile_pic: profilePicUrl })
-                    .eq("email", user?.email);
+                    const { data, error } = await supaBase
+                        .from("profile")
+                        .update({ profile_pic: profilePicUrl })
+                        .eq("email", user?.email);
 
-                if (error) {
-                    ErrorToast(error.message);
-                    return;
+                    if (error) {
+                        ErrorToast(error.message);
+                    }
+
+                    // Download profile pics
+                    await downloadAndSetImage(profilePicUrl, "profile_pic", setProfilePicEdit);
                 }
             }
 
             if (coverPicEdit) {
                 const coverPicName = `cover_${Date.now()}_${coverPicEdit.name}`;
-                const coverPicUrl = await uploadImageToStore(coverPicEdit, coverPicName);
+                if (!coverPicName.includes("undefined")) {
+                    const coverPicUrl = await uploadImageToStore(coverPicEdit, coverPicName);
 
-                const { data, error } = await supaBase
-                    .from("profile")
-                    .update({ cover_pic: coverPicUrl })
-                    .eq("email", user?.email);
+                    const { data, error } = await supaBase
+                        .from("profile")
+                        .update({ cover_pic: coverPicUrl })
+                        .eq("email", user?.email);
 
-                if (error) {
-                    ErrorToast(error.message);
-                    return;
+                    if (error) {
+                        ErrorToast(error.message);
+                    }
+
+                    // Download cover pics
+                    await downloadAndSetImage(coverPicUrl, "cover_pic", setCoverPicEdit);
                 }
             }
 
-            // Reset the form fields
-            setProfilePicEdit(null);
-            setCoverPicEdit(null);
             setShowEditImagePopup(false);
         },
-        [coverPicEdit, profilePicEdit, user?.email],
+        [coverPicEdit, downloadAndSetImage, profilePicEdit, uploadImageToStore, user?.email],
     );
 
     return {

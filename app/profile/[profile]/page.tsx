@@ -10,6 +10,7 @@ import {
     useReactionUpdate,
     useProfile,
 } from "@/hooks/useDBFetch";
+import { shallowEqual } from "react-redux";
 import { selectUser } from "@/redux/slices/user";
 import { useAppSelector } from "@/redux/store";
 import { PostType, selectPostsByAuthorId } from "@/redux/slices/posts";
@@ -17,7 +18,7 @@ import { useCheckAuth, usePathId } from "@/utils/custom";
 import { useSocialLinkForm, useUpdateUserForm } from "@/utils/form";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo, memo } from "react";
 import {
     AiFillFacebook,
     AiFillGithub,
@@ -33,19 +34,26 @@ import {
 import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
 import EditImagesPopup from "../editImage";
 import EditProfilePopup from "../editProfile";
+import Loading from "@/app/loading";
 
 const pageSize = 10;
 
 const Profile = () => {
     const pathId = usePathId();
-    const { user } = useCheckAuth();
-    const currentVisitor = user?.id === pathId ? "owner" : "visitor";
-    const { user: pathUser } = useAppSelector<any>(selectUser);
+    const { user: authUser, authenticated } = useCheckAuth();
+    const [authLoading, setAuthLoading] = useState(true);
+    const [user, setUser] = useState<any>(useAppSelector(selectUser));
+    const currentVisitor =
+        user?.user_id === pathId
+            ? "owner"
+            : authUser?.id && authUser?.id === pathId
+            ? "owner"
+            : "visitor";
     const [page, setPage] = useState(1);
     const [activeTabIndex, setActiveTabIndex] = useState(1);
     const [activeEditTab, setActiveEditTab] = useState(1);
     const [posts, setPosts] = useState<PostType[] | any[]>(
-        useAppSelector((state) => selectPostsByAuthorId(state, pathId)),
+        useAppSelector((state) => selectPostsByAuthorId(state, pathId), shallowEqual),
     );
     const { isLoading, posts: fetchedPosts } = useFetchPostsByAuthorId(page, pageSize, pathId);
     const { selectedPostComments, fetchCommentsForPost, setSelectedPostComments } =
@@ -72,6 +80,45 @@ const Profile = () => {
         handleCoverPicChange,
         handlePictureUpload,
     } = useProfile(pathId, user);
+    const [profilePic, setProfile] = useState(
+        typeof profilePicEdit === "string" ? profilePicEdit : "/profile-dp.png",
+    );
+    const [coverPic, setCover] = useState(
+        typeof coverPicEdit === "string" ? coverPicEdit : "/cover-photo.png",
+    );
+
+    // change profile pic if updated
+    useEffect(() => {
+        if (typeof profilePicEdit === "string") {
+            setProfile(profilePicEdit);
+        }
+    }, [profilePicEdit]);
+
+    // change cover pic if updated
+    useEffect(() => {
+        if (typeof coverPicEdit === "string") {
+            setCover(coverPicEdit);
+        }
+    }, [coverPicEdit]);
+
+    useEffect(() => {
+        const checkUser = async () => {
+            try {
+                setAuthLoading(true);
+                if (!user || !user?.email) {
+                    setUser(authUser);
+                }
+            } catch (error: any) {
+                throw new Error(error.message);
+            } finally {
+                setAuthLoading(false);
+            }
+        };
+
+        if (authenticated) {
+            checkUser();
+        }
+    }, [authUser, authenticated, user]);
 
     useEffect(() => {
         if (fetchedPosts.length > 0) {
@@ -91,22 +138,26 @@ const Profile = () => {
         errors: socialFormErrors,
     } = useSocialLinkForm(handleSocialFormSubmit);
 
+    if (authLoading || pageLoading) {
+        return <Loading />;
+    }
+
+    console.log("userp", user, "authuserp", authUser);
+
     return (
         <React.Fragment>
             {!pageLoading && (
                 <header
                     className="py-[5rem] px-4 sm:px-8 flex flex-col gap-6 bg-slate-950 text-center min-h-[20rem] relative mt-2 mx-2 rounded-t-lg"
                     style={{
-                        backgroundImage: `url('${coverPicEdit ?? "/cover-photo.png"}')`,
+                        backgroundImage: `url('${coverPic}')`,
                         backgroundPosition: "center",
                         backgroundRepeat: "no-repeat",
                         backgroundSize: "cover",
                     }}
                 >
                     <Image
-                        src={
-                            typeof profilePicEdit === "string" ? profilePicEdit : "/profile-dp.png"
-                        }
+                        src={profilePic}
                         alt="Profile Picture"
                         width={200}
                         height={200}
@@ -125,6 +176,7 @@ const Profile = () => {
                                 right: "2%",
                             }}
                             handleClick={() => setShowEditImagePopup(true)}
+                            disabled={!authenticated || !user?.email}
                         />
                     )}
                 </header>
@@ -132,20 +184,20 @@ const Profile = () => {
             <div className="bg-primary-50 flex flex-col 2xs:flex-row justify-between items-center px-4 pb-4 pt-10 shadow-inner md:pl-[15rem] mx-2 rounded-b-lg">
                 <div>
                     <h2 className="text-primary text-2xl font-bold">
-                        {posts &&
-                            posts?.length > 0 &&
-                            !isEmptyObject(posts[0]) &&
-                            (posts[0]?.author?.first_name ?? pathUser?.first_name)}{" "}
-                        {posts &&
-                            posts?.length > 0 &&
-                            !isEmptyObject(posts[0]) &&
-                            (posts[0]?.author?.last_name ?? pathUser?.last_name)}
+                        {posts && posts?.length > 0 && !isEmptyObject(posts[0])
+                            ? posts[0]?.author?.first_name ?? user?.first_name
+                            : ""}{" "}
+                        {posts && posts?.length > 0 && !isEmptyObject(posts[0])
+                            ? posts[0]?.author?.last_name ?? user?.last_name
+                            : ""}
+                        {!posts && isEmptyObject(posts[0]) && authUser
+                            ? authUser?.user_metadata?.full_name || authUser?.user_metadata?.name
+                            : ""}
                     </h2>
                     <p className="text-primary text-base capitalize">
-                        {posts &&
-                            posts?.length > 0 &&
-                            !isEmptyObject(posts[0]) &&
-                            (posts[0]?.author?.join_as ?? pathUser?.join_as)}
+                        {posts && posts?.length > 0 && !isEmptyObject(posts[0])
+                            ? posts[0]?.author?.join_as ?? user?.join_as
+                            : ""}
                     </p>
                 </div>
                 <div className="flex items-center gap-0 xs:gap-4 flex-col xs:flex-row">
@@ -157,6 +209,7 @@ const Profile = () => {
                                 size="small"
                                 variant="primary"
                                 handleClick={() => setShowPopup(true)}
+                                disabled={!authenticated || !user?.email}
                             />
                             <Button
                                 text={

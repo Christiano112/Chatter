@@ -1,7 +1,8 @@
 "use client";
 
-import { PayloadAction, createSlice, createSelector } from "@reduxjs/toolkit";
 import { RootState } from "../store";
+import { PayloadAction, createSlice, createSelector, createAsyncThunk } from "@reduxjs/toolkit";
+import supaBase from "@/utils/supabase";
 
 export interface UserType {
     first_name: string | null;
@@ -23,6 +24,15 @@ const initialState: UserType = {
     username: "",
 };
 
+// fetch user info from database
+export const fetchUserFromDB = createAsyncThunk("user/fetchUser", async (email: string) => {
+    const { data, error } = await supaBase.from("users").select("*").eq("email", email);
+    if (error) {
+        throw error;
+    }
+    return data as UserType[];
+});
+
 export const userSlice = createSlice({
     name: "user",
     initialState: { user: initialState },
@@ -39,6 +49,11 @@ export const userSlice = createSlice({
         updateUser: (state, action) => {
             state.user = { ...state.user, ...action.payload };
         },
+    },
+    extraReducers: (builder) => {
+        builder.addCase(fetchUserFromDB.fulfilled, (state, action) => {
+            state.user = action.payload[0];
+        });
     },
 });
 

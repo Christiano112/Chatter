@@ -2,6 +2,7 @@
 
 import BookIcon from "@/public/book-icon.png";
 import ProfilePic from "@/public/man.png";
+import { shallowEqual } from "react-redux";
 import { deletePost, selectPostsByStatus } from "@/redux/slices/posts";
 import { selectUser } from "@/redux/slices/user";
 import { useAppDispatch, useAppSelector } from "@/redux/store";
@@ -13,12 +14,13 @@ import NotFound from "./not-found";
 
 const DraftPost = () => {
     const dispatch = useAppDispatch();
-    // const posts = useAppSelector((state) => selectPostsByStatus(state, "draft"));
-    // const user = useAppSelector(selectUser);
-    const { user, posts } = useAppSelector((state) => ({
-        user: selectUser(state),
-        posts: selectPostsByStatus(state, "draft"),
-    }));
+    const { user, posts } = useAppSelector(
+        (state) => ({
+            user: selectUser(state),
+            posts: selectPostsByStatus(state, "draft"),
+        }),
+        shallowEqual,
+    );
 
     if (!posts || posts.length === 0) {
         return <NotFound text="Post not found" />;
@@ -28,7 +30,6 @@ const DraftPost = () => {
         <>
             {posts.map((post) => {
                 const readingTime = calculateReadingTime(post?.content) + " mins";
-
                 return (
                     <div key={post?.post_id} className="border-b-2 border-b-slate-700 p-2 sm:p-4">
                         <div className="flex items-start sm:items-center gap-4 flex-col sm:flex-row">

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, ReactNode } from "react";
+import React, { useState, ReactNode, memo } from "react";
 import { useRouter } from "next/navigation";
 
 interface ButtonType {
@@ -10,6 +10,7 @@ interface ButtonType {
     variant?: "primary" | "secondary" | "tertiary";
     size?: "small" | "medium" | "large";
     style?: React.CSSProperties;
+    disabled?: boolean;
 }
 
 export interface NavigateButtonProps {
@@ -36,7 +37,7 @@ const getVariantClass = (variant: ButtonType["variant"]) => variantClassMap[vari
 
 const getSizeClass = (size: ButtonType["size"]) => sizeClassMap[size ?? "default"];
 
-const Button = ({ text, type, variant, handleClick, size, ...props }: ButtonType) => {
+const Button = memo(({ text, type, variant, handleClick, size, ...props }: ButtonType) => {
     const [isHovered, setIsHovered] = useState(false);
 
     const className = `btn ${getVariantClass(variant)} ${getSizeClass(size)} ${
@@ -55,7 +56,9 @@ const Button = ({ text, type, variant, handleClick, size, ...props }: ButtonType
             {text}
         </button>
     );
-};
+});
+
+Button.displayName = "Button";
 
 export default Button;
 

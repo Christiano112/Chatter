@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, CSSProperties, ChangeEvent } from "react";
+import { useState, CSSProperties, ChangeEvent, memo } from "react";
 import { AiOutlineSearch } from "react-icons/ai";
 
 interface SearchInputType {
@@ -9,7 +9,7 @@ interface SearchInputType {
     style?: CSSProperties;
 }
 
-const SearchInput = ({ placeholder, onSearch, style }: SearchInputType) => {
+const SearchInput = memo(({ placeholder, onSearch, style }: SearchInputType) => {
     const [searchQuery, setSearchQuery] = useState<string>("");
 
     const handleSearch = () => {
@@ -42,6 +42,8 @@ const SearchInput = ({ placeholder, onSearch, style }: SearchInputType) => {
             />
         </div>
     );
-};
+});
+
+SearchInput.displayName = "SearchInput";
 
 export default SearchInput;

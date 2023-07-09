@@ -16,6 +16,7 @@ export interface CustomLayoutPropType {
 
 const CustomLayout = ({ children, initialSession }: CustomLayoutPropType) => {
     React.useEffect(() => {
+        // eslint-disable-next-line no-unused-expressions
         ToastContainer;
     }, []);
 

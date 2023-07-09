@@ -8,7 +8,7 @@ import { SuccessToast, ErrorToast } from "@/components/toast";
 import Input from "@/components/input";
 import Button from "@/components/button";
 import { useAppDispatch } from "@/redux/store";
-import { login } from "@/redux/slices/user";
+import { login, fetchUserFromDB } from "@/redux/slices/user";
 import supaBase from "@/utils/supabase";
 import { useLoginForm, LoginType } from "@/utils/form";
 import { getURL } from "@/utils/urls";
@@ -59,6 +59,7 @@ const Login = () => {
 
             const mappedData = mapLoginDataFromColumns(userData[0]);
 
+            // dispatch(fetchUserFromDB(email));
             dispatch(login(mappedData));
             SuccessToast("Login Successful");
             router.push(redirectedFromUrl || "/feeds");
