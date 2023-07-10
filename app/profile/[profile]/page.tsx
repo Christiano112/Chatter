@@ -18,31 +18,21 @@ import { useCheckAuth, usePathId } from "@/utils/custom";
 import { useSocialLinkForm, useUpdateUserForm } from "@/utils/form";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useEffect, useState, useMemo, memo } from "react";
-import {
-    AiFillFacebook,
-    AiFillGithub,
-    AiFillInstagram,
-    AiFillLinkedin,
-    AiFillMediumSquare,
-    AiFillMessage,
-    AiFillTwitterSquare,
-    AiFillYoutube,
-    AiOutlineForm,
-    AiOutlineLink,
-} from "react-icons/ai";
+import React, { useEffect, useState } from "react";
+import { AiFillMessage, AiOutlineForm } from "react-icons/ai";
 import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
 import EditImagesPopup from "../editImage";
 import EditProfilePopup from "../editProfile";
 import Loading from "@/app/loading";
+import SocialMediaLinks from "../socialLinks";
 
 const pageSize = 10;
 
 const Profile = () => {
     const pathId = usePathId();
-    const { user: authUser, authenticated } = useCheckAuth();
-    const [authLoading, setAuthLoading] = useState(true);
     const [user, setUser] = useState<any>(useAppSelector(selectUser));
+    const { user: authUser, authenticated } = useCheckAuth();
+    const [authLoading, setAuthLoading] = useState(false);
     const currentVisitor =
         user?.user_id === pathId
             ? "owner"
@@ -55,16 +45,6 @@ const Profile = () => {
     const [posts, setPosts] = useState<PostType[] | any[]>(
         useAppSelector((state) => selectPostsByAuthorId(state, pathId), shallowEqual),
     );
-    const { isLoading, posts: fetchedPosts } = useFetchPostsByAuthorId(page, pageSize, pathId);
-    const { selectedPostComments, fetchCommentsForPost, setSelectedPostComments } =
-        useFetchCommentsForPost();
-    const { selectedPost, newComment, handleCommentClick, handleAddComment, setNewComment } =
-        usePostInteraction({
-            pathId,
-            fetchCommentsForPost,
-            setSelectedPostComments,
-        });
-    const { handleReactionUpdate } = useReactionUpdate(posts, setPosts);
     const {
         pageLoading,
         socials,
@@ -80,12 +60,52 @@ const Profile = () => {
         handleCoverPicChange,
         handlePictureUpload,
     } = useProfile(pathId, user);
+    const { isLoading, posts: fetchedPosts } = useFetchPostsByAuthorId(page, pageSize, pathId);
+    const { selectedPostComments, fetchCommentsForPost, setSelectedPostComments } =
+        useFetchCommentsForPost();
+    const { selectedPost, newComment, handleCommentClick, handleAddComment, setNewComment } =
+        usePostInteraction({
+            author_id: user?.user_id || (authUser && authUser.id),
+            fetchCommentsForPost,
+            setSelectedPostComments,
+        });
+    const { handleReactionUpdate } = useReactionUpdate(posts, setPosts);
     const [profilePic, setProfile] = useState(
-        typeof profilePicEdit === "string" ? profilePicEdit : authUser?.user_metadata?.avatar_url,
+        typeof profilePicEdit === "string"
+            ? profilePicEdit
+            : currentVisitor === "owner" && authUser?.user_metadata
+            ? authUser?.user_metadata?.avatar_url
+            : "/profile-dp.png",
     );
     const [coverPic, setCover] = useState(
         typeof coverPicEdit === "string" ? coverPicEdit : "/cover-photo.png",
     );
+
+    useEffect(() => {
+        const checkUser = async () => {
+            try {
+                setAuthLoading(true);
+                if (currentVisitor !== "owner") return;
+                if (!user || !user?.email) {
+                    setUser(authUser);
+                }
+            } catch (error: any) {
+                throw new Error(error.message);
+            } finally {
+                setAuthLoading(false);
+            }
+        };
+
+        if (authenticated && currentVisitor === "owner") {
+            checkUser();
+        }
+    }, [authUser, authenticated, currentVisitor, user]);
+
+    useEffect(() => {
+        if (fetchedPosts.length > 0) {
+            setPosts(fetchedPosts);
+        }
+    }, [fetchedPosts]);
 
     // change profile pic if updated
     useEffect(() => {
@@ -101,32 +121,6 @@ const Profile = () => {
         }
     }, [coverPicEdit]);
 
-    useEffect(() => {
-        const checkUser = async () => {
-            try {
-                setAuthLoading(true);
-                if (!user || !user?.email) {
-                    setUser(authUser);
-                }
-            } catch (error: any) {
-                throw new Error(error.message);
-            } finally {
-                setAuthLoading(false);
-            }
-        };
-
-        if (authenticated) {
-            checkUser();
-        }
-    }, [authUser, authenticated, user]);
-
-    useEffect(() => {
-        if (fetchedPosts.length > 0) {
-            setPosts(fetchedPosts);
-            return;
-        }
-    }, [fetchedPosts]);
-
     const handleTabChange = (index: number) => {
         setActiveTabIndex(index);
     };
@@ -141,8 +135,6 @@ const Profile = () => {
     if (authLoading || pageLoading) {
         return <Loading />;
     }
-
-    console.log("userp", user, "authuserp", authUser);
 
     return (
         <React.Fragment>
@@ -190,9 +182,6 @@ const Profile = () => {
                         {posts && posts?.length > 0 && !isEmptyObject(posts[0])
                             ? posts[0]?.author?.last_name ?? user?.last_name
                             : ""}
-                        {!posts && isEmptyObject(posts[0]) && authUser
-                            ? authUser?.user_metadata?.full_name || authUser?.user_metadata?.name
-                            : ""}
                     </h2>
                     <p className="text-primary text-base capitalize">
                         {posts && posts?.length > 0 && !isEmptyObject(posts[0])
@@ -238,99 +227,7 @@ const Profile = () => {
                 </div>
             </div>
             <div className="flex flex-col sm:flex-row justify-between gap-2 m-2">
-                {!isEmptyObject(socials) && (
-                    <div className="flex flex-row flex-wrap sm:flex-col gap-4 sm:gap-8 px-4 py-8 rounded-lg bg-primary-50 flex-grow max-h-[40rem]">
-                        <h3 className="text-primary text-xl font-bold">Socials:</h3>
-                        {socials?.facebook_link && (
-                            <Link
-                                href={socials.facebook_link}
-                                rel="noreferrer"
-                                target="_blank"
-                                className="text-primary cursor-pointer flex items-center gap-2"
-                            >
-                                <AiFillFacebook className="text-3xl" />
-                                <span>Facebook</span>
-                            </Link>
-                        )}
-                        {socials?.twitter_link && (
-                            <Link
-                                href={socials.twitter_link}
-                                rel="noreferrer"
-                                target="_blank"
-                                className="text-primary cursor-pointer flex items-center gap-2"
-                            >
-                                <AiFillTwitterSquare className="text-3xl" />
-                                <span>Twitter</span>
-                            </Link>
-                        )}
-                        {socials?.instagram_link && (
-                            <Link
-                                href={socials.instagram_link}
-                                rel="noreferrer"
-                                target="_blank"
-                                className="text-primary cursor-pointer flex items-center gap-2"
-                            >
-                                <AiFillInstagram className="text-3xl" />
-                                <span>Instagram</span>
-                            </Link>
-                        )}
-                        {socials?.linkedin_link && (
-                            <Link
-                                href={socials.linkedin_link}
-                                rel="noreferrer"
-                                target="_blank"
-                                className="text-primary cursor-pointer flex items-center gap-2"
-                            >
-                                <AiFillLinkedin className="text-3xl" />
-                                <span>LinkedIn</span>
-                            </Link>
-                        )}
-                        {socials?.github_link && (
-                            <Link
-                                href={socials.github_link}
-                                rel="noreferrer"
-                                target="_blank"
-                                className="text-primary cursor-pointer flex items-center gap-2"
-                            >
-                                <AiFillGithub className="text-3xl" />
-                                <span>Github</span>
-                            </Link>
-                        )}
-                        {socials?.medium_link && (
-                            <Link
-                                href={socials.medium_link}
-                                rel="noreferrer"
-                                target="_blank"
-                                className="text-primary cursor-pointer flex items-center gap-2"
-                            >
-                                <AiFillMediumSquare className="text-3xl" />
-                                <span>Medium</span>
-                            </Link>
-                        )}
-                        {socials?.youtube_link && (
-                            <Link
-                                href={socials.youtube_link}
-                                rel="noreferrer"
-                                target="_blank"
-                                className="text-primary cursor-pointer flex items-center gap-2"
-                            >
-                                <AiFillYoutube className="text-3xl" />
-                                <span>Youtube</span>
-                            </Link>
-                        )}
-                        {socials?.website_link && (
-                            <Link
-                                href={socials.website_link}
-                                rel="noreferrer"
-                                target="_blank"
-                                className="text-primary cursor-pointer flex items-center gap-2"
-                            >
-                                <AiOutlineLink className="text-3xl" />
-                                <span>Website</span>
-                            </Link>
-                        )}
-                    </div>
-                )}
+                {!isEmptyObject(socials) && <SocialMediaLinks socials={socials} />}
                 <div className="bg-primary-50 px-4 pt-8 pb-2 flex-grow w-[100%] sm:w-[85%] min-h-[20rem] rounded-lg">
                     <Tabs className="" selectedIndex={activeTabIndex} onSelect={handleTabChange}>
                         <TabList className="border-b-4 border-primary flex items-center gap-8 justify-start">
@@ -366,6 +263,9 @@ const Profile = () => {
                                 page={page}
                                 pageSize={pageSize}
                                 setNewComment={setNewComment}
+                                authUser={authUser}
+                                currentVisitor={currentVisitor}
+                                profilePic={profilePic}
                             />
                         </TabPanel>
                     </Tabs>

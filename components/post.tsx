@@ -26,6 +26,9 @@ interface PostComponentProps {
     setPage: React.Dispatch<React.SetStateAction<number>>;
     page: number;
     pageSize: number;
+    authUser?: any;
+    currentVisitor?: string;
+    profilePic?: any;
 }
 
 const PostComponent = React.memo(
@@ -42,6 +45,9 @@ const PostComponent = React.memo(
         page,
         pageSize,
         setNewComment,
+        authUser,
+        currentVisitor,
+        profilePic,
         excerptLimit = 500,
     }: PostComponentProps) => {
         if (isLoading) {
@@ -66,10 +72,19 @@ const PostComponent = React.memo(
                             key={post?.post_id}
                             className="border-b-2 border-b-slate-700 p-2 sm:p-4"
                         >
-                            <div className="flex items-start sm:items-center gap-4 flex-col sm:flex-row">
+                            <div className="flex items-start sm:items-center gap-4 flex-col sm:flex-row pt-4">
                                 <Link href={`/profile/${user_id}`}>
                                     <Image
-                                        src={ProfilePic}
+                                        src={
+                                            profilePic
+                                                ? profilePic
+                                                : currentVisitor === "owner" &&
+                                                  authUser?.user_metadata
+                                                ? authUser?.user_metadata?.avatar_url
+                                                : ProfilePic
+                                        }
+                                        width={200}
+                                        height={200}
                                         alt="profile pic"
                                         className="rounded-full cursor-pointer"
                                     />

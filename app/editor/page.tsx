@@ -188,8 +188,6 @@ const TextEditor = () => {
         localStorage.removeItem(`${author_id}-editorContent`);
     }, [author_id, title, content, dispatch]);
 
-    console.log("userE", user, "authuserE", authUser);
-
     return (
         <React.Fragment>
             <Header />

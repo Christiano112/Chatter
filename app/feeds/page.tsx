@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useUser } from "@supabase/auth-helpers-react";
@@ -28,7 +28,7 @@ const Feeds = () => {
     const user = useAppSelector(selectUser);
     const dispatch = useAppDispatch();
     const [posts, setPosts] = useState<PostType[] | any[]>(useAppSelector(selectAllPosts));
-    const [author_id, setAuthorId] = useState(user.user_id);
+    const [author_id, setAuthorId] = useState(user?.user_id);
     const [page, setPage] = useState(1);
     const { isLoading, posts: fetchedPosts } = useFetchAllPosts(page, pageSize);
     const { selectedPostComments, fetchCommentsForPost, setSelectedPostComments } =
@@ -43,12 +43,13 @@ const Feeds = () => {
     const { handleReactionUpdate } = useReactionUpdate(posts, setPosts);
 
     useEffect(() => {
-        if (authUser?.id || user.user_id) {
-            setAuthorId(authUser?.id ?? user.user_id);
+        if (authUser?.id || user?.user_id) {
+            setAuthorId(authUser?.id ?? user?.user_id);
         }
-        dispatch(fetchPostsToStore());
         if (!authUser?.email) return;
-        dispatch(fetchUserFromDB(authUser.email));
+        dispatch(fetchPostsToStore());
+        dispatch(fetchUserFromDB(authUser?.email));
+        // dispatchToStore(authUser?.email ?? "");
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -63,8 +64,6 @@ const Feeds = () => {
             return;
         }
     }, [filteredPosts, fetchedPosts]);
-
-    console.log("userf", user, "authuserf", authUser);
 
     return (
         <div className="flex-grow shadow-inner rounded">
@@ -87,12 +86,12 @@ const Feeds = () => {
                         className="rounded-full mr-[-.5rem]"
                     />
                     <Link
-                        href={`/profile/${user.user_id || authUser?.id}`}
+                        href={`/profile/${user?.user_id || authUser?.id}`}
                         className="cursor-pointer"
                     >
                         {user && user?.username
                             ? user?.username
-                            : authUser && authUser.user_metadata
+                            : authUser && authUser?.user_metadata
                             ? authUser?.user_metadata?.full_name || authUser?.user_metadata?.name
                             : ""}
                     </Link>

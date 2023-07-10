@@ -17,7 +17,7 @@ export const useCheckAuth = () => {
     const [authenticated, setAuthenticated] = useState(false);
 
     useEffect(() => {
-        if (user && user.role === "authenticated" && user.id) {
+        if (user && user?.role === "authenticated" && user?.id) {
             setAuthenticated(true);
         } else {
             setAuthenticated(false);
@@ -35,7 +35,7 @@ export const useCheckAuthRedirect = () => {
     const redirectedFromUrl = searchParams.get("redirectedFrom");
 
     useEffect(() => {
-        if (user && user.role === "authenticated" && user.id) {
+        if (user && user?.role === "authenticated" && user?.id) {
             setAuthenticated(true);
             router.push(redirectedFromUrl || "/feeds");
         } else {

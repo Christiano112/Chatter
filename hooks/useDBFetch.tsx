@@ -353,8 +353,6 @@ export const useProfile = (pathId: string, user: UserType | User | null) => {
                     .from("avatars")
                     .download(data?.[imageField]);
 
-                console.log("DDDimageField:::", imageField, "DDDimageData:::", imageData);
-
                 if (imageError) {
                     throw new Error(imageError.message);
                 }
