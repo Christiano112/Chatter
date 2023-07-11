@@ -1,9 +1,9 @@
 "use client";
 
 import { PayloadAction, createSlice, createAsyncThunk, createSelector } from "@reduxjs/toolkit";
-import { RootState } from "../store";
 import { formatDateTimeShort } from "@/utils/date";
 import supaBase from "@/utils/supabase";
+import { RootState } from "../store";
 
 export interface PostType {
     post_id: string;

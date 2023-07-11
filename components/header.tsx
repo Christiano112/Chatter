@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
 import Image from "next/image";
-import Button from "@/components/button";
-import Logo from "@/public/logo.png";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { FaAlignRight } from "react-icons/fa";
+import Button from "@/components/button";
+import Logo from "@/public/logo.png";
 import { useCheckAuth } from "@/utils/custom";
 
 const Header = () => {

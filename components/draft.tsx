@@ -1,15 +1,15 @@
 "use client";
 
+import parse from "html-react-parser";
+import Image from "next/image";
+import { shallowEqual } from "react-redux";
 import BookIcon from "@/public/book-icon.png";
 import ProfilePic from "@/public/man.png";
-import { shallowEqual } from "react-redux";
 import { deletePost, selectPostsByStatus } from "@/redux/slices/posts";
 import { selectUser } from "@/redux/slices/user";
 import { useAppDispatch, useAppSelector } from "@/redux/store";
 import { formatDateTimeShort } from "@/utils/date";
 import calculateReadingTime from "@/utils/reading_time";
-import parse from "html-react-parser";
-import Image from "next/image";
 import NotFound from "./not-found";
 
 const DraftPost = () => {

@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useAppDispatch } from "@/redux/store";
-import { signUp } from "@/redux/slices/user";
-import { SuccessToast, ErrorToast } from "@/components/toast";
-import Input from "@/components/input";
 import Button from "@/components/button";
+import Input from "@/components/input";
 import Select from "@/components/select";
-import supaBase from "@/utils/supabase";
+import { SuccessToast, ErrorToast } from "@/components/toast";
+import { signUp } from "@/redux/slices/user";
+import { useAppDispatch } from "@/redux/store";
 import { useSignUpForm, SignUpType, professions } from "@/utils/form";
+import supaBase from "@/utils/supabase";
 
 const mapSignUpDataToColumns = (signUpData: SignUpType, id: string) => {
     const { first_name, last_name, username, join_as, email } = signUpData;

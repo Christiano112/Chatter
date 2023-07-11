@@ -1,8 +1,8 @@
 "use client";
 
-import { RootState } from "../store";
-import { formatDateTimeShort } from "@/utils/date";
 import { PayloadAction, createSlice, createSelector } from "@reduxjs/toolkit";
+import { formatDateTimeShort } from "@/utils/date";
+import { RootState } from "../store";
 
 export interface CommentsType {
     id: number;

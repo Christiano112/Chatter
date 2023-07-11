@@ -1,5 +1,10 @@
 "use client";
 
+import parse from "html-react-parser";
+import Image from "next/image";
+import Link from "next/link";
+import React, { useEffect, useState } from "react";
+import { shallowEqual } from "react-redux";
 import Loading from "@/app/loading";
 import Header from "@/components/header";
 import NotFound from "@/components/not-found";
@@ -15,11 +20,6 @@ import { usePathId } from "@/utils/custom";
 import { formatDateTimeShort, timeAgo } from "@/utils/date";
 import { formatName } from "@/utils/format";
 import calculateReadingTime from "@/utils/reading_time";
-import Link from "next/link";
-import parse from "html-react-parser";
-import Image from "next/image";
-import React, { useEffect, useState } from "react";
-import { shallowEqual } from "react-redux";
 
 const SingleFeed = () => {
     const pathId = usePathId();

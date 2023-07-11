@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
 import { useUser } from "@supabase/auth-helpers-react";
+import { usePathname } from "next/navigation";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
 
 export const usePathId = () => {
     const pathname = usePathname();

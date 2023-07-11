@@ -1,12 +1,12 @@
+import { User } from "@supabase/supabase-js";
 import React, { useCallback, useEffect, useState } from "react";
-import supaBase from "@/utils/supabase";
 import { ErrorToast, SuccessToast } from "@/components/toast";
-import { useAppDispatch } from "@/redux/store";
 import { addComment } from "@/redux/slices/comments";
 import { UserType, updateUser } from "@/redux/slices/user";
+import { useAppDispatch } from "@/redux/store";
 import { SocialLinkType, UpdateUserType } from "@/utils/form";
+import supaBase from "@/utils/supabase";
 import { Json } from "@/utils/types";
-import { User } from "@supabase/supabase-js";
 
 export const mapUpdateDataToColumns = (updateData: UpdateUserType) => {
     const { first_name, last_name, username, join_as, email } = updateData;

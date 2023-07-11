@@ -1,5 +1,12 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
+import React, { useEffect, useState } from "react";
+import { AiFillMessage, AiOutlineForm } from "react-icons/ai";
+import { shallowEqual } from "react-redux";
+import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
+import Loading from "@/app/loading";
 import Button from "@/components/button";
 import PostComponent from "@/components/post";
 import {
@@ -10,20 +17,13 @@ import {
     useReactionUpdate,
     useProfile,
 } from "@/hooks/useDBFetch";
-import { shallowEqual } from "react-redux";
+import { PostType, selectPostsByAuthorId } from "@/redux/slices/posts";
 import { selectUser } from "@/redux/slices/user";
 import { useAppSelector } from "@/redux/store";
-import { PostType, selectPostsByAuthorId } from "@/redux/slices/posts";
 import { useCheckAuth, usePathId } from "@/utils/custom";
 import { useSocialLinkForm, useUpdateUserForm } from "@/utils/form";
-import Image from "next/image";
-import Link from "next/link";
-import React, { useEffect, useState } from "react";
-import { AiFillMessage, AiOutlineForm } from "react-icons/ai";
-import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
 import EditImagesPopup from "../editImage";
 import EditProfilePopup from "../editProfile";
-import Loading from "@/app/loading";
 import SocialMediaLinks from "../socialLinks";
 
 const pageSize = 10;

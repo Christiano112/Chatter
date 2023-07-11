@@ -1,19 +1,19 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useUser } from "@supabase/auth-helpers-react";
-import { v4 as uuidv4 } from "uuid";
-import { SuccessToast, InfoToast, ErrorToast } from "@/components/toast";
 import dynamic from "next/dynamic";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import "suneditor/dist/css/suneditor.min.css";
 import SunEditorCore from "suneditor/src/lib/core";
-import supaBase from "@/utils/supabase";
+import { v4 as uuidv4 } from "uuid";
 import Button, { SavingSpinner } from "@/components/button";
 import Header from "@/components/header";
 import { initialReactionValues } from "@/components/reactions";
-import { useAppDispatch, useAppSelector } from "@/redux/store";
-import { selectUser } from "@/redux/slices/user";
+import { SuccessToast, InfoToast, ErrorToast } from "@/components/toast";
 import { PostType, addPost } from "@/redux/slices/posts";
+import { selectUser } from "@/redux/slices/user";
+import { useAppDispatch, useAppSelector } from "@/redux/store";
+import supaBase from "@/utils/supabase";
 
 const SunEditor = dynamic(() => import("suneditor-react"), {
     ssr: false,
@@ -43,7 +43,7 @@ const TextEditor = () => {
     const [showPopup, setShowPopup] = useState(false);
     const [title, setTitle] = useState("");
     const [content, setContent] = useState<string>(" ");
-    const [author_id, setAuthorId] = useState(user.user_id);
+    const [author_id, setAuthorId] = useState(user?.user_id);
 
     useEffect(() => {
         const handleWindowBeforeUnload = (event: BeforeUnloadEvent) => {

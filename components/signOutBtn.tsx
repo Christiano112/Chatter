@@ -1,10 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { logOut } from "@/redux/slices/user";
+import { useAppDispatch } from "@/redux/store";
 import Button from "./button";
 import { ErrorToast, SuccessToast } from "./toast";
-import { useAppDispatch } from "@/redux/store";
-import { logOut } from "@/redux/slices/user";
 
 const SignOutBtn = () => {
     const dispatch = useAppDispatch();

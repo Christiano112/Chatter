@@ -1,12 +1,12 @@
-import Link from "next/link";
 import Image from "next/image";
-import TrendingIcon from "../public/trending-icon.png";
-import FeedIcon from "../public/feed-icon.png";
-import BookmarkIcon from "../public/bookmark-icon.png";
-import TeamBlogsIcon from "../public/team-icon.png";
-import AnalyticsIcon from "../public/analytics-icon.png";
+import Link from "next/link";
 import AccountIcon from "../public/account-icon.png";
+import AnalyticsIcon from "../public/analytics-icon.png";
+import BookmarkIcon from "../public/bookmark-icon.png";
+import FeedIcon from "../public/feed-icon.png";
 import NotificationIcon from "../public/notification-icon.png";
+import TeamBlogsIcon from "../public/team-icon.png";
+import TrendingIcon from "../public/trending-icon.png";
 import SignOutBtn from "./signOutBtn";
 
 const SideNav = () => {

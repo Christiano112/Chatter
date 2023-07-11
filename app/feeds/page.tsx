@@ -1,17 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import { useUser } from "@supabase/auth-helpers-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useUser } from "@supabase/auth-helpers-react";
-import { useAppSelector, useAppDispatch } from "@/redux/store";
-import { fetchUserFromDB, selectUser } from "@/redux/slices/user";
-import { PostType, fetchPostsToStore, selectAllPosts } from "@/redux/slices/posts";
-import SearchInput from "@/components/search";
+import React, { useState, useEffect } from "react";
 import Button from "@/components/button";
-import NotificationIcon from "@/public/notification-icon.png";
-import AccountIcon from "@/public/account-icon.png";
-import PostIcon from "@/public/post-icon.png";
+import PostComponent from "@/components/post";
+import SearchInput from "@/components/search";
 import {
     useFetchAllPosts,
     useFetchCommentsForPost,
@@ -19,7 +14,12 @@ import {
     useSearchPosts,
     useReactionUpdate,
 } from "@/hooks/useDBFetch";
-import PostComponent from "@/components/post";
+import AccountIcon from "@/public/account-icon.png";
+import NotificationIcon from "@/public/notification-icon.png";
+import PostIcon from "@/public/post-icon.png";
+import { PostType, fetchPostsToStore, selectAllPosts } from "@/redux/slices/posts";
+import { fetchUserFromDB, selectUser } from "@/redux/slices/user";
+import { useAppSelector, useAppDispatch } from "@/redux/store";
 
 const pageSize = 20;
 
@@ -49,7 +49,6 @@ const Feeds = () => {
         if (!authUser?.email) return;
         dispatch(fetchPostsToStore());
         dispatch(fetchUserFromDB(authUser?.email));
-        // dispatchToStore(authUser?.email ?? "");
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 

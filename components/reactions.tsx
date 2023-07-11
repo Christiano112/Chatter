@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState, memo } from "react";
-import { useAppDispatch } from "@/redux/store";
-import { PostType, reactionCountAdded, reactionCountDeleted } from "@/redux/slices/posts";
-import supaBase from "@/utils/supabase";
 import { ErrorToast } from "@/components/toast";
+import { PostType, reactionCountAdded, reactionCountDeleted } from "@/redux/slices/posts";
+import { useAppDispatch } from "@/redux/store";
+import supaBase from "@/utils/supabase";
 
 export const reactionEmojis = {
     like: "👍",

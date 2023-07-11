@@ -1,18 +1,18 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import React from "react";
 import { AiFillGoogleCircle, AiFillGithub } from "react-icons/ai";
-import { SuccessToast, ErrorToast } from "@/components/toast";
-import Input from "@/components/input";
 import Button from "@/components/button";
-import { useAppDispatch } from "@/redux/store";
+import Input from "@/components/input";
+import { SuccessToast, ErrorToast } from "@/components/toast";
 import { login } from "@/redux/slices/user";
-import supaBase from "@/utils/supabase";
-import { useLoginForm, LoginType } from "@/utils/form";
-import { getURL } from "@/utils/urls";
+import { useAppDispatch } from "@/redux/store";
 import { useCheckAuthRedirect } from "@/utils/custom";
+import { useLoginForm, LoginType } from "@/utils/form";
+import supaBase from "@/utils/supabase";
+import { getURL } from "@/utils/urls";
 
 const mapLoginDataFromColumns = (userData: any) => {
     const { first_name, last_name, username, join_as, email, user_id } = userData;

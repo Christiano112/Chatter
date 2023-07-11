@@ -1,3 +1,7 @@
+import parse from "html-react-parser";
+import Image from "next/image";
+import Link from "next/link";
+import React from "react";
 import Loading from "@/app/loading";
 import BookIcon from "@/public/book-icon.png";
 import CommentIcon from "@/public/comment-icon.png";
@@ -5,10 +9,6 @@ import ProfilePic from "@/public/man.png";
 import { formatDateTimeShort, timeAgo } from "@/utils/date";
 import { formatName } from "@/utils/format";
 import calculateReadingTime from "@/utils/reading_time";
-import parse from "html-react-parser";
-import Image from "next/image";
-import Link from "next/link";
-import React from "react";
 import NotFound from "./not-found";
 import ReactionButton from "./reactions";
 

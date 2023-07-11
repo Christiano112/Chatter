@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, ReactNode, memo } from "react";
 import { useRouter } from "next/navigation";
+import React, { useState, ReactNode, memo } from "react";
 
 interface ButtonType {
     text: ReactNode;

@@ -1,13 +1,13 @@
 "use client";
 
-import React from "react";
 import { createPagesBrowserClient } from "@supabase/auth-helpers-nextjs";
 import { SessionContextProvider, Session } from "@supabase/auth-helpers-react";
-import { ToastContainer } from "react-toastify";
+import { Analytics } from "@vercel/analytics/react";
+import React from "react";
 import { Provider } from "react-redux";
+import { ToastContainer } from "react-toastify";
 import { PersistGate } from "redux-persist/integration/react";
 import store, { persistor } from "@/redux/store";
-import { Analytics } from "@vercel/analytics/react";
 
 export interface CustomLayoutPropType {
     children: React.ReactNode;
