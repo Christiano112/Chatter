@@ -3,12 +3,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
-import { AiFillMessage, AiOutlineForm } from "react-icons/ai";
+import { AiFillMessage, AiOutlineForm, AiOutlineMenu, AiOutlineClose } from "react-icons/ai";
+import { MdArticle } from "react-icons/md";
 import { shallowEqual } from "react-redux";
 import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
 import Loading from "@/app/loading";
 import Button from "@/components/button";
 import PostComponent from "@/components/post";
+import SignOutBtn from "@/components/signOutBtn";
 import {
     isEmptyObject,
     useFetchCommentsForPost,
@@ -80,6 +82,7 @@ const Profile = () => {
     const [coverPic, setCover] = useState(
         typeof coverPicEdit === "string" ? coverPicEdit : "/cover-photo.png",
     );
+    const [showEditProfile, setShowEditProfile] = useState(false);
 
     useEffect(() => {
         const checkUser = async () => {
@@ -149,28 +152,56 @@ const Profile = () => {
                     }}
                 >
                     <Image
-                        src={profilePic}
+                        src={profilePic ?? "/profile-dp.png"}
                         alt="Profile Picture"
                         width={200}
                         height={200}
                         className="rounded-full bg-primary absolute bottom-[-10%]"
                     />
-                    {currentVisitor === "owner" && (
-                        <Button
-                            text="Edit Pictures"
-                            type="button"
-                            size="small"
-                            style={{
-                                backgroundColor: "white",
-                                color: "#543EE0",
-                                position: "absolute",
-                                top: "0",
-                                right: "2%",
-                            }}
-                            handleClick={() => setShowEditImagePopup(true)}
-                            disabled={!authenticated || !user?.email}
-                        />
+                    {showEditProfile && (
+                        <div className="absolute top-2 right-2 rounded p-2 bg-white shadow-inner z-50">
+                            <AiOutlineClose
+                                className="text-2xl text-red-700 cursor-pointer absolute right-2"
+                                onClick={() => setShowEditProfile(false)}
+                            />
+                            {currentVisitor === "owner" && (
+                                <div className="flex flex-col gap-0 mt-8">
+                                    <Button
+                                        text="Edit Profile"
+                                        type="button"
+                                        size="small"
+                                        variant="primary"
+                                        handleClick={() => {
+                                            setShowPopup(true);
+                                            setShowEditProfile(false);
+                                        }}
+                                        disabled={!authenticated || !user?.email}
+                                    />
+                                    <Button
+                                        text="Edit Pictures"
+                                        type="button"
+                                        size="small"
+                                        variant="primary"
+                                        style={{
+                                            marginTop: "-.3rem",
+                                        }}
+                                        handleClick={() => {
+                                            setShowEditImagePopup(true);
+                                            setShowEditProfile(false);
+                                        }}
+                                        disabled={!authenticated || !user?.email}
+                                    />
+                                </div>
+                            )}
+                            <div className="mt-[-1rem]">
+                                <SignOutBtn />
+                            </div>
+                        </div>
                     )}
+                    <AiOutlineMenu
+                        className="absolute right-2 top-2 text-bold text-white text-4xl cursor-pointer"
+                        onClick={() => setShowEditProfile(true)}
+                    />
                 </header>
             )}
             <div className="bg-primary-50 flex flex-col 2xs:flex-row justify-between items-center px-4 pb-4 pt-10 shadow-inner md:pl-[15rem] mx-2 rounded-b-lg">
@@ -193,12 +224,18 @@ const Profile = () => {
                     {currentVisitor === "owner" ? (
                         <>
                             <Button
-                                text="Edit Profile"
+                                text={
+                                    <Link
+                                        href="/feeds"
+                                        className="flex gap-2 items-center justify-center text-white"
+                                    >
+                                        <MdArticle />
+                                        <span>Feeds</span>
+                                    </Link>
+                                }
                                 type="button"
                                 size="small"
                                 variant="primary"
-                                handleClick={() => setShowPopup(true)}
-                                disabled={!authenticated || !user?.email}
                             />
                             <Button
                                 text={

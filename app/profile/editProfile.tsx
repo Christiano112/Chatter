@@ -28,7 +28,7 @@ const EditProfilePopup = React.memo(
         socialFormErrors,
     }: EditProfilePopupPropsType) => {
         return (
-            <form onSubmit={activeEditTab === 1 ? handleFormSubmit : socialFormSubmit}>
+            <div>
                 <h3 className="text-2xl px-4 mb-4 text-primary font-medium">
                     Edit {activeEditTab === 1 ? "Profile" : "Social Links"}
                 </h3>
@@ -170,7 +170,7 @@ const EditProfilePopup = React.memo(
                         <AiFillCaretRight />
                     </button>
                 </div>
-            </form>
+            </div>
         );
     },
 );

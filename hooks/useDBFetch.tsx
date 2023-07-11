@@ -7,6 +7,7 @@ import { useAppDispatch } from "@/redux/store";
 import { SocialLinkType, UpdateUserType } from "@/utils/form";
 import supaBase from "@/utils/supabase";
 import { Json } from "@/utils/types";
+import is from "date-fns/locale/is/index.js";
 
 export const mapUpdateDataToColumns = (updateData: UpdateUserType) => {
     const { first_name, last_name, username, join_as, email } = updateData;
@@ -22,6 +23,16 @@ export const mapUpdateDataToColumns = (updateData: UpdateUserType) => {
 
 export const isEmptyObject = (obj: any) => {
     return Object.keys(obj).length === 0;
+};
+
+export const filterEmptySocialFields = (obj: SocialLinkType) => {
+    const result = Object.entries(obj).reduce((acc: SocialLinkType, [key, value]) => {
+        if (value !== "") {
+            acc[key] = value;
+        }
+        return acc;
+    }, {});
+    return result;
 };
 
 export interface DBPostType {
@@ -104,7 +115,7 @@ export const useFetchAllPosts = (page: number, pageSize: number) => {
         } finally {
             setIsLoading(false);
         }
-    }, [page, pageSize]);
+    }, [page]);
 
     useEffect(() => {
         fetchAllPosts();
@@ -147,7 +158,7 @@ export const useFetchPostsByAuthorId = (page: number, pageSize: number, author_i
         } finally {
             setIsLoading(false);
         }
-    }, [author_id, page, pageSize]);
+    }, [author_id, page]);
 
     useEffect(() => {
         fetchPostsByAuthorId();
@@ -480,15 +491,12 @@ export const useProfile = (pathId: string, user: UserType | User | null) => {
         async (socialData: SocialLinkType) => {
             try {
                 // Remove empty fields from socialData
-                const filteredSocialData = Object.entries(socialData).reduce(
-                    (acc: SocialLinkType, [key, value]) => {
-                        if (value !== "") {
-                            acc[key] = value;
-                        }
-                        return acc;
-                    },
-                    {},
-                );
+                const filteredSocialData = filterEmptySocialFields(socialData);
+
+                if (isEmptyObject(filteredSocialData)) {
+                    ErrorToast("Please enter at least one social link");
+                    return;
+                }
 
                 if (!isEmptyObject(socials)) {
                     // If socials exist, update the specific fields
@@ -536,8 +544,6 @@ export const useProfile = (pathId: string, user: UserType | User | null) => {
         if (e.target.files && e.target.files.length > 0) {
             setProfilePicEdit(e.target.files[0]);
         }
-        // const url = URL.createObjectURL(imageData);
-        //         setImage(url);
     };
 
     const handleCoverPicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
