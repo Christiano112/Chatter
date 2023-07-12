@@ -65,7 +65,7 @@ const SignUp = () => {
     return (
         <div className="flex h-[100vh] min-h-full">
             <div
-                className="hidden md:flex flex-col items-center justify-center px-4"
+                className="hidden md:flex flex-col items-center justify-center px-4 fixed top-0 bottom-0 left-0 max-w-[25rem]"
                 style={{ background: "url('/side.jpg') center no-repeat", backgroundSize: "cover" }}
             >
                 <h1 className="text-4xl text-black text-center my-8 font-semibold">Chatter</h1>
@@ -73,7 +73,7 @@ const SignUp = () => {
                     Unleash the Power of Words, Connect with Like-minded Readers and Writers
                 </p>
             </div>
-            <section className="w-full my-10 flex flex-col items-center">
+            <section className="w-full my-10 flex flex-col items-center md:ml-[20rem] ml-[3rem]">
                 <h1 className="text-2xl md:text-4xl text-black text-center font-bold">
                     Register to enjoy <span className="text-primary">Chatter</span>
                 </h1>
@@ -148,7 +148,7 @@ const SignUp = () => {
                         handleClick={handleFormSubmit}
                     />
                 </form>
-                <p className="">
+                <p className="pb-8">
                     Already have an account?{" "}
                     <Link href="/login" className="underline">
                         Login
