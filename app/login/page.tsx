@@ -145,7 +145,7 @@ const Login = () => {
                             handleClick={handleFormSubmit}
                         />
                     </form>
-                    {/* <div className="flex flex-col items-center justify-center p-4 rounded shadow-inner w-[80%] mx-auto">
+                    <div className="flex flex-col items-center justify-center p-4 rounded shadow-inner w-[80%] mx-auto">
                         <h5 className="font-medium text-xl">Or Sign in with Socials</h5>
                         <button
                             className="flex items-center justify-center bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg mt-2"
@@ -161,7 +161,7 @@ const Login = () => {
                             <AiFillGithub className="mr-2 text-4xl" />
                             GitHub
                         </button>
-                    </div> */}
+                    </div>
                     <p className="mt-10">
                         Don{"'"}t have an account?{" "}
                         <Link
