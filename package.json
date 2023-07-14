@@ -7,7 +7,8 @@
         "build": "next build",
         "start": "next start",
         "lint": "next lint",
-        "format": "prettier --write app/**/*.{js,jsx,ts,tsx} components/**/*.{js,jsx,ts,tsx} hooks/**/*.{js,jsx,ts,tsx} utils/**/*.{js,jsx,ts,tsx} redux/**/*.{js,jsx,ts,tsx}"
+        "format": "prettier --write app/**/*.{js,jsx,ts,tsx} components/**/*.{js,jsx,ts,tsx} hooks/**/*.{js,jsx,ts,tsx} utils/**/*.{js,jsx,ts,tsx} redux/**/*.{js,jsx,ts,tsx}",
+        "cypress:open": "cypress open"
     },
     "dependencies": {
         "@hookform/resolvers": "^3.1.0",
@@ -23,6 +24,7 @@
         "babel-polyfill": "^6.26.0",
         "date-fns": "^2.30.0",
         "eslint-config-next": "13.4.3",
+        "eslint-plugin-cypress": "^2.13.3",
         "html-react-parser": "^4.0.0",
         "next": "13.4.3",
         "postcss": "8.4.23",
@@ -46,7 +48,7 @@
     "devDependencies": {
         "@testing-library/react": "^14.0.0",
         "@types/uuid": "^9.0.2",
-        "cypress": "^12.12.0",
+        "cypress": "^12.17.1",
         "eslint": "^8.43.0",
         "eslint-config-prettier": "^8.8.0",
         "eslint-plugin-prettier": "^4.2.1",
