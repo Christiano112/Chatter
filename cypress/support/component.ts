@@ -13,14 +13,15 @@
 // https://on.cypress.io/configuration
 // ***********************************************************
 
-// import "../../app/globals";
-import "../../app/layout";
+// import "../../app/globals.css";
+import { EnhancedStore } from "@reduxjs/toolkit";
+import { MountOptions, MountReturn } from "cypress/react18";
+import React from "react";
+import { Provider } from "react-redux";
+import store, { RootState } from "@/redux/store";
 
 // Import commands.js using ES2015 syntax:
 import "./commands";
-
-// Alternatively you can use CommonJS syntax:
-// require('./commands')
 
 import { mount } from "cypress/react18";
 
@@ -32,6 +33,16 @@ declare global {
     namespace Cypress {
         interface Chainable {
             mount: typeof mount;
+
+            /**
+             * Mounts a React node
+             * @param component React Node to mount
+             * @param options Additional options to pass into mount
+             */
+            mountRedux(
+                component: React.ReactNode,
+                options?: MountOptions & { reduxStore?: EnhancedStore<RootState> },
+            ): Cypress.Chainable<MountReturn>;
         }
     }
 }
@@ -40,3 +51,12 @@ Cypress.Commands.add("mount", mount);
 
 // Example use:
 // cy.mount(<MyComponent />)
+
+// Cypress.Commands.add('mountRedux', (component, options = {}) => {
+//     // Use the default store if one is not provided
+//     const { reduxStore: store , ...mountOptions } = options
+
+//     const wrapped = <Provider store={newReduxStore}>{component}</Provider>
+
+//     return mount(wrapped, mountOptions)
+// })
