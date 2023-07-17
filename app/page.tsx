@@ -43,10 +43,10 @@ export default function Home() {
                     backgroundSize: "cover",
                 }}
             >
-                <h1 className="text-white text-bold text-3xl md:text-6xl">
+                <h1 className="text-white font-bold text-3xl md:text-6xl">
                     Welcome to Chatter: A Haven for Text-Based Content
                 </h1>
-                <p className="text-white text-medium">
+                <p className="text-white font-medium">
                     Unleash the Power of Words, Connect with Like-minded Readers and Writers
                 </p>
                 <NavigateButton text="Get Started" direction="feeds" size="small" />

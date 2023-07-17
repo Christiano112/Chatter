@@ -199,7 +199,7 @@ const Profile = () => {
                         </div>
                     )}
                     <AiOutlineMenu
-                        className="absolute right-2 top-2 text-bold text-white text-4xl cursor-pointer"
+                        className="absolute right-2 top-2 font-bold text-white text-4xl cursor-pointer"
                         onClick={() => setShowEditProfile(true)}
                     />
                 </header>
